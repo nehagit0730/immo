@@ -1,5 +1,8 @@
 import { Property, WebPage, User, EmailLog, SystemStats } from './types';
 
+// Keep reference to original window.fetch before it gets overridden
+const originalFetch = typeof window !== 'undefined' ? window.fetch : null;
+
 // Client-side simulated database schema
 export interface LocalDatabaseSchema {
   users: User[];
@@ -372,7 +375,7 @@ export async function ibFetch(input: RequestInfo | URL, init?: RequestInit): Pro
 
   // Check if the request targets /api
   if (!urlStr.includes('/api/')) {
-    return window.fetch(input, init);
+    return originalFetch ? originalFetch(input, init) : window.fetch(input, init);
   }
 
   // Determine if we are deployed on Vercel, or if mock mode is forced, or if the server response is invalid html
@@ -381,7 +384,7 @@ export async function ibFetch(input: RequestInfo | URL, init?: RequestInit): Pro
   if (!isVercel) {
     try {
       // Run check to see if server-side is alive and returns JSON properly
-      const response = await window.fetch(input, init);
+      const response = originalFetch ? await originalFetch(input, init) : await window.fetch(input, init);
       const contentType = response.headers.get('content-type') || '';
       
       // If it's a 404 or page is HTML (like Vercel default SPA HTML)
