@@ -10,6 +10,90 @@ import {
 import { ibFetch } from '../apiMock';
 import { ThemeSchema, themesMap, getThemeSettings } from '../theme';
 
+interface AdminImageUploadProps {
+  id?: string;
+  value: string;
+  onChange: (url: string) => void;
+  label?: string;
+  placeholder?: string;
+}
+
+const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImageUploadProps) => {
+  const [localUploading, setLocalUploading] = useState(false);
+
+  const handleUpload = async (file: File) => {
+    setLocalUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onChange(data.url);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to upload image');
+      }
+    } catch (e) {
+      console.error('Upload error:', e);
+      alert('Error uploading image');
+    } finally {
+      setLocalUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-1 font-sans" id={id}>
+      {label && <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">{label}</label>}
+      <div className="border border-dashed border-slate-800 rounded p-3 text-center bg-slate-950 hover:bg-slate-900/60 transition-colors relative cursor-pointer min-h-[85px] flex items-center justify-center">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleUpload(e.target.files[0]);
+            }
+          }}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        {value ? (
+          <div className="flex items-center gap-3 w-full text-left justify-between pr-2 z-10">
+            <div className="flex items-center gap-2 min-w-0">
+              <img src={value} alt="Preview" className="w-16 h-10 object-cover rounded border border-slate-800 flex-shrink-0" referrerPolicy="no-referrer" />
+              <div className="text-[10px] text-slate-400 truncate pr-2 min-w-0">{value}</div>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onChange('');
+              }}
+              className="text-red-500 hover:text-red-400 text-[10px] uppercase font-bold tracking-wider flex-shrink-0 z-20 cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <div className="text-[10px] text-slate-400 flex flex-col items-center gap-1">
+            {localUploading ? (
+              <span className="flex items-center gap-1.5"><span className="animate-spin text-blue-500 mr-1">🔄</span> Uploading secure copy...</span>
+            ) : (
+              <>
+                <span className="font-bold text-slate-350">📁 {placeholder || 'Choose Image or Drag here'}</span>
+                <span className="text-[8px] text-slate-500">Auto-saved to public uploads directory</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface AdminDashboardProps {
   currentLanguage: Language;
   onThemeChange?: () => void;
@@ -630,8 +714,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                   <input type="text" value={addGpsLocation} onChange={(e) => setAddGpsLocation(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5" placeholder="e.g. -3.3822, 29.3599" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Representative Image (Unsplash URL)</label>
-                  <input type="url" value={addImageUrl} onChange={(e) => setAddImageUrl(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5" placeholder="https://images.unsplash.com/photo-..." />
+                  <AdminImageUpload 
+                    value={addImageUrl} 
+                    onChange={setAddImageUrl} 
+                    label="Representative Image" 
+                    placeholder="Upload image from device" 
+                  />
                 </div>
               </div>
               <div>
@@ -1629,10 +1717,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <label className="block text-[9.5px] tracking-wider font-mono text-slate-455 uppercase mb-1">Subheading Copy text</label>
               <textarea rows={2.5} value={s.subtitle || ''} onChange={(e) => updateFn('subtitle', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 focus:outline-none" />
             </div>
-            <div>
-              <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">Cover Image URL</label>
-              <input type="url" value={s.imageUrl || ''} onChange={(e) => updateFn('imageUrl', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 focus:outline-none" />
-            </div>
+            <AdminImageUpload
+              value={s.imageUrl || ''}
+              onChange={(url) => updateFn('imageUrl', url)}
+              label="Cover Image"
+              placeholder="Upload cover banner image"
+            />
             <div>
               <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">Call to Action button text</label>
               <input type="text" value={s.buttonText || ''} onChange={(e) => updateFn('buttonText', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 focus:outline-none" />
@@ -1651,10 +1741,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Body descriptive copy</label>
               <textarea rows={4} value={s.body || ''} onChange={(e) => updateFn('body', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" placeholder="Write paragraphs..." />
             </div>
-            <div>
-              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Aesthetic image URL</label>
-              <input type="url" value={s.imageUrl || ''} onChange={(e) => updateFn('imageUrl', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
-            </div>
+            <AdminImageUpload
+              value={s.imageUrl || ''}
+              onChange={(url) => updateFn('imageUrl', url)}
+              label="Aesthetic Image"
+              placeholder="Upload illustration image"
+            />
             <div>
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Image Alignment</label>
               <select value={s.alignment || 'left'} onChange={(e) => updateFn('alignment', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200">
@@ -1736,10 +1828,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <label className="block text-[9.5px] font-mono text-slate-455 uppercase mb-1">Video Header Title</label>
               <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
             </div>
-            <div>
-              <label className="block text-[9.5px] font-mono text-slate-455 uppercase mb-1">Poster Cover image URL</label>
-              <input type="url" value={s.coverImage || ''} onChange={(e) => updateFn('coverImage', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
-            </div>
+            <AdminImageUpload
+              value={s.coverImage || ''}
+              onChange={(url) => updateFn('coverImage', url)}
+              label="Poster Cover Image"
+              placeholder="Upload poster cover image"
+            />
             <div>
               <label className="block text-[9.5px] font-mono text-slate-455 uppercase mb-1">Video Duration Tag</label>
               <input type="text" value={s.duration || ''} onChange={(e) => updateFn('duration', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
@@ -1750,10 +1844,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       case 'single_image':
         return (
           <div className="space-y-3">
-            <div>
-              <label className="block text-[9.5px] font-mono text-slate-455 uppercase mb-1">High-Res Image URL</label>
-              <input type="url" value={s.imageUrl || ''} onChange={(e) => updateFn('imageUrl', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
-            </div>
+            <AdminImageUpload
+              value={s.imageUrl || ''}
+              onChange={(url) => updateFn('imageUrl', url)}
+              label="High-Res Image"
+              placeholder="Upload single photography/image"
+            />
             <div>
               <label className="block text-[9.5px] font-mono text-slate-455 uppercase mb-1">Border label caption text</label>
               <input type="text" value={s.caption || ''} onChange={(e) => updateFn('caption', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />

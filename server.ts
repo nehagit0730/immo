@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { createServer as createViteServer } from 'vite';
 import { getDatabase, saveDatabase } from './database';
 import { Property, WebPage, User, EmailLog } from './src/types';
@@ -9,6 +11,40 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Serve static uploads
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+
+  // Configure multer storage for local uploading
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), 'public/uploads');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname);
+      const baseName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '_');
+      cb(null, `${baseName}-${uniqueSuffix}${ext}`);
+    }
+  });
+
+  const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  });
+
+  // Image upload API
+  app.post('/api/upload', upload.single('image'), (req: express.Request, res: express.Response) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file uploaded' });
+    }
+    const relativeUrl = `/uploads/${req.file.filename}`;
+    res.json({ success: true, url: relativeUrl });
+  });
 
   // Helper to generate IDs
   const generateId = () => Math.random().toString(36).substring(2, 11);

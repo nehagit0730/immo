@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { Property, User, EmailLog } from '../types';
 import { Language, translations } from '../translations';
-import { PlusCircle, List, Mail, FileCheck, RefreshCw, X, ShieldAlert, Compass } from 'lucide-react';
+import { PlusCircle, List, Mail, FileCheck, RefreshCw, X, ShieldAlert, Compass, Upload, Trash2, Loader2 } from 'lucide-react';
 import PropertyCard from './PropertyCard';
 import { ibFetch } from '../apiMock';
 
@@ -34,7 +34,35 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
   const [imageUrl, setImageUrl] = useState('');
   const [gpsLocation, setGpsLocation] = useState('');
 
+  const [isUploading, setIsUploading] = useState(false);
+
   const t = translations[currentLanguage];
+
+  const handleImageUpload = async (file: File, callback: (url: string) => void) => {
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        callback(data.url);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to upload image');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Error uploading image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const fetchClientData = async () => {
     setIsLoading(true);
@@ -445,16 +473,65 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
                 </div>
               </div>
 
-              {/* Image Input url */}
+              {/* Image Input url / Drag-and-drop secure upload */}
               <div className="space-y-1">
-                <label className="text-slate-505 font-mono text-[10px] uppercase font-bold tracking-wider block">Cover Image URL</label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/... (leave empty for automatically assigned premium real estate picture)"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-sm py-1.5 px-3 text-xs focus:outline-none focus:border-blue-700 font-medium"
-                />
+                <label className="text-slate-505 font-mono text-[10px] uppercase font-bold tracking-wider block">Cover Image Upload</label>
+                <div className="border border-dashed border-slate-350 rounded-sm p-4 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors relative cursor-pointer group font-sans">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleImageUpload(e.target.files[0], setImageUrl);
+                      }
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  {imageUrl ? (
+                    <div className="space-y-2">
+                      <div className="relative inline-block">
+                        <img
+                          src={imageUrl}
+                          alt="Cover preview"
+                          className="w-32 h-20 object-cover rounded-sm border border-slate-250 mx-auto"
+                          referrerPolicy="no-referrer"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setImageUrl('');
+                          }}
+                          className="absolute -top-1.5 -right-1.5 bg-red-650 text-white p-0.5 rounded-full hover:bg-red-750 transition-colors"
+                          title="Remove image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-500 truncate max-w-xs mx-auto">{imageUrl}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 py-1">
+                      <div className="text-slate-500 font-bold text-xs flex justify-center items-center gap-1.5">
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-650" />
+                            <span>Uploading secure image...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-slate-400" />
+                            <span>Choose Image or Drag here</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-[9.5px] text-slate-450">
+                        Supports JPEG, PNG or WebP files (stored in workspace uploads directory)
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* GPS coordinates mapping */}
