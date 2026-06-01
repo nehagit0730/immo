@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
 import { Property, WebPage, EmailLog, SystemStats, PageSection } from '../types';
 import { Language, translations } from '../translations';
 import { 
@@ -20,6 +20,7 @@ interface AdminImageUploadProps {
 
 const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImageUploadProps) => {
   const [localUploading, setLocalUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
     setLocalUploading(true);
@@ -45,26 +46,52 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
     }
   };
 
+  const triggerFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // allow uploading the same file again
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <div className="space-y-1 font-sans" id={id}>
       {label && <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">{label}</label>}
-      <div className="border border-dashed border-slate-800 rounded p-3 text-center bg-slate-950 hover:bg-slate-900/60 transition-colors relative cursor-pointer min-h-[85px] flex items-center justify-center">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              handleUpload(e.target.files[0]);
-            }
-          }}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-        {value ? (
-          <div className="flex items-center gap-3 w-full text-left justify-between pr-2 z-10">
-            <div className="flex items-center gap-2 min-w-0">
-              <img src={value} alt="Preview" className="w-16 h-10 object-cover rounded border border-slate-800 flex-shrink-0" referrerPolicy="no-referrer" />
-              <div className="text-[10px] text-slate-400 truncate pr-2 min-w-0">{value}</div>
+      
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleUpload(e.target.files[0]);
+          }
+        }}
+        className="hidden"
+      />
+
+      {value ? (
+        <div className="border border-slate-800 rounded p-3 bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[85px]">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <img 
+              src={value} 
+              alt="Preview" 
+              className="w-16 h-12 object-cover rounded border border-slate-800 flex-shrink-0" 
+              referrerPolicy="no-referrer" 
+            />
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] text-[#94a3b8] uppercase font-mono block">Active Cover url</span>
+              <div className="text-[10px] text-slate-350 font-mono truncate">{value}</div>
             </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={triggerFileSelect}
+              className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-[9.5px] font-bold text-slate-300 hover:bg-slate-800 transition-colors uppercase tracking-wider cursor-pointer font-mono"
+            >
+              Replace
+            </button>
             <button
               type="button"
               onClick={(e) => {
@@ -72,24 +99,31 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
                 e.stopPropagation();
                 onChange('');
               }}
-              className="text-red-500 hover:text-red-400 text-[10px] uppercase font-bold tracking-wider flex-shrink-0 z-20 cursor-pointer"
+              className="px-2.5 py-1.5 bg-red-950/40 border border-red-900/30 text-red-400 hover:bg-red-900/45 rounded text-[9.5px] font-bold transition-colors uppercase tracking-wider cursor-pointer font-mono"
             >
               Clear
             </button>
           </div>
-        ) : (
-          <div className="text-[10px] text-slate-400 flex flex-col items-center gap-1">
-            {localUploading ? (
-              <span className="flex items-center gap-1.5"><span className="animate-spin text-blue-500 mr-1">🔄</span> Uploading secure copy...</span>
-            ) : (
-              <>
-                <span className="font-bold text-slate-350">📁 {placeholder || 'Choose Image or Drag here'}</span>
-                <span className="text-[8px] text-slate-500">Auto-saved to public uploads directory</span>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div 
+          onClick={triggerFileSelect}
+          className="border border-dashed border-slate-800 rounded p-4 text-center bg-slate-950 hover:bg-slate-900/40 transition-colors cursor-pointer min-h-[85px] flex flex-col items-center justify-center space-y-1"
+        >
+          {localUploading ? (
+            <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
+              <span className="animate-spin text-blue-500 mr-1">🔄</span> Uploading secure copy...
+            </span>
+          ) : (
+            <>
+              <span className="font-bold text-[11px] text-slate-350 flex items-center gap-1.5">
+                📁 {placeholder || 'Choose Image or Drag here'}
+              </span>
+              <span className="text-[8.5px] text-slate-500 font-mono">Stored in public uploads directory</span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

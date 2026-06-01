@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
 import { Property, User, EmailLog } from '../types';
 import { Language, translations } from '../translations';
 import { PlusCircle, List, Mail, FileCheck, RefreshCw, X, ShieldAlert, Compass, Upload, Trash2, Loader2 } from 'lucide-react';
@@ -35,6 +35,7 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
   const [gpsLocation, setGpsLocation] = useState('');
 
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[currentLanguage];
 
@@ -476,62 +477,84 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
               {/* Image Input url / Drag-and-drop secure upload */}
               <div className="space-y-1">
                 <label className="text-slate-505 font-mono text-[10px] uppercase font-bold tracking-wider block">Cover Image Upload</label>
-                <div className="border border-dashed border-slate-350 rounded-sm p-4 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors relative cursor-pointer group font-sans">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleImageUpload(e.target.files[0], setImageUrl);
+                
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleImageUpload(e.target.files[0], setImageUrl);
+                    }
+                  }}
+                  className="hidden"
+                />
+
+                {imageUrl ? (
+                  <div className="border border-slate-200 rounded p-3 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[85px] font-sans">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <img 
+                        src={imageUrl} 
+                        alt="Preview" 
+                        className="w-16 h-12 object-cover rounded-sm border border-slate-200 flex-shrink-0" 
+                        referrerPolicy="no-referrer" 
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9px] text-slate-450 uppercase font-mono block">Active Property photo</span>
+                        <div className="text-[10px] text-slate-550 font-mono truncate">{imageUrl}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                            fileInputRef.current.click();
+                          }
+                        }}
+                        className="px-2.5 py-1.5 bg-white border border-slate-200 rounded text-[9.5px] font-bold text-slate-650 hover:bg-slate-100 transition-colors uppercase tracking-wider cursor-pointer font-mono"
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setImageUrl('');
+                        }}
+                        className="px-2.5 py-1.5 bg-red-50 border border-red-200 text-red-650 hover:bg-red-100 rounded text-[9.5px] font-bold transition-colors uppercase tracking-wider cursor-pointer font-mono"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                        fileInputRef.current.click();
                       }
                     }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  {imageUrl ? (
-                    <div className="space-y-2">
-                      <div className="relative inline-block">
-                        <img
-                          src={imageUrl}
-                          alt="Cover preview"
-                          className="w-32 h-20 object-cover rounded-sm border border-slate-250 mx-auto"
-                          referrerPolicy="no-referrer"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setImageUrl('');
-                          }}
-                          className="absolute -top-1.5 -right-1.5 bg-red-650 text-white p-0.5 rounded-full hover:bg-red-750 transition-colors"
-                          title="Remove image"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p className="text-[10px] text-slate-500 truncate max-w-xs mx-auto">{imageUrl}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1 py-1">
-                      <div className="text-slate-500 font-bold text-xs flex justify-center items-center gap-1.5">
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin text-blue-650" />
-                            <span>Uploading secure image...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 text-slate-400" />
-                            <span>Choose Image or Drag here</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[9.5px] text-slate-450">
-                        Supports JPEG, PNG or WebP files (stored in workspace uploads directory)
-                      </p>
-                    </div>
-                  )}
-                </div>
+                    className="border border-dashed border-slate-300 rounded p-4 text-center bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer min-h-[85px] flex flex-col items-center justify-center space-y-1 font-sans"
+                  >
+                    {isUploading ? (
+                      <span className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-650" /> Uploading secure copy...
+                      </span>
+                    ) : (
+                      <>
+                        <span className="font-bold text-[11px] text-slate-600 flex items-center gap-1.5 justify-center">
+                          <Upload className="w-4 h-4 text-slate-400" /> Choose Image or Drag here
+                        </span>
+                        <span className="text-[8.5px] text-slate-450 font-mono">Stored in public uploads directory</span>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* GPS coordinates mapping */}
