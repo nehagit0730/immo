@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { PageSection } from '../types';
+import { PageSection, Property } from '../types';
+import { Language } from '../translations';
+import PropertyCard from './PropertyCard';
 import { ChevronRight, ChevronLeft, Volume2, HelpCircle, Star, Play, CheckCircle } from 'lucide-react';
 
 interface PageSectionsRendererProps {
   sections: PageSection[];
+  properties?: Property[];
+  currentLanguage?: Language;
 }
 
-export default function PageSectionsRenderer({ sections }: PageSectionsRendererProps) {
+export default function PageSectionsRenderer({ sections, properties = [], currentLanguage = 'en' }: PageSectionsRendererProps) {
   if (!sections || sections.length === 0) return null;
 
   return (
@@ -35,7 +39,7 @@ export default function PageSectionsRenderer({ sections }: PageSectionsRendererP
         return (
           <div key={section.id || idx} className={commonStyle}>
             <div className="max-w-7xl mx-auto">
-              {renderSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal })}
+              {renderSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, properties, currentLanguage)}
             </div>
           </div>
         );
@@ -46,7 +50,9 @@ export default function PageSectionsRenderer({ sections }: PageSectionsRendererP
 
 function renderSectionContent(
   section: PageSection, 
-  styles: { fontSizeHeadClass: string; fontSizeTextClass: string; headColorVal: string; txtColorVal: string }
+  styles: { fontSizeHeadClass: string; fontSizeTextClass: string; headColorVal: string; txtColorVal: string },
+  properties: Property[],
+  currentLanguage: Language
 ) {
   const settings = section.settings || {};
   const { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal } = styles;
@@ -427,6 +433,48 @@ function renderSectionContent(
           <p className={`${fontSizeTextClass} ${txtColorVal}`}>
             {settings.body || 'This is a dedicated text block layout. Expand on corporate rules, office locations, security policies, digital submission files, boundary maps limits, or any broker listings guidelines.'}
           </p>
+        </div>
+      );
+    }
+
+    case 'property_list': {
+      const heading = settings.heading || (currentLanguage === 'en' ? 'Featured Properties' : currentLanguage === 'fr' ? 'Propriétés Vedettes' : 'Mali Maalum');
+      const subheading = settings.subheading || (currentLanguage === 'en' ? 'Explore active verified listings directly synchronized from the registry builder' : 'Explorez les annonces actives vérifiées directement synchronisées');
+      const limit = parseInt(settings.limit || '3', 10);
+      const typeFilter = settings.typeFilter || 'all';
+      const showOnlyVerified = settings.showOnlyVerified !== false;
+
+      // Filter in client space
+      const fullList = properties || [];
+      const filtered = fullList
+        .filter(p => p.status === 'approved')
+        .filter(p => !showOnlyVerified || p.verified)
+        .filter(p => typeFilter === 'all' || p.type === typeFilter)
+        .slice(0, limit);
+
+      return (
+        <div className="space-y-8 font-sans">
+          <div className="text-center max-w-3xl mx-auto space-y-2">
+            <h2 className={`${fontSizeHeadClass} ${headColorVal} font-black`}>{heading}</h2>
+            {subheading && <p className={`text-xs ${txtColorVal}`}>{subheading}</p>}
+          </div>
+          
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 rounded-3xl bg-slate-50 border border-slate-100 p-6 max-w-md mx-auto">
+              <span className="text-xl">🔍</span>
+              <p className="text-xs text-slate-400 mt-2 font-mono">No matching verified properties found. Ensure approved listings are active.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  currentLanguage={currentLanguage}
+                />
+              ))}
+            </div>
+          )}
         </div>
       );
     }

@@ -1390,6 +1390,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         defaultSettings = { title: 'Premium Content Heading', subtitle: 'Responsive block layouts' };
       } else if (type === 'text') {
         defaultSettings = { body: 'This block is dedicated to informative text. You can adjust background colors, sizes, alignment, and preview everything immediately.' };
+      } else if (type === 'property_list') {
+        defaultSettings = { heading: 'Premium Verified Properties', subheading: 'Explore active listings verified directly on the ground by IMMO BURUNDI in Bujumbura, Gitega and Rumonge.', limit: '3', typeFilter: 'all', showOnlyVerified: true };
       } else {
         defaultSettings = { title: 'High-Tech Block', subtitle: 'Dynamic templates content' };
       }
@@ -1590,7 +1592,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             <div className="p-4 border-t border-slate-800 space-y-3.5 shrink-0">
               <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-extrabold uppercase">Block Sections Catalog</span>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text'] as PageSection['type'][]).map((type) => (
+                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list'] as PageSection['type'][]).map((type) => (
                   <button
                     key={type}
                     type="button"
@@ -1891,6 +1893,48 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           </div>
         );
 
+      case 'property_list':
+        return (
+          <div className="space-y-3.5">
+            <div>
+              <label className="block text-[9.5px] tracking-wider font-mono text-slate-450 uppercase mb-1">Listings Section Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 focus:outline-none text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] tracking-wider font-mono text-slate-455 uppercase mb-1">Subheading Copy text</label>
+              <textarea rows={2.5} value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 focus:outline-none text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] tracking-wider font-mono text-slate-455 uppercase mb-1">Property Limit to Show</label>
+              <select value={s.limit || '3'} onChange={(e) => updateFn('limit', e.target.value)} className="w-full bg-slate-950 border border-slate-855 rounded p-2 text-slate-200">
+                <option value="3">3 properties</option>
+                <option value="6">6 properties</option>
+                <option value="9">9 properties</option>
+                <option value="12">12 properties</option>
+                <option value="18">18 properties</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[9.5px] tracking-wider font-mono text-slate-455 uppercase mb-1">Filter by Property Type</label>
+              <select value={s.typeFilter || 'all'} onChange={(e) => updateFn('typeFilter', e.target.value)} className="w-full bg-slate-950 border border-slate-855 rounded p-2 text-slate-200">
+                <option value="all">All Types</option>
+                <option value="house">House/Villa</option>
+                <option value="land">Land/Plot</option>
+                <option value="commercial">Commercial Space</option>
+                <option value="rental">Rental Property</option>
+                <option value="investment">Investment Land</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">Verification Status Filter</label>
+              <select value={s.showOnlyVerified === false ? 'all' : 'verified'} onChange={(e) => updateFn('showOnlyVerified', e.target.value === 'verified')} className="w-full bg-slate-950 border border-slate-855 rounded p-2 text-slate-200">
+                <option value="verified">Fully Verified Properties Only (Recommended)</option>
+                <option value="all">All Approved Properties (Self-Reported + Verified)</option>
+              </select>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="text-[10px] text-slate-500 font-mono leading-normal">
@@ -2038,6 +2082,30 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           <p className="text-slate-650 text-[10.5px] text-left leading-normal font-sans px-2 mx-auto max-w-sm">
             {s.body || 'Provide detailed layout information paragraph segments...'}
           </p>
+        )}
+
+        {sec.type === 'property_list' && (
+          <div className="space-y-2 text-left py-1.5 border-t border-b border-slate-100 mt-2">
+            <h4 className="font-extrabold text-xs text-slate-950 border-none pb-0 text-center">{s.heading || 'Featured Properties Catalog'}</h4>
+            <p className="text-[9.5px] opacity-70 leading-tight text-center max-w-xs mx-auto">{s.subheading || 'Listing widgets filtered from the database'}</p>
+            <div className="grid grid-cols-3 gap-2 text-center pt-2 text-[8px] font-mono">
+              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
+                <span>🏡 Villa</span>
+                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Kiriri Hills</p>
+              </div>
+              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
+                <span>🏢 Office</span>
+                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Rohero I</p>
+              </div>
+              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
+                <span>🗺️ Land</span>
+                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Rumonge</p>
+              </div>
+            </div>
+            <div className="text-[8.5px] text-blue-600 font-mono text-center font-bold mt-1 tracking-wide">
+              Show Limit: {s.limit || '3'} • Filter: {s.typeFilter || 'all'} • Verified Only: {s.showOnlyVerified !== false ? 'Yes' : 'No'}
+            </div>
+          </div>
         )}
 
       </div>

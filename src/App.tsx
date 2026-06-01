@@ -232,7 +232,7 @@ export default function App() {
             {(() => {
               const homePageObj = pages.find(p => p.slug === 'home' || p.isHomepage);
               if (homePageObj?.sections && homePageObj.sections.length > 0) {
-                return <PageSectionsRenderer sections={homePageObj.sections} />;
+                return <PageSectionsRenderer sections={homePageObj.sections} properties={properties} currentLanguage={currentLanguage} />;
               }
               return (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -300,7 +300,7 @@ export default function App() {
             if (matchedPl.sections && matchedPl.sections.length > 0) {
               return (
                 <div className="w-full animate-in fade-in duration-300">
-                  <PageSectionsRenderer sections={matchedPl.sections} />
+                  <PageSectionsRenderer sections={matchedPl.sections} properties={properties} currentLanguage={currentLanguage} />
                 </div>
               );
             }

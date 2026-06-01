@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { User, Property, WebPage, EmailLog, SystemStats } from './src/types';
+import { User, Property, WebPage, EmailLog, SystemStats, PageSection } from './src/types';
 
 const DB_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'database.json');
@@ -474,40 +474,201 @@ const defaultUsers: User[] = [
   }
 ];
 
+// Custom prebuilt beautiful sections
+const prebuiltHomeSections: PageSection[] = [
+  {
+    id: "sec_home_banner",
+    type: "banner",
+    backgroundColor: "bg-slate-900 text-white",
+    headingColor: "text-white",
+    textColor: "text-slate-300",
+    fontSize: "display",
+    settings: {
+      title: "Find Your Secure Dream Property in Burundi",
+      subtitle: "IMMO BURUNDI is the premier fully verified real estate marketplace. Every title deed is auditable, and every compound is inspected on-site by our local agents.",
+      imageUrl: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+      buttonText: "Explore Real Estate"
+    }
+  },
+  {
+    id: "sec_home_featured",
+    type: "property_list",
+    backgroundColor: "bg-white",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-500",
+    fontSize: "lg",
+    settings: {
+      heading: "Premium Verified Properties",
+      subheading: "Every property list item has verified cadastral records checked independently by elite agents on location.",
+      limit: "3",
+      typeFilter: "all",
+      showOnlyVerified: true
+    }
+  },
+  {
+    id: "sec_home_columns",
+    type: "columns",
+    backgroundColor: "bg-slate-50 text-slate-800",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-650",
+    fontSize: "md",
+    settings: {
+      heading: "Burundi's Trusted Real Estate Standards",
+      subheading: "Connecting diaspora investors, private-sector landlords, and active local buyers.",
+      columns: [
+        { icon: "🛡️", title: "Cadaster Verifications", desc: "Direct title review and matching at national property registry records in Rohero." },
+        { icon: "🔑", title: "Electronic Escrow Agreements", desc: "Legally standard bilingual contracts signed electronically to bypass double allocation." },
+        { icon: "✈️", title: "Diaspora Support Hub", desc: "Drone inspections, physical land checks, boundaries mapping, and active broker assistance." }
+      ]
+    }
+  },
+  {
+    id: "sec_home_testimonials",
+    type: "testimonials",
+    backgroundColor: "bg-white",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-600",
+    fontSize: "md",
+    settings: {
+      heading: "Endorsed by Diaspora & Residents",
+      testimonials: [
+        { text: "IMMO BURUNDI saved us from an urban double-allocation trap in Kiriri! Their local title validation is essential.", author: "Gérard Sindayigaya", role: "Diaspora Investor" },
+        { text: "Quickest rental broker response rate in Kinindo. Signed bilingual service contract on Sunday and got keys Monday.", author: "Clara Kaneza", role: "Corporate Secretary" }
+      ]
+    }
+  },
+  {
+    id: "sec_home_brands",
+    type: "brands",
+    backgroundColor: "bg-slate-50 text-slate-400",
+    headingColor: "text-slate-400",
+    textColor: "text-slate-400",
+    fontSize: "sm",
+    settings: {
+      brands: ["CADASTRE NATIONAL", "OBR BURUNDI", "BANQUE COMMERCIALE", "REGIDESO"]
+    }
+  }
+];
+
+const prebuiltAboutSections: PageSection[] = [
+  {
+    id: "sec_about_banner",
+    type: "banner",
+    backgroundColor: "bg-gradient-to-r from-blue-900 to-slate-950 text-white border-none",
+    headingColor: "text-white",
+    textColor: "text-slate-200",
+    fontSize: "lg",
+    settings: {
+      title: "About IMMO BURUNDI S.A.R.L",
+      subtitle: "Spearheading digital safety, boundary validation, and professional brokerage in the property sector of Burundi.",
+      imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+      buttonText: "Read Our Framework"
+    }
+  },
+  {
+    id: "sec_about_mission",
+    type: "image_text",
+    backgroundColor: "bg-white",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-650",
+    fontSize: "md",
+    settings: {
+      heading: "Corporate Mission & Local Support",
+      body: "IMMO BURUNDI is a private-sector real estate technology marketplace and professional brokerage provider built to improve transparency and confidence in Burundi's property market.\n\nOperating from Boulevard de l'Uprona, Rohero, Bujumbura, our team conducts physical ground checks, coordinates with national registry representatives, and assists buyers with bilingual paperless contracts to eliminate duplication fraud and create a reliable local hub.",
+      imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+      alignment: "left"
+    }
+  },
+  {
+    id: "sec_about_featured_land",
+    type: "property_list",
+    backgroundColor: "bg-slate-50",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-600",
+    fontSize: "md",
+    settings: {
+      heading: "Elite Land & Investment Portfolios",
+      subheading: "Direct beachfront and agricultural plots configured with absolute cadaster boundary guarantees.",
+      limit: "3",
+      typeFilter: "land",
+      showOnlyVerified: false
+    }
+  },
+  {
+    id: "sec_about_faqs",
+    type: "faqs",
+    backgroundColor: "bg-white",
+    headingColor: "text-slate-900",
+    textColor: "text-slate-655",
+    fontSize: "md",
+    settings: {
+      heading: "Answers to Common Concerns",
+      faqs: [
+        { q: "How does IMMO BURUNDI verify boundary coordinates?", a: "IMMO BURUNDI coordinates with national cadaster checkers who inspect GPS markers and physical border drawings on-site." },
+        { q: "Are standard listings free to post?", a: "Yes! Basic listings are free, whereas full physical document verification and banner promotions have standard flat-rate options." }
+      ]
+    }
+  }
+];
+
 // Load Database
 export function getDatabase(): DatabaseSchema {
   if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
 
+  let db: DatabaseSchema;
+  let fromFile = false;
+
   if (fs.existsSync(DB_FILE)) {
     try {
       const data = fs.readFileSync(DB_FILE, 'utf8');
-      return JSON.parse(data);
+      db = JSON.parse(data);
+      fromFile = true;
     } catch (e) {
       console.error('Error reading database file, resetting to defaults:', e);
+      fromFile = false;
     }
   }
 
-  // Create initial database with defaults
-  const initialData: DatabaseSchema = {
-    users: defaultUsers,
-    properties: defaultProperties,
-    pages: defaultPages,
-    emails: [],
-    stats: {
-      totalProperties: 5,
-      approvedProperties: 4,
-      pendingProperties: 1,
-      rejectedProperties: 0,
-      totalUsers: 2,
-      totalViews: 1250,
-      totalInquiries: 48
-    }
-  };
+  if (!fromFile || !db!) {
+    // Create initial database with defaults
+    db = {
+      users: defaultUsers,
+      properties: defaultProperties,
+      pages: defaultPages,
+      emails: [],
+      stats: {
+        totalProperties: 5,
+        approvedProperties: 4,
+        pendingProperties: 1,
+        rejectedProperties: 0,
+        totalUsers: 2,
+        totalViews: 1250,
+        totalInquiries: 48
+      }
+    };
+  }
 
-  saveDatabase(initialData);
-  return initialData;
+  // Self-heal loaded database sections if they missing
+  let changed = false;
+  const homePage = db.pages.find((p: any) => p.id === 'home' || p.slug === 'home');
+  if (homePage && (!homePage.sections || homePage.sections.length === 0)) {
+    homePage.sections = prebuiltHomeSections;
+    changed = true;
+  }
+
+  const aboutPage = db.pages.find((p: any) => p.id === 'about' || p.slug === 'about-us');
+  if (aboutPage && (!aboutPage.sections || aboutPage.sections.length === 0)) {
+    aboutPage.sections = prebuiltAboutSections;
+    changed = true;
+  }
+
+  if (changed || !fromFile) {
+    saveDatabase(db);
+  }
+
+  return db;
 }
 
 // Save Database
