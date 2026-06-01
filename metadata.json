@@ -1,0 +1,6 @@
+{
+  "name": "Immo Burundi",
+  "description": "The premier verified real estate marketplace and brokerage platform of Burundi modal with multilingual support (English, French, Swahili), interactive page builder, and dedicated client/admin approval workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
