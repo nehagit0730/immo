@@ -39,6 +39,16 @@ export interface Property {
   createdAt: string;
 }
 
+export interface PageSection {
+  id: string;
+  type: 'banner' | 'slideshow' | 'image_text' | 'columns' | 'gallery' | 'richtext' | 'brands' | 'faqs' | 'testimonials' | 'video' | 'single_image' | 'heading' | 'text';
+  backgroundColor: string;
+  headingColor: string;
+  textColor: string;
+  fontSize: 'sm' | 'md' | 'lg' | 'display';
+  settings: any;
+}
+
 export interface WebPage {
   id: string;
   slug: string;
@@ -46,6 +56,7 @@ export interface WebPage {
   content: TranslationMap;
   isHomepage: boolean;
   systemPage: boolean; // if true, it's one of the predefined pages
+  sections?: PageSection[];
   updatedAt: string;
 }
 

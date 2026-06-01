@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { User } from '../types';
 import { Language, translations } from '../translations';
 import { ShieldCheck, User as UserIcon, LogOut, Globe, Menu, X, ChevronDown, Award } from 'lucide-react';
+import { getThemeSettings } from '../theme';
 
 interface HeaderProps {
   user: User | null;
@@ -25,6 +26,7 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [legalDropdownOpen, setLegalDropdownOpen] = useState(false);
   
+  const { colors, headerTitle } = getThemeSettings();
   const t = translations[currentLanguage];
 
   const handleLinkClick = (view: string, pageId?: string) => {
@@ -39,14 +41,14 @@ export default function Header({
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center cursor-pointer" onClick={() => handleLinkClick('home')}>
-            <div className="flex items-center justify-center w-10 h-10 rounded-sm bg-blue-700 mr-3 shadow-sm hover:bg-blue-800 transition-colors">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-xl mr-3 shadow-sm ${colors.primaryBg} ${colors.primaryHover} transition-colors`}>
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-sans font-black text-blue-900 leading-none text-base tracking-tight flex items-center">
-                IMMO <span className="text-blue-700 ml-1.5 font-bold">BURUNDI</span>
+              <span className={`font-sans font-black leading-none text-base tracking-tight flex items-center ${colors.primaryText}`}>
+                {headerTitle}
               </span>
-              <span className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.15em] leading-none mt-1">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.14em] leading-none mt-1">
                 {currentLanguage === 'en' ? 'Verified Workspace' : currentLanguage === 'fr' ? 'Espace Vérifié' : 'Uhakiki Salama'}
               </span>
             </div>
@@ -56,9 +58,9 @@ export default function Header({
           <nav className="hidden md:flex items-center space-x-6 font-bold text-xs uppercase tracking-widest text-[#475569]">
             <button 
               onClick={() => handleLinkClick('home')}
-              className={`pb-1 transition-all hover:text-blue-700 cursor-pointer ${
+              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
                 currentView === 'home' 
-                  ? 'text-blue-700 border-b-2 border-blue-700 font-extrabold' 
+                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
                   : 'text-slate-600'
               }`}
             >
@@ -66,9 +68,9 @@ export default function Header({
             </button>
             <button 
               onClick={() => handleLinkClick('about')}
-              className={`pb-1 transition-all hover:text-blue-700 cursor-pointer ${
+              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
                 currentView === 'about' 
-                  ? 'text-blue-700 border-b-2 border-blue-700 font-extrabold' 
+                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
                   : 'text-slate-600'
               }`}
             >
@@ -79,9 +81,9 @@ export default function Header({
             <div className="relative">
               <button
                 onClick={() => setLegalDropdownOpen(!legalDropdownOpen)}
-                className={`flex items-center pb-1 transition-all hover:text-blue-700 focus:outline-none cursor-pointer ${
+                className={`flex items-center pb-1 transition-all focus:outline-none cursor-pointer hover:opacity-80 ${
                   ['disclaimer', 'agreement', 'privacy', 'terms'].includes(currentView)
-                    ? 'text-blue-700 border-b-2 border-blue-700 font-extrabold'
+                    ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold`
                     : 'text-slate-600'
                 }`}
               >
@@ -92,29 +94,29 @@ export default function Header({
               {legalDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setLegalDropdownOpen(false)}></div>
-                  <div className="absolute right-0 mt-2 w-52 rounded-sm shadow-md bg-white border border-slate-200 z-50 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-md bg-white border border-slate-200 z-50 overflow-hidden">
                     <div className="py-1">
                       <button
                         onClick={() => handleLinkClick('disclaimer')}
-                        className="block w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-colors uppercase font-bold tracking-wider"
+                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider ${colors.primaryText}`}
                       >
                         {t.navDisclaimer}
                       </button>
                       <button
                         onClick={() => handleLinkClick('agreement')}
-                        className="block w-full text-left px-4 py-2.5 text-xs text-blue-700 hover:bg-slate-50 transition-colors font-extrabold uppercase tracking-wider border-t border-slate-100"
+                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors font-extrabold uppercase tracking-wider border-t border-slate-100 ${colors.primaryText}`}
                       >
                         ✍️ {t.navAgreement}
                       </button>
                       <button
                         onClick={() => handleLinkClick('privacy')}
-                        className="block w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-colors uppercase font-bold tracking-wider border-t border-slate-100"
+                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider border-t border-slate-100 ${colors.primaryText}`}
                       >
                         {t.navPrivacy}
                       </button>
                       <button
                         onClick={() => handleLinkClick('terms')}
-                        className="block w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-colors uppercase font-bold tracking-wider border-t border-slate-100"
+                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider border-t border-slate-100 ${colors.primaryText}`}
                       >
                         {t.navTerms}
                       </button>
@@ -126,9 +128,9 @@ export default function Header({
 
             <button 
               onClick={() => handleLinkClick('contact')}
-              className={`pb-1 transition-all hover:text-blue-700 cursor-pointer ${
+              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
                 currentView === 'contact' 
-                  ? 'text-blue-700 border-b-2 border-blue-700 font-extrabold' 
+                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
                   : 'text-slate-600'
               }`}
             >
@@ -145,9 +147,9 @@ export default function Header({
                 <button
                   key={lang}
                   onClick={() => onLanguageChange(lang)}
-                  className={`px-1.5 py-0.5 text-[10px] font-mono rounded-sm transition-colors cursor-pointer ${
+                  className={`px-1.5 py-0.5 text-[10px] font-mono rounded transition-colors cursor-pointer ${
                     currentLanguage === lang 
-                      ? 'bg-blue-700 text-white font-extrabold' 
+                      ? `${colors.primaryBg} text-white font-extrabold` 
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -161,7 +163,7 @@ export default function Header({
               <div className="flex items-center space-x-3 border-l border-slate-200 pl-4">
                 <button
                   onClick={() => handleLinkClick(user.role === 'admin' ? 'admin-dashboard' : 'client-dashboard')}
-                  className="flex items-center bg-blue-50 hover:bg-blue-100 text-blue-750 border border-blue-200 px-3 py-1.5 rounded-sm text-xs font-bold transition-all uppercase tracking-wider cursor-pointer"
+                  className={`flex items-center text-blue-750 border px-3 py-1.5 rounded-xl text-xs font-bold transition-all uppercase tracking-wider cursor-pointer ${colors.lightBg} ${colors.lightBorder}`}
                 >
                   <Award className="w-3.5 h-3.5 mr-1.5" />
                   {user.role === 'admin' ? t.navAdminDash : t.navClientDash}
@@ -181,7 +183,7 @@ export default function Header({
             ) : (
               <button
                 onClick={onLoginClick}
-                className="flex items-center bg-blue-700 hover:bg-blue-800 text-white px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer"
+                className={`flex items-center text-white px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer ${colors.primaryBg} ${colors.primaryHover}`}
               >
                 <UserIcon className="w-3.5 h-3.5 mr-1.5" />
                 {t.navLogin}

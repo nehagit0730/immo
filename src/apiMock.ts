@@ -672,7 +672,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
 
     // 8. POST /api/pages
     if (pathname === '/api/pages' && method === 'POST') {
-      const { title, content, slug } = body;
+      const { title, content, slug, sections } = body;
 
       if (!title || !content || !slug) {
         return new Response(JSON.stringify({ error: 'Missing title, content, or slug' }), {
@@ -696,6 +696,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
         content: typeof content === 'object' ? content : { en: content, fr: content, sw: content },
         isHomepage: false,
         systemPage: false,
+        sections: sections || [],
         updatedAt: new Date().toISOString()
       };
 
@@ -712,7 +713,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
     if (pathname.startsWith('/api/pages/') && method === 'PUT') {
       const segments = pathname.split('/');
       const id = segments[segments.length - 1];
-      const { title, content, isHomepage, slug } = body;
+      const { title, content, isHomepage, slug, sections } = body;
 
       const page = db.pages.find(p => p.id === id);
       if (!page) {
@@ -730,6 +731,9 @@ support@immoburundi.bi | +257 22 22 45 45`;
       }
       if (slug && !page.systemPage) {
         page.slug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      }
+      if (sections) {
+        page.sections = sections;
       }
 
       if (isHomepage === true) {

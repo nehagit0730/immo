@@ -9,9 +9,14 @@ import AdminDashboard from './components/AdminDashboard';
 import ContractDetails from './components/ContractDetails';
 import { Search, MapPin, Building2, Phone, Mail, Clock, HelpCircle, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { ibFetch } from './apiMock';
+import PageSectionsRenderer from './components/PageSectionsRenderer';
+import { getThemeSettings } from './theme';
 
 export default function App() {
   // Local states
+  const [themeRev, setThemeRev] = useState(0);
+  const { colors, headerTitle, footerCopyright } = getThemeSettings();
+
   const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem('ib_user');
@@ -224,19 +229,27 @@ export default function App() {
             </section>
 
             {/* Dynamic Intro/Homepage Text from Page Manager Block */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-                <span className="text-[10px] font-mono font-bold tracking-wider text-slate-400 block uppercase mb-1">
-                  {currentLanguage === 'en' ? 'ADMINISTRATIVE PROLOGUE' : 'PROLOGUE ADMINISTRATIF'}
-                </span>
-                <h3 className="font-sans font-black text-slate-900 text-lg sm:text-xl leading-tight border-b pb-3.5 mb-4">
-                  {findPageTitle('home', 'Welcome to IMMO BURUNDI')}
-                </h3>
-                <p className="text-slate-650 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap">
-                  {findPageContent('home', 'Discover secure holdings across the cadasters of Gitega, Rumonge and Bujumbura.')}
-                </p>
-              </div>
-            </section>
+            {(() => {
+              const homePageObj = pages.find(p => p.slug === 'home' || p.isHomepage);
+              if (homePageObj?.sections && homePageObj.sections.length > 0) {
+                return <PageSectionsRenderer sections={homePageObj.sections} />;
+              }
+              return (
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-slate-400 block uppercase mb-1">
+                      {currentLanguage === 'en' ? 'ADMINISTRATIVE PROLOGUE' : 'PROLOGUE ADMINISTRATIF'}
+                    </span>
+                    <h3 className="font-sans font-black text-slate-900 text-lg sm:text-xl leading-tight border-b pb-3.5 mb-4">
+                      {findPageTitle('home', 'Welcome to IMMO BURUNDI')}
+                    </h3>
+                    <p className="text-slate-650 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap">
+                      {findPageContent('home', 'Discover secure holdings across the cadasters of Gitega, Rumonge and Bujumbura.')}
+                    </p>
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* Public Properties Grid */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
@@ -276,25 +289,38 @@ export default function App() {
               )}
             </section>
           </div>
-        ) : currentView === 'about' || currentView === 'disclaimer' || currentView === 'privacy' || currentView === 'terms' ? (
+        ) : pages.some(p => p.slug === currentView) ? (
           /* ==========================================
-              DYNAMIC SYSTEM / LEGAL PAGES RENDERER
+              DYNAMIC CUSTOM PAGE ROUTER
           ========================================== */
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 animate-in fade-in duration-300">
-            <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1">
-              {currentLanguage === 'en' ? 'OFFICIAL DOCUMENT REFERENCE' : 'DOCUMENT OFFICIEL DE CONFORMITÉ'}
-            </span>
-            <div className="bg-white border border-slate-205 rounded-2xl p-6 sm:p-10 shadow-sm leading-relaxed prose prose-slate">
-              <h1 className="font-sans font-black text-slate-900 text-2xl sm:text-3xl border-b pb-4 mb-6">
-                {findPageTitle(currentView, 'Document Title')}
-              </h1>
-              <div 
-                className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap leading-relaxed space-y-4 font-sans italic-quotes"
-              >
-                {findPageContent(currentView, 'Document content loaded instantly.')}
+          (() => {
+            const matchedPl = pages.find(p => p.slug === currentView);
+            if (!matchedPl) return null;
+            
+            if (matchedPl.sections && matchedPl.sections.length > 0) {
+              return (
+                <div className="w-full animate-in fade-in duration-300">
+                  <PageSectionsRenderer sections={matchedPl.sections} />
+                </div>
+              );
+            }
+
+            return (
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 animate-in fade-in duration-300">
+                <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1 font-bold">
+                  {currentLanguage === 'en' ? 'OFFICIAL DOCUMENT REFERENCE' : 'DOCUMENT OFFICIEL DE CONFORMITÉ'}
+                </span>
+                <div className="bg-white border border-slate-205 rounded-2xl p-6 sm:p-10 shadow-sm leading-relaxed prose prose-slate">
+                  <h1 className="font-sans font-black text-slate-900 text-2xl sm:text-3xl border-b pb-4 mb-6">
+                    {matchedPl.title[currentLanguage] || matchedPl.title.en}
+                  </h1>
+                  <div className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap leading-relaxed space-y-4 font-sans">
+                    {matchedPl.content[currentLanguage] || matchedPl.content.en}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()
         ) : currentView === 'agreement' ? (
           /* ==========================================
               SERVICE AGREEMENT WITH DIGITAL SIGNATURE
@@ -375,7 +401,7 @@ export default function App() {
           /* ==========================================
               ADMIN DASHBOARD VIEW (CORE REGULATORY)
           ========================================== */
-          <AdminDashboard currentLanguage={currentLanguage} />
+          <AdminDashboard currentLanguage={currentLanguage} onThemeChange={() => setThemeRev(r => r + 1)} />
         ) : (
           /* FALLBACK / OUT-OF-SESSION HANDLER */
           <div className="max-w-md mx-auto py-24 text-center px-4 animate-in fade-in duration-200">
@@ -403,11 +429,11 @@ export default function App() {
             
             {/* Logo and brief */}
             <div className="md:col-span-2 space-y-4">
-              <span className="font-sans font-black text-white text-lg tracking-tight">
-                IMMO <span className="text-blue-500">BURUNDI</span>
+              <span className={`font-sans font-black text-lg tracking-tight ${colors.primaryText}`}>
+                {headerTitle}
               </span>
               <p className="text-[11.5px] text-slate-400 leading-normal max-w-sm font-sans italic-quotes">
-                IMMO BURUNDI provides real estate listing and verification support services. Verification statuses are based on documents presented by owners or representatives and do not constitute a legal ownership guarantee. Users are encouraged to conduct independent legal due diligence before completing transactions.
+                {headerTitle} provides real estate listing and verification support services. Verification statuses are based on documents presented by owners or representatives and do not constitute a legal ownership guarantee. Users are encouraged to conduct independent legal due diligence before completing transactions.
               </p>
             </div>
 
@@ -434,7 +460,7 @@ export default function App() {
           </div>
 
           <div className="border-t border-slate-800 pt-6 mt-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10.5px] text-slate-500 font-mono">
-            <span>© 2026 IMMO BURUNDI Private Limited. All rights reserved.</span>
+            <span>{footerCopyright}</span>
             <span>Accredited Hub • Bujumbura, Republic of Burundi</span>
           </div>
         </div>
