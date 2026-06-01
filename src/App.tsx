@@ -8,6 +8,7 @@ import ClientDashboard from './components/ClientDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ContractDetails from './components/ContractDetails';
 import { Search, MapPin, Building2, Phone, Mail, Clock, HelpCircle, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ibFetch } from './apiMock';
 
 export default function App() {
   // Local states
@@ -56,12 +57,12 @@ export default function App() {
     setIsLoading(true);
     try {
       // Fetch public listings (Express server filters pre-approved only for public query)
-      const pRes = await fetch('/api/properties');
+      const pRes = await ibFetch('/api/properties');
       const pData = await pRes.json();
       setProperties(pData);
 
       // Fetch dynamic pages cadasters
-      const pgRes = await fetch('/api/pages');
+      const pgRes = await ibFetch('/api/pages');
       const pgData = await pgRes.json();
       setPages(pgData);
     } catch (err) {

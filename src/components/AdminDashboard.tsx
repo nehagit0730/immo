@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { Property, WebPage, EmailLog, SystemStats } from '../types';
 import { Language, translations } from '../translations';
 import { ShieldCheck, Plus, Trash2, Edit3, Check, X, Mail, Layers, BarChart2, CheckCircle, RefreshCw, Eye, Home, Sparkles, MapPin, Search } from 'lucide-react';
+import { ibFetch } from '../apiMock';
 
 interface AdminDashboardProps {
   currentLanguage: Language;
@@ -60,22 +61,22 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     setIsLoading(true);
     try {
       // Fetch all properties
-      const pRes = await fetch('/api/properties?role=admin');
+      const pRes = await ibFetch('/api/properties?role=admin');
       const pData = await pRes.json();
       setProperties(pData);
 
       // Fetch all dynamic pages
-      const pgRes = await fetch('/api/pages');
+      const pgRes = await ibFetch('/api/pages');
       const pgData = await pgRes.json();
       setPages(pgData);
 
       // Fetch simulated emails outbox logs
-      const emRes = await fetch('/api/emails');
+      const emRes = await ibFetch('/api/emails');
       const emData = await emRes.json();
       setEmails(emData);
 
       // Fetch stats summary
-      const stRes = await fetch('/api/stats');
+      const stRes = await ibFetch('/api/stats');
       const stData = await stRes.json();
       setStats(stData);
     } catch (e) {
@@ -110,7 +111,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     };
 
     try {
-      const res = await fetch('/api/properties', {
+      const res = await ibFetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -144,7 +145,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     }
 
     try {
-      const res = await fetch(`/api/properties/${id}/review`, {
+      const res = await ibFetch(`/api/properties/${id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, rejectionReason })
@@ -162,7 +163,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
 
   const handleToggleVerification = async (id: string) => {
     try {
-      const res = await fetch(`/api/properties/${id}/verify`, { method: 'POST' });
+      const res = await ibFetch(`/api/properties/${id}/verify`, { method: 'POST' });
       if (res.ok) {
         fetchAllAdminData();
       }
@@ -176,7 +177,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     if (!check) return;
 
     try {
-      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+      const res = await ibFetch(`/api/properties/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchAllAdminData();
       }
@@ -206,7 +207,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     };
 
     try {
-      const res = await fetch(`/api/pages/${editingPage.id}`, {
+      const res = await ibFetch(`/api/pages/${editingPage.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -222,7 +223,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
 
   const handleSetHomepage = async (id: string) => {
     try {
-      const res = await fetch(`/api/pages/${id}`, {
+      const res = await ibFetch(`/api/pages/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isHomepage: true })
@@ -246,7 +247,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     };
 
     try {
-      const res = await fetch('/api/pages', {
+      const res = await ibFetch('/api/pages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -276,7 +277,7 @@ export default function AdminDashboard({ currentLanguage }: AdminDashboardProps)
     if (!confirmation) return;
 
     try {
-      const res = await fetch(`/api/pages/${id}`, { method: 'DELETE' });
+      const res = await ibFetch(`/api/pages/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchAllAdminData();
       }

@@ -3,6 +3,7 @@ import { Property, User, EmailLog } from '../types';
 import { Language, translations } from '../translations';
 import { PlusCircle, List, Mail, FileCheck, RefreshCw, X, ShieldAlert, Compass } from 'lucide-react';
 import PropertyCard from './PropertyCard';
+import { ibFetch } from '../apiMock';
 
 interface ClientDashboardProps {
   user: User;
@@ -39,12 +40,12 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
     setIsLoading(true);
     try {
       // Get properties filtered by ownerId
-      const pRes = await fetch(`/api/properties?ownerId=${user.id}&role=client`);
+      const pRes = await ibFetch(`/api/properties?ownerId=${user.id}&role=client`);
       const pData = await pRes.json();
       setProperties(pData);
 
       // Get simulated client email notification logs
-      const eRes = await fetch('/api/emails');
+      const eRes = await ibFetch('/api/emails');
       const eData = await eRes.json();
       // Filter logs sent to current user's email
       const clientEmails = eData.filter((e: EmailLog) => e.recipientEmail.toLowerCase() === user.email.toLowerCase());
@@ -99,7 +100,7 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
     if (!confirmation) return;
 
     try {
-      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+      const res = await ibFetch(`/api/properties/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchClientData();
       }
@@ -131,7 +132,7 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
       const endpoint = editingProperty ? `/api/properties/${editingProperty.id}` : '/api/properties';
       const method = editingProperty ? 'PUT' : 'POST';
 
-      const res = await fetch(endpoint, {
+      const res = await ibFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

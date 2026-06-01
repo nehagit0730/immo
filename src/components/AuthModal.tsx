@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Language, translations } from '../translations';
 import { User as UserIcon, Mail, Lock, ShieldAlert, Phone, ToggleLeft, ToggleRight, Info } from 'lucide-react';
+import { ibFetch } from '../apiMock';
 
 interface AuthModalProps {
   currentLanguage: Language;
@@ -48,7 +49,7 @@ export default function AuthModal({ currentLanguage, onClose, onAuthSuccess }: A
       : { email, password, name, phone };
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await ibFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
