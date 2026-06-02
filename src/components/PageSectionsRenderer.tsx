@@ -8,9 +8,10 @@ interface PageSectionsRendererProps {
   sections: PageSection[];
   properties?: Property[];
   currentLanguage?: Language;
+  onViewDetails?: (id: string) => void;
 }
 
-export default function PageSectionsRenderer({ sections, properties = [], currentLanguage = 'en' }: PageSectionsRendererProps) {
+export default function PageSectionsRenderer({ sections, properties = [], currentLanguage = 'en', onViewDetails }: PageSectionsRendererProps) {
   if (!sections || sections.length === 0) return null;
 
   return (
@@ -41,7 +42,7 @@ export default function PageSectionsRenderer({ sections, properties = [], curren
             {/* Ambient subtle gradient blur behind sections */}
             <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
             <div className="max-w-7xl mx-auto relative z-10">
-              {renderSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, properties, currentLanguage)}
+              {renderSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, properties, currentLanguage, onViewDetails)}
             </div>
           </div>
         );
@@ -200,7 +201,8 @@ function renderSectionContent(
   section: PageSection, 
   styles: { fontSizeHeadClass: string; fontSizeTextClass: string; headColorVal: string; txtColorVal: string },
   properties: Property[],
-  currentLanguage: Language
+  currentLanguage: Language,
+  onViewDetails?: (id: string) => void
 ) {
   const settings = section.settings || {};
   const { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal } = styles;
@@ -556,6 +558,7 @@ function renderSectionContent(
                   key={property.id}
                   property={property}
                   currentLanguage={currentLanguage}
+                  onViewDetails={onViewDetails}
                 />
               ))}
             </div>

@@ -8,9 +8,10 @@ import { ibFetch } from '../apiMock';
 interface ClientDashboardProps {
   user: User;
   currentLanguage: Language;
+  onViewDetails?: (id: string) => void;
 }
 
-export default function ClientDashboard({ user, currentLanguage }: ClientDashboardProps) {
+export default function ClientDashboard({ user, currentLanguage, onViewDetails }: ClientDashboardProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [emails, setEmails] = useState<EmailLog[]>([]);
   const [activeTab, setActiveTab] = useState<'listings' | 'emails'>('listings');
@@ -258,6 +259,7 @@ export default function ClientDashboard({ user, currentLanguage }: ClientDashboa
                   isDashboard={true}
                   onEditClick={handleOpenEditForm}
                   onDeleteClick={handleDeleteListing}
+                  onViewDetails={onViewDetails}
                 />
               ))}
             </div>

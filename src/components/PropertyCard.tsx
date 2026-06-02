@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Property } from '../types';
 import { Language, translations } from '../translations';
 import { ShieldCheck, MapPin, Eye, Phone, Mail, User, Compass, Info, Building, LandPlot, Key, Landmark, X } from 'lucide-react';
@@ -9,6 +10,7 @@ interface PropertyCardProps {
   currentLanguage: Language;
   onEditClick?: (property: Property) => void;
   onDeleteClick?: (id: string) => void;
+  onViewDetails?: (id: string) => void;
   isDashboard?: boolean;
 }
 
@@ -19,11 +21,17 @@ export default function PropertyCard({
   currentLanguage,
   onEditClick,
   onDeleteClick,
+  onViewDetails,
   isDashboard = false
 }: PropertyCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const t = translations[currentLanguage];
+
+  // Safely extract property images list to prevent exceptions if empty or undefined
+  const images = property.images && Array.isArray(property.images) && property.images.length > 0
+    ? property.images
+    : ['https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'];
 
   // Helper to format currency lists
   const formatCurrencies = (price: number, currency: 'USD' | 'BIF') => {
@@ -95,9 +103,12 @@ export default function PropertyCard({
       </div>
 
       {/* Property Thumbnail */}
-      <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden">
+      <div 
+        onClick={() => onViewDetails ? onViewDetails(property.id) : setModalOpen(true)}
+        className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden cursor-pointer"
+      >
         <img
-          src={property.images[0] || 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80'}
+          src={images[0]}
           alt={property.title}
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-550 ease-out"
@@ -125,7 +136,10 @@ export default function PropertyCard({
             <span>{property.city}</span>
           </div>
 
-          <h3 className="font-sans font-bold text-slate-900 group-hover:text-blue-700 transition-colors text-base line-clamp-1 mb-1.5">
+          <h3 
+            onClick={() => onViewDetails ? onViewDetails(property.id) : setModalOpen(true)}
+            className="font-sans font-bold text-slate-900 group-hover:text-blue-700 transition-colors text-base line-clamp-1 mb-1.5 cursor-pointer"
+          >
             {property.title}
           </h3>
 
@@ -172,27 +186,43 @@ export default function PropertyCard({
               </button>
               <button
                 onClick={() => onDeleteClick?.(property.id)}
-                className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 p-2 rounded-xl text-xs transition-colors cursor-pointer"
+                className="bg-red-50 hover:bg-red-100 text-red-650 border border-red-200 p-2 rounded-xl text-xs transition-colors cursor-pointer"
                 title={currentLanguage === 'en' ? 'Delete Listing' : 'Supprimer'}
               >
                 🗑️
               </button>
               <button
                 onClick={() => setModalOpen(true)}
-                className="bg-slate-900 text-white rounded-xl p-2 hover:bg-slate-800 transition-colors cursor-pointer"
-                title={t.viewDetails}
+                className="bg-slate-100 text-slate-700 rounded-xl p-2 hover:bg-slate-200 border border-slate-200 transition-colors cursor-pointer"
+                title={currentLanguage === 'en' ? 'Quick View' : 'Aperçu Rapide'}
               >
                 <Eye className="w-4 h-4" />
               </button>
+              {onViewDetails && (
+                <button
+                  onClick={() => onViewDetails(property.id)}
+                  className="bg-slate-900 text-white rounded-xl p-2 hover:bg-slate-800 transition-colors cursor-pointer"
+                  title={t.viewDetails}
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ) : (
-            <button
-              onClick={() => setModalOpen(true)}
-              className="w-full flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-xs tracking-widest uppercase transition-all shadow-sm cursor-pointer hover:shadow-md"
-            >
-              <Eye className="w-4 h-4" />
-              {t.viewDetails}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex-1 flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-[10px] sm:text-xs tracking-wider uppercase transition-all border border-slate-200/60 cursor-pointer"
+              >
+                {currentLanguage === 'en' ? 'Quick View' : currentLanguage === 'fr' ? 'Aperçu Rapide' : 'Uhakiki wa Haraka'}
+              </button>
+              <button
+                onClick={() => onViewDetails?.(property.id)}
+                className="flex-1 flex items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-[10px] sm:text-xs tracking-wider uppercase transition-all shadow-sm cursor-pointer hover:shadow-md"
+              >
+                {t.viewDetails}
+              </button>
+            </div>
           )}
 
           {/* Rejection Notification if rejected in dashboard */}
@@ -211,11 +241,11 @@ export default function PropertyCard({
       </div>
 
       {/* ==========================================
-          PROPERTY DETAIL MODAL POPUP
+          PROPERTY DETAIL MODAL POPUP (Rendered via Portal for smooth overlay & zero flickering)
       ========================================== */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200/40 animate-in fade-in duration-200">
+      {modalOpen && createPortal(
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200/40 animate-in fade-in duration-200 text-slate-800">
             
             {/* Close Button absolute */}
             <button
@@ -254,16 +284,16 @@ export default function PropertyCard({
                 {/* Big Active Image */}
                 <div className="aspect-4/3 rounded-2xl overflow-hidden bg-slate-900 relative mb-5 border border-slate-800 shadow-xl">
                   <img
-                    src={property.images[activeImageIdx]}
+                    src={images[activeImageIdx]}
                     alt={`${property.title} detailed list`}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
                   
                   {/* Image Navigation overlay if multiples */}
-                  {property.images.length > 1 && (
+                  {images.length > 1 && (
                     <div className="absolute bottom-4 right-4 flex gap-1.5 bg-black/60 p-1.5 rounded-xl backdrop-blur-md border border-slate-800">
-                      {property.images.map((img, idx) => (
+                      {images.map((img, idx) => (
                         <button
                           key={idx}
                           onClick={() => setActiveImageIdx(idx)}
@@ -275,9 +305,9 @@ export default function PropertyCard({
                 </div>
 
                 {/* Small Image Thumbs */}
-                {property.images.length > 1 && (
+                {images.length > 1 && (
                   <div className="flex gap-2.5 p-1 overflow-x-auto">
-                    {property.images.map((img, idx) => (
+                    {images.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveImageIdx(idx)}
@@ -303,7 +333,7 @@ export default function PropertyCard({
               </div>
 
               {/* Information Section (Right side) */}
-              <div className="p-8 flex flex-col justify-between h-full bg-slate-50">
+              <div className="p-8 flex flex-col justify-between h-full bg-slate-50 text-slate-800">
                 <div className="space-y-6">
                   <div>
                     <span className="text-[10px] font-mono font-black tracking-[0.2em] text-slate-450 uppercase block mb-2">
@@ -404,7 +434,8 @@ export default function PropertyCard({
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

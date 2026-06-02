@@ -11,6 +11,7 @@ import { Search, MapPin, Building2, Phone, Mail, Clock, HelpCircle, ShieldAlert,
 import { ibFetch } from './apiMock';
 import PageSectionsRenderer from './components/PageSectionsRenderer';
 import { getThemeSettings } from './theme';
+import PropertyDetailView from './components/PropertyDetailView';
 
 export default function App() {
   // Local states
@@ -32,6 +33,8 @@ export default function App() {
   });
 
   const [currentView, setCurrentView] = useState('home'); // active view slug
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [previousView, setPreviousView] = useState<string>('home');
   const [properties, setProperties] = useState<Property[]>([]);
   const [pages, setPages] = useState<WebPage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,6 +110,12 @@ export default function App() {
     setCurrentView(view);
   };
 
+  const handleViewPropertyDetails = (id: string) => {
+    setPreviousView(currentView);
+    setSelectedPropertyId(id);
+    setCurrentView('property-details');
+  };
+
   // Find dynamic text block for custom page contents
   const findPageContent = (id: string, defText: string) => {
     const page = pages.find(p => p.id === id);
@@ -158,7 +167,28 @@ export default function App() {
 
       {/* Render panel routing layout views */}
       <main className="flex-grow">
-        {currentView === 'home' ? (
+        {currentView === 'property-details' && selectedPropertyId ? (() => {
+          const matchedPProp = properties.find(p => p.id === selectedPropertyId);
+          if (!matchedPProp) {
+            return (
+              <div className="py-24 text-center font-mono text-xs text-slate-400">
+                Property not found.
+                <button onClick={() => setCurrentView('home')} className="block mx-auto mt-4 underline text-blue-600 cursor-pointer">Back home</button>
+              </div>
+            );
+          }
+          return (
+            <PropertyDetailView
+              property={matchedPProp}
+              currentLanguage={currentLanguage}
+              user={user}
+              onBack={() => {
+                setCurrentView(previousView || 'home');
+                setSelectedPropertyId(null);
+              }}
+            />
+          );
+        })() : currentView === 'home' ? (
           /* ==========================================
               MAIN HOMEPAGE VIEW
           ========================================== */
@@ -232,7 +262,7 @@ export default function App() {
             {(() => {
               const homePageObj = pages.find(p => p.slug === 'home' || p.isHomepage);
               if (homePageObj?.sections && homePageObj.sections.length > 0) {
-                return <PageSectionsRenderer sections={homePageObj.sections} properties={properties} currentLanguage={currentLanguage} />;
+                return <PageSectionsRenderer sections={homePageObj.sections} properties={properties} currentLanguage={currentLanguage} onViewDetails={handleViewPropertyDetails} />;
               }
               return (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -283,6 +313,7 @@ export default function App() {
                       key={property.id}
                       property={property}
                       currentLanguage={currentLanguage}
+                      onViewDetails={handleViewPropertyDetails}
                     />
                   ))}
                 </div>
@@ -300,7 +331,7 @@ export default function App() {
             if (matchedPl.sections && matchedPl.sections.length > 0) {
               return (
                 <div className="w-full animate-in fade-in duration-300">
-                  <PageSectionsRenderer sections={matchedPl.sections} properties={properties} currentLanguage={currentLanguage} />
+                  <PageSectionsRenderer sections={matchedPl.sections} properties={properties} currentLanguage={currentLanguage} onViewDetails={handleViewPropertyDetails} />
                 </div>
               );
             }
@@ -396,7 +427,7 @@ export default function App() {
           /* ==========================================
               CLIENT DASHBOARD VIEW (DEDICATED PANEL)
           ========================================== */
-          <ClientDashboard user={user} currentLanguage={currentLanguage} />
+          <ClientDashboard user={user} currentLanguage={currentLanguage} onViewDetails={handleViewPropertyDetails} />
         ) : currentView === 'admin-dashboard' && user?.role === 'admin' ? (
           /* ==========================================
               ADMIN DASHBOARD VIEW (CORE REGULATORY)
