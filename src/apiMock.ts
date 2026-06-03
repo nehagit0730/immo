@@ -366,7 +366,11 @@ function saveLocalDatabase(db: LocalDatabaseSchema) {
   db.stats.rejectedProperties = db.properties.filter(p => p.status === 'rejected').length;
   db.stats.totalUsers = db.users.length;
   
-  localStorage.setItem('ib_db', JSON.stringify(db));
+  try {
+    localStorage.setItem('ib_db', JSON.stringify(db));
+  } catch (err) {
+    console.error('[IMMO BURUNDI LOCAL STORAGE ERROR] Quota limits exceeded or localStorage blocked. Saving in-memory state.', err);
+  }
 }
 
 // Intercept window.fetch globally to allow client-only deployment on Vercel

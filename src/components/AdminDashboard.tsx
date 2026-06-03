@@ -548,9 +548,13 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         setActiveSectionId(null);
         fetchAllAdminData();
         alert('High-tech page sections saved successfully!');
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to save page sections: ${errorData.error || 'Server error (' + res.status + ')'}`);
       }
     } catch (e) {
       console.error(e);
+      alert('Network or database error saving page layout!');
     }
   };
 
