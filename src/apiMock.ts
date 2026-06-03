@@ -861,6 +861,80 @@ support@immoburundi.bi | +257 22 22 45 45`;
       });
     }
 
+    // 15. GET /api/media
+    if (pathname === '/api/media' && method === 'GET') {
+      const storedMedia = localStorage.getItem('ib_media');
+      let mediaList = [];
+      if (storedMedia) {
+        try {
+          mediaList = JSON.parse(storedMedia);
+        } catch {
+          mediaList = [];
+        }
+      }
+      if (!mediaList || mediaList.length === 0) {
+        mediaList = [
+          { url: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80", name: "kiriri_hill_villa.jpg", size: "450 KB", uploadedAt: "2026-06-02T10:00:00Z" },
+          { url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80", name: "rohero_executive_suite.jpg", size: "320 KB", uploadedAt: "2026-06-01T15:30:00Z" },
+          { url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80", name: "rumonge_beach_plot.jpg", size: "610 KB", uploadedAt: "2026-05-31T09:15:00Z" },
+          { url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80", name: "gitega_commercial_center.jpg", size: "780 KB", uploadedAt: "2026-05-30T14:45:00Z" }
+        ];
+        localStorage.setItem('ib_media', JSON.stringify(mediaList));
+      }
+      return new Response(JSON.stringify(mediaList), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 16. DELETE /api/media/:filename
+    if (pathname.startsWith('/api/media/') && method === 'DELETE') {
+      const segments = pathname.split('/');
+      const filename = decodeURIComponent(segments[segments.length - 1]);
+      const storedMedia = localStorage.getItem('ib_media');
+      let mediaList = [];
+      if (storedMedia) {
+        try {
+          mediaList = JSON.parse(storedMedia);
+        } catch {
+          mediaList = [];
+        }
+      }
+      mediaList = mediaList.filter((m: any) => m.name !== filename);
+      localStorage.setItem('ib_media', JSON.stringify(mediaList));
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 17. POST /api/upload (Simulated image upload to mock library)
+    if (pathname === '/api/upload' && method === 'POST') {
+      const storedMedia = localStorage.getItem('ib_media');
+      let mediaList = [];
+      if (storedMedia) {
+        try {
+          mediaList = JSON.parse(storedMedia);
+        } catch {
+          mediaList = [];
+        }
+      }
+      const url = `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=${Math.floor(Math.random() * 100)}`;
+      const name = `uploaded_asset_${generateId()}.jpg`;
+      const size = `${Math.floor(Math.random() * 500) + 120} KB`;
+      const uploadedAt = new Date().toISOString();
+
+      const newMedia = { url, name, size, uploadedAt };
+      mediaList.unshift(newMedia);
+      localStorage.setItem('ib_media', JSON.stringify(mediaList));
+
+      return new Response(JSON.stringify({ success: true, url }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Fallback 404 for simulated APIs
     return new Response(JSON.stringify({ error: 'API route not simulated' }), {
       status: 404,

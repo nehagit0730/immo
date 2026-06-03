@@ -1,11 +1,12 @@
-import { useState, useEffect, FormEvent, useRef } from 'react';
+import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Property, WebPage, EmailLog, SystemStats, PageSection } from '../types';
 import { Language, translations } from '../translations';
 import { 
   ShieldCheck, Plus, Trash2, Edit3, Check, X, Mail, Layers, BarChart2, 
   CheckCircle, RefreshCw, Eye, Home, Sparkles, MapPin, Search, 
   ChevronUp, ChevronDown, ArrowUp, ArrowDown, Settings, Copy, 
-  Monitor, Layout, Info, UserCheck, AlertTriangle, Play, HelpCircle, Star
+  Monitor, Layout, Info, UserCheck, AlertTriangle, Play, HelpCircle, Star,
+  Image
 } from 'lucide-react';
 import { ibFetch } from '../apiMock';
 import { ThemeSchema, themesMap, getThemeSettings } from '../theme';
@@ -20,7 +21,25 @@ interface AdminImageUploadProps {
 
 const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImageUploadProps) => {
   const [localUploading, setLocalUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [mediaList, setMediaList] = useState<{ url: string; name: string }[]>([]);
+  const [loadingMedia, setLoadingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchMedia = async () => {
+    setLoadingMedia(true);
+    try {
+      const res = await ibFetch('/api/media');
+      if (res.ok) {
+        const data = await res.json();
+        setMediaList(data);
+      }
+    } catch (e) {
+      console.error('Error fetching media list:', e);
+    } finally {
+      setLoadingMedia(false);
+    }
+  };
 
   const handleUpload = async (file: File) => {
     setLocalUploading(true);
@@ -53,8 +72,15 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
     }
   };
 
+  const openPicker = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPickerOpen(true);
+    fetchMedia();
+  };
+
   return (
-    <div className="space-y-1 font-sans" id={id}>
+    <div className="space-y-1.5 font-sans" id={id}>
       {label && <label className="block text-[9.5px] tracking-wider font-mono text-[#94a3b8] uppercase mb-1">{label}</label>}
       
       {/* Hidden file input */}
@@ -70,13 +96,31 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
         className="hidden"
       />
 
+      {/* Manual Input + Media Library trigger bar */}
+      <div className="flex gap-2 mb-1.5">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder || "Paste image URL or upload below..."}
+          className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-slate-700 min-w-0"
+        />
+        <button
+          type="button"
+          onClick={openPicker}
+          className="px-3 py-2 bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 rounded-lg text-[10px] font-bold font-mono uppercase tracking-wider whitespace-nowrap cursor-pointer transition-colors"
+        >
+          📁 Media Pick
+        </button>
+      </div>
+
       {value ? (
-        <div className="border border-slate-800 rounded p-3 bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[85px]">
+        <div className="border border-slate-800 rounded-lg p-3 bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[85px]">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <img 
               src={value} 
               alt="Preview" 
-              className="w-16 h-12 object-cover rounded border border-slate-800 flex-shrink-0" 
+              className="w-16 h-12 object-cover rounded-lg border border-slate-800 flex-shrink-0" 
               referrerPolicy="no-referrer" 
             />
             <div className="min-w-0 flex-1">
@@ -90,7 +134,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
               onClick={triggerFileSelect}
               className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded text-[9.5px] font-bold text-slate-300 hover:bg-slate-800 transition-colors uppercase tracking-wider cursor-pointer font-mono"
             >
-              Replace
+              {localUploading ? 'Uploading...' : 'Replace'}
             </button>
             <button
               type="button"
@@ -108,7 +152,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
       ) : (
         <div 
           onClick={triggerFileSelect}
-          className="border border-dashed border-slate-800 rounded p-4 text-center bg-slate-950 hover:bg-slate-900/40 transition-colors cursor-pointer min-h-[85px] flex flex-col items-center justify-center space-y-1"
+          className="border border-dashed border-slate-800 rounded-lg p-4 text-center bg-slate-950 hover:bg-slate-900/40 transition-colors cursor-pointer min-h-[85px] flex flex-col items-center justify-center space-y-1"
         >
           {localUploading ? (
             <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
@@ -124,6 +168,57 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
           )}
         </div>
       )}
+
+      {/* Media Picker Modal Overlay */}
+      {pickerOpen && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-950 border border-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl relative">
+            <div className="flex justify-between items-start border-b border-slate-900 pb-4">
+              <div>
+                <h4 className="text-xs sm:text-xs font-mono font-black text-white uppercase tracking-widest text-[#38bdf8]">Select Platform Image asset</h4>
+                <p className="text-[10px] text-slate-500 font-mono mt-1 leading-relaxed">Choose an uploaded media element to allocate instantly</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className="p-1 px-3 text-slate-300 hover:bg-slate-800 rounded bg-slate-900 text-xs font-bold cursor-pointer transition-colors"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 select-none">
+              {loadingMedia ? (
+                <div className="py-16 text-center text-xs font-mono text-slate-500 flex items-center justify-center gap-2">
+                  <span className="animate-spin text-blue-500">🔄</span> Loading Media asset registry...
+                </div>
+              ) : mediaList.length === 0 ? (
+                <div className="py-16 text-center text-xs font-mono text-slate-500 border border-dashed border-slate-850 rounded-2xl leading-relaxed p-4">
+                  No images uploaded yet on disk. Upload your first image or open the "Media Manager" under Admin sidebar to create assets.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {mediaList.map((item) => (
+                    <div 
+                      key={item.url}
+                      onClick={() => {
+                        onChange(item.url);
+                        setPickerOpen(false);
+                      }}
+                      className="group border border-slate-850 hover:border-[#38bdf8] rounded-xl p-2 bg-slate-900 cursor-pointer transition flex flex-col space-y-1.5"
+                    >
+                      <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-950 relative">
+                        <img src={item.url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      </div>
+                      <span className="text-[9.2px] font-mono text-slate-400 truncate text-center block max-w-full px-0.5">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -135,13 +230,15 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ currentLanguage, onThemeChange }: AdminDashboardProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings' | 'media'>('analytics');
   
   // App data state
   const [properties, setProperties] = useState<Property[]>([]);
   const [pages, setPages] = useState<WebPage[]>([]);
   const [emails, setEmails] = useState<EmailLog[]>([]);
   const [stats, setStats] = useState<SystemStats | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<{ url: string; name: string; size: string; uploadedAt: string }[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Property Filters / search
@@ -182,6 +279,11 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   const [addImageUrl, setAddImageUrl] = useState('');
   const [addGpsLocation, setAddGpsLocation] = useState('');
 
+  // Media Tab Lifted States to respect Rules of Hooks
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaCopiedUrl, setMediaCopiedUrl] = useState<string | null>(null);
+  const adminMediaInputRef = useRef<HTMLInputElement>(null);
+
   const t = translations[currentLanguage];
   const { colors } = getThemeSettings();
 
@@ -204,6 +306,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       const stRes = await ibFetch('/api/stats');
       const stData = await stRes.json();
       setStats(stData);
+
+      const mdRes = await ibFetch('/api/media');
+      if (mdRes.ok) {
+        const mdData = await mdRes.json();
+        setMediaFiles(mdData);
+      }
     } catch (e) {
       console.error('Error fetching admin data:', e);
     } finally {
@@ -530,21 +638,38 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </button>
 
             <button
-              onClick={() => { setActiveTab('pages'); setEditorPage(null); }}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'pages' 
-                  ? `${colors.primaryBg} text-white shadow-lg` 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <Layout className="w-4 h-4" />
-                Content Pages Builder
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950/40 text-slate-400">
-                {pages.length}
-              </span>
-            </button>
+               onClick={() => { setActiveTab('pages'); setEditorPage(null); }}
+               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                 activeTab === 'pages' 
+                   ? `${colors.primaryBg} text-white shadow-lg` 
+                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+               }`}
+             >
+               <span className="flex items-center gap-3">
+                 <Layout className="w-4 h-4" />
+                 Content Pages Builder
+               </span>
+               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950/40 text-slate-400">
+                 {pages.length}
+               </span>
+             </button>
+ 
+             <button
+               onClick={() => { setActiveTab('media'); setEditorPage(null); }}
+               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                 activeTab === 'media' 
+                   ? `${colors.primaryBg} text-white shadow-lg` 
+                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+               }`}
+             >
+               <span className="flex items-center gap-3">
+                 <Image className="w-4 h-4" />
+                 Media Assets Hub
+               </span>
+               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950/40 text-slate-400">
+                 {mediaFiles.length}
+               </span>
+             </button>
 
             <button
               onClick={() => { setActiveTab('logs'); setEditorPage(null); }}
@@ -609,6 +734,9 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
 
             {/* Custom Content Pages Builder Tab */}
             {activeTab === 'pages' && renderPagesCatalogView()}
+
+            {/* Dynamic Media Assets Library Tab */}
+            {activeTab === 'media' && renderMediaView()}
 
             {/* Simulated Outbound Emails logs */}
             {activeTab === 'logs' && renderEmailsLogView()}
@@ -1219,6 +1347,196 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   }
 
   // ==========================================
+  // RENDER DYNAMIC TAB: ADMIN MEDIA LIBRARY
+  // ==========================================
+  function renderMediaView() {
+    const handleMediaUpload = async (file: File) => {
+      setMediaUploading(true);
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Refresh list
+          const mdRes = await ibFetch('/api/media');
+          if (mdRes.ok) {
+            const mdData = await mdRes.json();
+            setMediaFiles(mdData);
+          }
+          alert('Media file successfully uploaded!');
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to upload image');
+        }
+      } catch (e) {
+        console.error('Upload error:', e);
+        alert('Error uploading media file');
+      } finally {
+        setMediaUploading(false);
+      }
+    };
+
+    const handleCopy = (url: string) => {
+      navigator.clipboard.writeText(url);
+      setMediaCopiedUrl(url);
+      setTimeout(() => setMediaCopiedUrl(null), 2000);
+    };
+
+    const handleDeleteMedia = async (name: string) => {
+      if (!confirm('Are you sure you want to permanently delete this media file from disk? This cannot be undone.')) return;
+      try {
+        const res = await ibFetch(`/api/media/${name}`, { method: 'DELETE' });
+        if (res.ok) {
+          // Refresh list
+          const mdRes = await ibFetch('/api/media');
+          if (mdRes.ok) {
+            const mdData = await mdRes.json();
+            setMediaFiles(mdData);
+          }
+        } else {
+          alert('Failed to delete media asset');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error deleting media asset');
+      }
+    };
+
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300 font-sans">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Image className="w-5 h-5 text-blue-500" />
+              Dynamic Platform Assets &amp; Media Library
+            </h2>
+            <p className="text-xs text-slate-400">Upload, manage, and retrieve local attachments used in cover page layouts or properties.</p>
+          </div>
+          
+          <div>
+            <input 
+              type="file" 
+              ref={adminMediaInputRef} 
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  handleMediaUpload(e.target.files[0]);
+                }
+              }}
+              className="hidden" 
+            />
+            <button
+              onClick={() => adminMediaInputRef.current?.click()}
+              disabled={mediaUploading}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900 mx-auto text-white text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer flex items-center gap-2 transition duration-250 shrink-0"
+            >
+              {mediaUploading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Storing Resource File...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Upload New Image Asset
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Informative advice banner */}
+        <div className="bg-blue-950/20 border border-blue-900/30 p-4 rounded-2xl flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-300 leading-normal font-sans">
+            <span className="font-bold text-white block mb-0.5">Asset Utilization Protocol</span>
+            Click <strong className="text-[#38bdf8]">Copy URL Path</strong> on any asset below to copy its system address. You can copy-paste this URL path into any Page Section (e.g. Banners, Hero blocks, Image-Text blocks) as well as Property Listing cover edits to show the custom uploaded image instantly.
+          </div>
+        </div>
+
+        {/* Gallery collection */}
+        {mediaFiles.length === 0 ? (
+          <div className="py-20 text-center border shadow-sm border-dashed border-slate-800 rounded-3xl p-8 bg-slate-900/10">
+            <Image className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest font-mono">Archive is completely empty</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mt-1">
+              There are no images detected inside the `/public/uploads` system register. Use the button above to upload attachment files from your device now.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {mediaFiles.map((file) => (
+              <div key={file.url} className="bg-slate-900 border border-slate-805/60 hover:border-slate-700/60 transition duration-200 rounded-2xl p-3 flex flex-col space-y-3 justify-between">
+                <div>
+                  <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850 relative group">
+                    <img 
+                      src={file.url} 
+                      alt={file.name} 
+                      className="w-full h-full object-cover group-hover:scale-102 transition duration-300"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center">
+                      <a 
+                        href={file.url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="p-1.5 rounded-lg bg-slate-950 text-white hover:bg-slate-800 text-[10px] sm:text-xs font-mono font-bold flex items-center gap-1.5 transition-colors absolute bottom-2 right-2 pointer-events-auto"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Full View
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 space-y-0.5">
+                    <div className="text-xs font-mono text-slate-200 font-bold truncate" title={file.name}>
+                      {file.name}
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                      <span>{file.size}</span>
+                      <span>{new Date(file.uploadedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-1 border-t border-slate-800/40">
+                  <button
+                    onClick={() => handleCopy(file.url)}
+                    className="flex-1 py-2 rounded-lg text-[10px] font-bold font-mono tracking-wider uppercase transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-slate-950 text-[#38bdf8] hover:bg-slate-850 border border-[#38bdf8]/15"
+                  >
+                    {mediaCopiedUrl === file.url ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy URL Path
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteMedia(file.name)}
+                    className="p-2 rounded-lg bg-red-950/30 hover:bg-red-900/40 border border-red-900/20 text-red-400 transition cursor-pointer flex items-center justify-center"
+                    title="Delete media from disk"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ==========================================
   // RENDER DYNAMIC TAB: SIMULATED LOG TABLES
   // ==========================================
   function renderEmailsLogView() {
@@ -1521,6 +1839,154 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <span className="text-slate-500">{sections.length} blocks used</span>
             </div>
 
+            {/* Quick Templates Trigger bar */}
+            <div className="p-3 bg-slate-950/40 border-b border-slate-800/60 space-y-1.5 shrink-0">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold tracking-wider">🚀 Quick Page Presets (Replaces current)</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Applying this template will replace your current section layout cards. Proceed?")) {
+                      const agencySections: PageSection[] = [
+                        {
+                          id: 'sec_1',
+                          type: 'banner',
+                          backgroundColor: 'bg-slate-950 text-slate-100 border-b border-slate-800',
+                          headingColor: 'text-white',
+                          textColor: 'text-slate-350',
+                          fontSize: 'lg',
+                          settings: {
+                            title: 'Elite Real Estate & Cadastral Verification in Burundi',
+                            subtitle: 'Connecting certified property owners, investors and diaspora clients with total legal authenticity on the ground.',
+                            buttonText: 'Browse Vetted Listings',
+                            imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'
+                          }
+                        },
+                        {
+                          id: 'sec_2',
+                          type: 'property_list',
+                          backgroundColor: 'bg-white text-slate-800 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-650',
+                          fontSize: 'md',
+                          settings: {
+                            heading: 'Vetted & Registered Holdings',
+                            subheading: 'Properties physically audited and certified directly at the Land Registry Office.',
+                            limit: '3',
+                            typeFilter: 'all',
+                            showOnlyVerified: true
+                          }
+                        },
+                        {
+                          id: 'sec_3',
+                          type: 'columns',
+                          backgroundColor: 'bg-slate-50 text-slate-800 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-650',
+                          fontSize: 'md',
+                          settings: {
+                            heading: 'Institutional Guardrails & Transparency',
+                            subheading: 'Why trust Burundi’s premier real estate catalog ecosystem',
+                            columns: [
+                              { icon: '🛡️', title: 'Registry Checks', desc: 'Every title deed is cross-referenced with Gitega land registry before listing approval.' },
+                              { icon: '🗺️', title: 'GPS Cadastrals', desc: 'Official boundaries are confirmed with precise coordinate survey matches.' },
+                              { icon: '🔒', title: 'Secure Escrow', desc: 'Service execution agreements with legal validation prevent double-allocation.' }
+                            ]
+                          }
+                        },
+                        {
+                          id: 'sec_4',
+                          type: 'testimonials',
+                          backgroundColor: 'bg-white text-slate-800 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-600',
+                          fontSize: 'md',
+                          settings: {
+                            heading: 'What Vetted Investors Say',
+                            testimonials: [
+                              { text: 'IMMO BURUNDI saved us from a fraudulent double-allocation trap in Kiriri. The document audit is stellar!', author: 'Gérard Sindayigaya', role: 'Diaspora Investor' },
+                              { text: 'Easiest rent broker experience in Kinindo! Signed electronically on a Sunday and got keys on Monday.', author: 'Clara Kaneza', role: 'Administrative Manager' }
+                            ]
+                          }
+                        }
+                      ];
+                      setEditorPage({ ...editorPage, sections: agencySections });
+                      setActiveSectionId('sec_1');
+                    }
+                  }}
+                  className="p-1.5 bg-blue-950/40 hover:bg-blue-900/60 border border-blue-900/20 text-blue-300 rounded-lg text-[9px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center"
+                >
+                  🏢 Agency Home
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Applying this template will replace your current section layout cards. Proceed?")) {
+                      const landSections: PageSection[] = [
+                        {
+                          id: 'sec_11',
+                          type: 'slideshow',
+                          backgroundColor: 'bg-slate-950 text-slate-100 border-none',
+                          headingColor: 'text-white',
+                          textColor: 'text-slate-200',
+                          fontSize: 'md',
+                          settings: {
+                            slides: [
+                              { image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80', title: 'Acreages & Fenced Plots', desc: 'Discover high elevation investment parcels in Gitega.' },
+                              { image: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=80', title: 'Lakefront Beach Plots', desc: 'Secure sandy shore developments on Lake Tanganyika, Rumonge.' }
+                            ]
+                          }
+                        },
+                        {
+                          id: 'sec_12',
+                          type: 'property_list',
+                          backgroundColor: 'bg-white text-slate-800 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-600',
+                          fontSize: 'md',
+                          settings: {
+                            heading: 'Featured Land Holdings Only',
+                            subheading: 'Premium verified plots with demarcations ready for construction.',
+                            limit: '3',
+                            typeFilter: 'land',
+                            showOnlyVerified: false
+                          }
+                        },
+                        {
+                          id: 'sec_13',
+                          type: 'richtext',
+                          backgroundColor: 'bg-slate-50 text-slate-805 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-650',
+                          fontSize: 'md',
+                          settings: {
+                            title: 'Land Acquisition & Cadastral Procedures',
+                            body: 'All investors seeking land holdings in Burundi are advised to review compliance files. IMMO BURUNDI guides buyers through official name registration, title deeds transfer, and tax compliance indices.'
+                          }
+                        },
+                        {
+                          id: 'sec_14',
+                          type: 'brands',
+                          backgroundColor: 'bg-white text-slate-800 border-none',
+                          headingColor: 'text-slate-900',
+                          textColor: 'text-slate-600',
+                          fontSize: 'md',
+                          settings: {
+                            brands: ['CADASTRE DE GITEGA', 'OFFICE DES RECETTES (OBR)', 'COMMUNE DE RO HERO', 'REGIDESO']
+                          }
+                        }
+                      ];
+                      setEditorPage({ ...editorPage, sections: landSections });
+                      setActiveSectionId('sec_11');
+                    }
+                  }}
+                  className="p-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-900/20 text-emerald-300 rounded-lg text-[9px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center"
+                >
+                  🗺️ Land Plots
+                </button>
+              </div>
+            </div>
+
             {/* List of active sections stack */}
             <div className="p-4 flex-grow space-y-2.5 overflow-y-auto">
               {sections.length === 0 ? (
@@ -1807,31 +2273,290 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           </div>
         );
 
-      case 'faqs':
+      case 'faqs': {
+        const faqs = s.faqs && s.faqs.length > 0 ? s.faqs : [
+          { q: 'How does IMMO BURUNDI verify cadastral documents?', a: 'Our expert team visits the physical national registry of properties of Burundi, coordinating with officials to ensure authenticity.' },
+          { q: 'What is the cost of full property promotion?', a: 'Standard packages start from 1% of the final verified lease price.' },
+          { q: 'Can international buyers securely signed electronic contracts?', a: 'Yes! Immo Burundi offers bilingual digital signatures.' }
+        ];
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Accordions Heading Title</label>
-              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
             <div>
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Objections subtitle</label>
-              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
-            <p className="text-[10px] text-slate-500 font-mono leading-normal pt-2 border-t border-slate-800">FAQs questionnaires are populated with professional default frameworks during final renders.</p>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Manage questions & answers</span>
+              {faqs.map((faq: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">Question #{idx + 1}</span>
+                  <input 
+                    type="text" 
+                    value={faq.q || ''} 
+                    onChange={(e) => {
+                      const newFaqs = [...faqs];
+                      newFaqs[idx] = { ...newFaqs[idx], q: e.target.value };
+                      updateFn('faqs', newFaqs);
+                    }} 
+                    placeholder="Question Text"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                  />
+                  <textarea 
+                    rows={2} 
+                    value={faq.a || ''} 
+                    onChange={(e) => {
+                      const newFaqs = [...faqs];
+                      newFaqs[idx] = { ...newFaqs[idx], a: e.target.value };
+                      updateFn('faqs', newFaqs);
+                    }} 
+                    placeholder="Answer Details"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         );
+      }
 
-      case 'testimonials':
+      case 'testimonials': {
+        const testimonials = s.testimonials && s.testimonials.length > 0 ? s.testimonials : [
+          { text: 'IMMO BURUNDI saved us from a fraudulent double-allocation trap in Kiriri. The document audit is stellar!', author: 'Gérard Sindayigaya', role: 'Diaspora Investor' },
+          { text: 'Easiest rent broker experience in Kinindo! Signed electronically on a Sunday and got keys on Monday.', author: 'Clara Kaneza', role: 'Administrative Manager' }
+        ];
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Slider review header</label>
-              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2" />
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
-            <p className="text-[10px] text-slate-500 font-mono leading-relaxed pt-2 border-t border-slate-800">Accrets high-profile client endorsement reviews with gold rating stars automatically during layouts deployment.</p>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Edit Customer Reviews</span>
+              {testimonials.map((test: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-555 font-bold">Review #{idx + 1}</span>
+                  <textarea 
+                    rows={2.5} 
+                    value={test.text || ''} 
+                    onChange={(e) => {
+                      const newTests = [...testimonials];
+                      newTests[idx] = { ...newTests[idx], text: e.target.value };
+                      updateFn('testimonials', newTests);
+                    }} 
+                    placeholder="Feedback text"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input 
+                      type="text" 
+                      value={test.author || ''} 
+                      onChange={(e) => {
+                        const newTests = [...testimonials];
+                        newTests[idx] = { ...newTests[idx], author: e.target.value };
+                        updateFn('testimonials', newTests);
+                      }} 
+                      placeholder="Name"
+                      className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                    <input 
+                      type="text" 
+                      value={test.role || ''} 
+                      onChange={(e) => {
+                        const newTests = [...testimonials];
+                        newTests[idx] = { ...newTests[idx], role: e.target.value };
+                        updateFn('testimonials', newTests);
+                      }} 
+                      placeholder="Role"
+                      className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         );
+      }
+
+      case 'slideshow': {
+        const slides = s.slides && s.slides.length > 0 ? s.slides : [
+          { image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80', title: 'Luxury Living', desc: 'Secure properties in Bujumbura' },
+          { image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80', title: 'Prime Urban Portfolios', desc: 'Active commercial buildings in Gitega' }
+        ];
+        return (
+          <div className="space-y-4">
+            <span className="text-[9.5px] font-mono text-slate-400 uppercase block font-bold">Slideshow Showcase Items</span>
+            {slides.map((slide: any, idx: number) => (
+              <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-855 space-y-2">
+                <span className="text-[9px] font-mono text-slate-500 font-bold">Slide #{idx + 1}</span>
+                <input 
+                  type="text" 
+                  value={slide.title || ''} 
+                  onChange={(e) => {
+                    const newSlides = [...slides];
+                    newSlides[idx] = { ...newSlides[idx], title: e.target.value };
+                    updateFn('slides', newSlides);
+                  }} 
+                  placeholder="Slide Title text"
+                  className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-sans" 
+                />
+                <input 
+                  type="text" 
+                  value={slide.desc || ''} 
+                  onChange={(e) => {
+                    const newSlides = [...slides];
+                    newSlides[idx] = { ...newSlides[idx], desc: e.target.value };
+                    updateFn('slides', newSlides);
+                  }} 
+                  placeholder="Slide description caption"
+                  className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-sans" 
+                />
+                <AdminImageUpload
+                  value={slide.image || ''}
+                  onChange={(url) => {
+                    const newSlides = [...slides];
+                    newSlides[idx] = { ...newSlides[idx], image: url };
+                    updateFn('slides', newSlides);
+                  }}
+                  label="Slide Background"
+                  placeholder="Paste URL or upload image"
+                />
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      case 'columns': {
+        const cols = s.columns && s.columns.length > 0 ? s.columns : [
+          { icon: '🛡️', title: 'Premium Verification', desc: 'Independent land registry title checks before transaction.' },
+          { icon: '⚡', title: 'Instant Brokerage', desc: 'Secure real estate connections in Bujumbura, Gitega and beyond.' },
+          { icon: '📂', title: 'Frictionless Contracts', desc: 'Electronically signed service agreement with legal standards.' }
+        ];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Columns Section Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subheading explanation</label>
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Edit Columns (Max 3)</span>
+              {cols.map((col: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">Column Column #{idx + 1}</span>
+                  <div className="flex gap-1.5">
+                    <input 
+                      type="text" 
+                      value={col.icon || ''} 
+                      onChange={(e) => {
+                        const newCols = [...cols];
+                        newCols[idx] = { ...newCols[idx], icon: e.target.value };
+                        updateFn('columns', newCols);
+                      }} 
+                      placeholder="Icon (e.g. 🛡️)"
+                      className="w-10 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-center text-slate-200" 
+                    />
+                    <input 
+                      type="text" 
+                      value={col.title || ''} 
+                      onChange={(e) => {
+                        const newCols = [...cols];
+                        newCols[idx] = { ...newCols[idx], title: e.target.value };
+                        updateFn('columns', newCols);
+                      }} 
+                      placeholder="Title"
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                  </div>
+                  <textarea 
+                    rows={2} 
+                    value={col.desc || ''} 
+                    onChange={(e) => {
+                      const newCols = [...cols];
+                      newCols[idx] = { ...newCols[idx], desc: e.target.value };
+                      updateFn('columns', newCols);
+                    }} 
+                    placeholder="Short description description"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'gallery': {
+        const images = s.images && s.images.length > 0 ? s.images : [
+          'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80'
+        ];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Gallery heading title</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Gallery subheading</label>
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Image Grid (4 pictures)</span>
+              {images.map((img: string, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">Image #{idx + 1}</span>
+                  <AdminImageUpload
+                    value={img}
+                    onChange={(url) => {
+                      const newImages = [...images];
+                      newImages[idx] = url;
+                      updateFn('images', newImages);
+                    }}
+                    placeholder={`Upload gallery image #${idx + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'brands': {
+        const brandNames = s.brands && s.brands.length > 0 ? s.brands : ['BANQUE DE LA REPUBLIQUE', 'REGIDESO', 'MINISTERE DES FINANCES', 'OBR BURUNDI', 'CADASTRE NATIONAL'];
+        return (
+          <div className="space-y-3">
+            <span className="text-[9.5px] font-mono text-slate-400 uppercase block font-bold font-mono">Partner Brand Names</span>
+            <div className="space-y-2">
+              {brandNames.map((brand: string, idx: number) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">#{idx + 1}</span>
+                  <input
+                    type="text"
+                    value={brand}
+                    onChange={(e) => {
+                      const newBrands = [...brandNames];
+                      newBrands[idx] = e.target.value;
+                      updateFn('brands', newBrands);
+                    }}
+                    className="flex-1 bg-slate-950 border border-slate-850 rounded p-1.5 text-xs text-slate-200 font-sans"
+                    placeholder="Partner name"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
 
       case 'heading':
         return (
@@ -2001,20 +2726,25 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         )}
 
         {sec.type === 'slideshow' && (
-          <div className="rounded bg-cover bg-center h-20 relative flex flex-col justify-center text-white" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80')` }}>
+          <div className="rounded bg-cover bg-center h-20 relative flex flex-col justify-center text-white" style={{ backgroundImage: `url(${(s.slides && s.slides[0]?.image) || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'})` }}>
             <div className="absolute inset-0 bg-black/60 rounded" />
             <div className="relative z-10 p-2">
-              <h5 className="font-bold text-[11px] leading-none">Interactive Slideshow Rotates Live</h5>
-              <p className="text-[8px] opacity-80 leading-none mt-1">Multi-slide carousel banner support</p>
+              <h5 className="font-bold text-[11px] leading-none">{(s.slides && s.slides[0]?.title) || 'Luxury Living'}</h5>
+              <p className="text-[8px] opacity-85 leading-none mt-1">{(s.slides && s.slides[0]?.desc) || 'Multi-slide carousel banner support'}</p>
             </div>
           </div>
         )}
 
         {sec.type === 'gallery' && (
           <div className="grid grid-cols-4 gap-1 pt-1.5">
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className="bg-slate-200 h-10 rounded overflow-hidden">
-                <img src={`https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=150&q=80`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            {(s.images && s.images.length > 0 ? s.images : [
+              'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=150&q=80',
+              'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=150&q=80'
+            ]).slice(0, 4).map((imgUrl: string, idx: number) => (
+              <div key={idx} className="bg-slate-200 h-10 rounded overflow-hidden">
+                <img src={imgUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
             ))}
           </div>
@@ -2023,32 +2753,38 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         {sec.type === 'richtext' && (
           <div className="space-y-1 py-1 max-w-sm mx-auto text-left">
             <h5 className="font-bold text-[11.5px] border-b pb-1 text-slate-950 leading-tight">{s.title || 'Compliance details'}</h5>
-            <p className="text-[10px] opacity-70 leading-normal font-sans pr-1">{s.body || 'This provides high quality rich text layout models...'}</p>
+            <p className="text-[10px] opacity-70 leading-normal font-sans pr-1 line-clamp-2">{s.body || 'This provides high quality rich text layout models...'}</p>
           </div>
         )}
 
         {sec.type === 'brands' && (
-          <div className="py-1 flex justify-center gap-4 text-[9.5px] font-mono tracking-widest text-slate-500 uppercase font-black">
-            <span>🏢 REPUBLIQUE_BI</span>
-            <span>🏢 OBR_OFFICIAL</span>
-            <span>🏢 REGIDESO</span>
+          <div className="py-1 flex justify-center flex-wrap gap-2 text-[9px] font-mono tracking-wider text-slate-500 uppercase font-bold">
+            {(s.brands && s.brands.length > 0 ? s.brands : ['BANQUE DE LA REPUBLIQUE', 'REGIDESO', 'MINISTERE DES FINANCES', 'OBR BURUNDI']).slice(0, 4).map((b: string, idx: number) => (
+              <span key={idx} className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">🏢 {b}</span>
+            ))}
           </div>
         )}
 
         {sec.type === 'faqs' && (
           <div className="space-y-1.5 text-left max-w-xs mx-auto py-1.5">
             <span className="text-[10px] font-bold text-slate-800 tracking-tight block">❓ {s.heading || 'Frequently Asked Accordions'}</span>
-            <div className="p-2 bg-slate-100 rounded text-[9.5px] italic text-slate-600 leading-tight font-sans">
-              "How does IMMO BURUNDI audit listings securely?"
+            <div className="p-2 bg-slate-50 border rounded text-[9.5px] text-slate-600 leading-tight font-sans space-y-1">
+              {(s.faqs && s.faqs.length > 0 ? s.faqs : [{ q: 'How does IMMO BURUNDI audit listings securely?' }]).slice(0, 2).map((item: any, idx: number) => (
+                <div key={idx} className="truncate font-medium text-slate-700">Q: {item.q}</div>
+              ))}
             </div>
           </div>
         )}
 
         {sec.type === 'testimonials' && (
-          <div className="bg-slate-200/50 p-2.5 rounded-xl text-left max-w-xs mx-auto space-y-1.5">
+          <div className="bg-slate-50 p-2.5 rounded-xl text-left max-w-xs mx-auto space-y-1 border">
             <div className="flex gap-0.5 text-amber-500 text-[8px] leading-none">★★★★★</div>
-            <p className="text-[10px] italic leading-tight text-slate-600 font-sans">"Saved us from double-allocation trap!"</p>
-            <span className="text-[8.5px] font-bold text-slate-800 block">- Clara Kaneza</span>
+            <p className="text-[10px] italic leading-tight text-slate-650 font-sans line-clamp-2">
+              "{(s.testimonials && s.testimonials.length > 0 ? s.testimonials[0].text : 'Saved us from double-allocation trap!')}"
+            </p>
+            <span className="text-[8.5px] font-bold text-slate-800 block">
+              - {(s.testimonials && s.testimonials.length > 0 ? s.testimonials[0].author : 'Clara Kaneza')}
+            </span>
           </div>
         )}
 

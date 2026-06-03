@@ -338,7 +338,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
 
   // Create Custom Page
   app.post('/api/pages', (req, res) => {
-    const { title, content, slug } = req.body;
+    const { title, content, slug, sections } = req.body;
     const db = getDatabase();
 
     if (!title || !content || !slug) {
@@ -357,6 +357,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
       content,
       isHomepage: false,
       systemPage: false,
+      sections: sections || [],
       updatedAt: new Date().toISOString()
     };
 
@@ -369,7 +370,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
   // Edit Page content
   app.put('/api/pages/:id', (req, res) => {
     const { id } = req.params;
-    const { title, content, isHomepage, slug } = req.body;
+    const { title, content, isHomepage, slug, sections } = req.body;
     const db = getDatabase();
 
     const page = db.pages.find(p => p.id === id);
@@ -381,6 +382,9 @@ support@immoburundi.bi | +257 22 22 45 45`;
     if (content) page.content = content;
     if (slug && !page.systemPage) {
       page.slug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    }
+    if (sections) {
+      page.sections = sections;
     }
 
     if (isHomepage === true) {
@@ -430,6 +434,107 @@ support@immoburundi.bi | +257 22 22 45 45`;
   app.get('/api/stats', (req, res) => {
     const db = getDatabase();
     res.json(db.stats);
+  });
+
+  // Media Management API - GET List files
+  app.get('/api/media', (req, res) => {
+    const uploadDir = path.join(process.cwd(), 'public/uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    try {
+      const files = fs.readdirSync(uploadDir);
+      const mediaList = files.map(file => {
+        const filePath = path.join(uploadDir, file);
+        const stats = fs.statSync(filePath);
+        return {
+          url: `/uploads/${file}`,
+          name: file,
+          size: `${Math.round(stats.size / 1024)} KB`,
+          uploadedAt: stats.mtime.toISOString()
+        };
+      });
+      // Sort by uploadedAt descending
+      mediaList.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+      res.json(mediaList);
+    } catch (e) {
+      console.error('Error reading media library:', e);
+      res.json([]);
+    }
+  });
+
+  // Media Management API - DELETE specific filename
+  app.delete('/api/media/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const safeFilename = path.basename(filename);
+    const filePath = path.join(process.cwd(), 'public/uploads', safeFilename);
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        res.json({ success: true, message: 'Media file successfully removed' });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to delete file from disk' });
+      }
+    } else {
+      res.status(404).json({ error: 'File not found on system' });
+    }
+  });
+
+
+  // ==========================================
+  // SITEMAP.XML DYNAMIC GENERATOR
+  // ==========================================
+
+  app.get('/sitemap.xml', (req, res) => {
+    try {
+      const db = getDatabase();
+      res.header('Content-Type', 'application/xml');
+      
+      const host = req.get('host') || 'immoburundi.bi';
+      const protocol = req.secure ? 'https' : 'http';
+      const baseUrl = `${protocol}://${host}`;
+
+      const urls = [
+        { loc: `${baseUrl}/`, changefreq: 'daily', priority: '1.0' },
+        { loc: `${baseUrl}/properties`, changefreq: 'daily', priority: '0.9' },
+        { loc: `${baseUrl}/about`, changefreq: 'weekly', priority: '0.7' },
+        { loc: `${baseUrl}/contact`, changefreq: 'weekly', priority: '0.7' }
+      ];
+
+      db.pages.forEach(p => {
+        if (!p.isHomepage) {
+          urls.push({
+            loc: `${baseUrl}/${p.slug}`,
+            changefreq: 'weekly',
+            priority: '0.8'
+          });
+        }
+      });
+
+      db.properties.forEach(p => {
+        if (p.status === 'approved') {
+          urls.push({
+            loc: `${baseUrl}/properties?id=${p.id}`,
+            changefreq: 'weekly',
+            priority: '0.6'
+          });
+        }
+      });
+
+      const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url>
+    <loc>${u.loc}</loc>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+      res.send(sitemapXml);
+    } catch (err) {
+      console.error('Error generating sitemap xml:', err);
+      res.status(500).send('<?xml version="1.0" encoding="UTF-8"?><error>Internal server error generating dynamic index</error>');
+    }
   });
 
 
