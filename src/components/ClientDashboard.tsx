@@ -46,7 +46,7 @@ export default function ClientDashboard({ user, currentLanguage, onViewDetails }
     formData.append('image', file);
 
     try {
-      const res = await fetch('/api/upload', {
+      const res = await ibFetch('/api/upload', {
         method: 'POST',
         body: formData,
       });

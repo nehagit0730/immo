@@ -46,7 +46,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
     const formData = new FormData();
     formData.append('image', file);
     try {
-      const res = await fetch('/api/upload', {
+      const res = await ibFetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -1355,7 +1355,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       const formData = new FormData();
       formData.append('image', file);
       try {
-        const res = await fetch('/api/upload', {
+        const res = await ibFetch('/api/upload', {
           method: 'POST',
           body: formData,
         });

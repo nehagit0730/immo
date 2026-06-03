@@ -920,14 +920,39 @@ support@immoburundi.bi | +257 22 22 45 45`;
           mediaList = [];
         }
       }
-      const url = `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=${Math.floor(Math.random() * 100)}`;
-      const name = `uploaded_asset_${generateId()}.jpg`;
-      const size = `${Math.floor(Math.random() * 500) + 120} KB`;
+
+      let url = `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=${Math.floor(Math.random() * 100)}`;
+      let name = `uploaded_asset_${generateId()}.jpg`;
+      let size = `${Math.floor(Math.random() * 500) + 120} KB`;
+
+      if (init && init.body && init.body instanceof FormData) {
+        const fileObj = init.body.get('image');
+        if (fileObj && fileObj instanceof File) {
+          name = fileObj.name || name;
+          size = `${Math.round(fileObj.size / 1024)} KB`;
+          try {
+            url = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Failed to read file'));
+              reader.readAsDataURL(fileObj);
+            });
+          } catch (e) {
+            console.warn('[IMMO BURUNDI API REDIRECT] Failed to read uploaded file as base64 data-url. Using generic unsplash fallback.', e);
+          }
+        }
+      }
+
       const uploadedAt = new Date().toISOString();
 
       const newMedia = { url, name, size, uploadedAt };
       mediaList.unshift(newMedia);
-      localStorage.setItem('ib_media', JSON.stringify(mediaList));
+      
+      try {
+        localStorage.setItem('ib_media', JSON.stringify(mediaList));
+      } catch (quotaErr) {
+        console.warn('LocalStorage quota exceeded for media list, using in-memory fallback', quotaErr);
+      }
 
       return new Response(JSON.stringify({ success: true, url }), {
         status: 200,
