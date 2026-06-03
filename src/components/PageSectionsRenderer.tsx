@@ -2,16 +2,35 @@ import { useState, useEffect } from 'react';
 import { PageSection, Property } from '../types';
 import { Language } from '../translations';
 import PropertyCard from './PropertyCard';
-import { ChevronRight, ChevronLeft, HelpCircle, Star, Play, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, HelpCircle, Star, Play, ShieldAlert, CheckCircle2, Search } from 'lucide-react';
 
 interface PageSectionsRendererProps {
   sections: PageSection[];
   properties?: Property[];
   currentLanguage?: Language;
   onViewDetails?: (id: string) => void;
+  searchQuery?: string;
+  setSearchQuery?: (val: string) => void;
+  selectedType?: string;
+  setSelectedType?: (val: string) => void;
+  selectedPriceRange?: string;
+  setSelectedPriceRange?: (val: string) => void;
+  t?: any;
 }
 
-export default function PageSectionsRenderer({ sections, properties = [], currentLanguage = 'en', onViewDetails }: PageSectionsRendererProps) {
+export default function PageSectionsRenderer({ 
+  sections, 
+  properties = [], 
+  currentLanguage = 'en', 
+  onViewDetails,
+  searchQuery,
+  setSearchQuery,
+  selectedType,
+  setSelectedType,
+  selectedPriceRange,
+  setSelectedPriceRange,
+  t
+}: PageSectionsRendererProps) {
   if (!sections || sections.length === 0) return null;
 
   return (
@@ -42,7 +61,20 @@ export default function PageSectionsRenderer({ sections, properties = [], curren
             {/* Ambient subtle gradient blur behind sections */}
             <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
             <div className="max-w-7xl mx-auto relative z-10">
-              {renderSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, properties, currentLanguage, onViewDetails)}
+              {renderSectionContent(
+                section, 
+                { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, 
+                properties, 
+                currentLanguage, 
+                onViewDetails,
+                searchQuery,
+                setSearchQuery,
+                selectedType,
+                setSelectedType,
+                selectedPriceRange,
+                setSelectedPriceRange,
+                t
+              )}
             </div>
           </div>
         );
@@ -202,7 +234,14 @@ function renderSectionContent(
   styles: { fontSizeHeadClass: string; fontSizeTextClass: string; headColorVal: string; txtColorVal: string },
   properties: Property[],
   currentLanguage: Language,
-  onViewDetails?: (id: string) => void
+  onViewDetails?: (id: string) => void,
+  searchQuery?: string,
+  setSearchQuery?: (val: string) => void,
+  selectedType?: string,
+  setSelectedType?: (val: string) => void,
+  selectedPriceRange?: string,
+  setSelectedPriceRange?: (val: string) => void,
+  t?: any
 ) {
   const settings = section.settings || {};
   const { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal } = styles;
@@ -232,12 +271,56 @@ function renderSectionContent(
               {settings.subtitle || 'Customize this banner space directly with full alignment toggles, custom overlay variables, and instant layout previews.'}
             </p>
             {settings.buttonText && (
-              <div className="pt-4">
+              <div className="pt-2">
                 <button 
                   className="px-8 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer"
                 >
                   {settings.buttonText}
                 </button>
+              </div>
+            )}
+
+            {/* Custom Interactive Search Filter Cards */}
+            {setSearchQuery && (
+              <div className="mt-8 mx-auto bg-white border border-slate-200 p-3 sm:p-4 rounded-2xl shadow-xl text-slate-805 grid grid-cols-1 md:grid-cols-4 gap-3 items-center w-full max-w-4xl text-left relative z-30">
+                {/* Search input text */}
+                <div className="relative md:col-span-2">
+                  <input
+                    type="text"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder={t?.searchPlaceholder || "Search properties..."}
+                    value={searchQuery || ''}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+                </div>
+
+                {/* Category select */}
+                <select
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-blue-500"
+                  value={selectedType || 'all'}
+                  onChange={(e) => setSelectedType && setSelectedType(e.target.value)}
+                >
+                  <option value="all">{t?.allTypes || "All Types"}</option>
+                  <option value="house">{t?.house || "House"}</option>
+                  <option value="land">{t?.land || "Land"}</option>
+                  <option value="commercial">{t?.commercial || "Commercial"}</option>
+                  <option value="rental">{t?.rental || "Rental"}</option>
+                  <option value="investment">{t?.investment || "Investment"}</option>
+                </select>
+
+                {/* Price select */}
+                <select
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-blue-500"
+                  value={selectedPriceRange || 'all'}
+                  onChange={(e) => setSelectedPriceRange && setSelectedPriceRange(e.target.value)}
+                >
+                  <option value="all">{currentLanguage === 'en' ? 'All Prices' : 'Tous les prix'}</option>
+                  <option value="under-50k">{currentLanguage === 'en' ? 'Under $50k USD' : 'Moins de $50k'}</option>
+                  <option value="50k-150k">$50k - $150k USD</option>
+                  <option value="150k-350k">$150k - $350k USD</option>
+                  <option value="350k-plus">{currentLanguage === 'en' ? 'Above $350k' : 'Plus de $350k'}</option>
+                </select>
               </div>
             )}
           </div>
@@ -532,10 +615,34 @@ function renderSectionContent(
 
       // Filter in client space
       const fullList = properties || [];
+      const searchLower = (searchQuery || '').toLowerCase().trim();
       const filtered = fullList
         .filter(p => p.status === 'approved')
         .filter(p => !showOnlyVerified || p.verified)
-        .filter(p => typeFilter === 'all' || p.type === typeFilter)
+        .filter(p => {
+          if (typeFilter !== 'all') {
+            return p.type === typeFilter;
+          }
+          if (selectedType && selectedType !== 'all') {
+            return p.type === selectedType;
+          }
+          return true;
+        })
+        .filter(p => {
+          if (!searchQuery) return true;
+          return (p.title || '').toLowerCase().includes(searchLower) || 
+                 (p.location || '').toLowerCase().includes(searchLower) || 
+                 (p.city || '').toLowerCase().includes(searchLower);
+        })
+        .filter(p => {
+          if (!selectedPriceRange || selectedPriceRange === 'all') return true;
+          const priceInUsd = p.currency === 'USD' ? p.price : p.price / 2850;
+          if (selectedPriceRange === 'under-50k') return priceInUsd < 50000;
+          if (selectedPriceRange === '50k-150k') return priceInUsd >= 50000 && priceInUsd <= 150000;
+          if (selectedPriceRange === '150k-350k') return priceInUsd >= 150000 && priceInUsd <= 350000;
+          if (selectedPriceRange === '350k-plus') return priceInUsd > 350000;
+          return true;
+        })
         .slice(0, limit);
 
       return (

@@ -2171,7 +2171,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               </div>
 
               {/* Styled Mock Page Viewport container */}
-              <div className="flex-grow overflow-y-auto p-4 space-y-0 text-slate-800 font-sans select-none pointer-events-none">
+              <div className="flex-grow overflow-y-auto p-4 space-y-0 text-slate-800 font-sans select-none pointer-events-auto [&_*]:pointer-events-none">
                 {sections.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-3">
                     <Layout className="w-10 h-10 text-slate-700 animate-pulse" />

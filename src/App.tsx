@@ -192,79 +192,96 @@ export default function App() {
           /* ==========================================
               MAIN HOMEPAGE VIEW
           ========================================== */
-          <div className="space-y-12 animate-in fade-in duration-300">
-            {/* Elegant Hero Search Banner Section */}
-            <section className="relative bg-[#0f172a] text-white py-14 sm:py-20 overflow-hidden">
-              {/* Abstract decorative graphic elements */}
-              <div className="absolute inset-x-0 -bottom-24 h-48 bg-gradient-to-t from-slate-50 to-transparent"></div>
-              <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-blue-900/15 blur-3xl"></div>
-              <div className="absolute -right-20 top-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
-
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-mono mb-4">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-                  {currentLanguage === 'en' ? 'Bilateral Land Registry Audits' : currentLanguage === 'fr' ? 'Audits de Cadastre Bilatéraux' : 'Uhakiki Rasmi wa Ardhi'}
-                </span>
-                
-                <h2 className="font-sans font-black text-3xl sm:text-5xl tracking-tight max-w-3xl mx-auto leading-tight text-white mb-4">
-                  {t.heroTitle}
-                </h2>
-                <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
-                  {t.heroSubtitle}
-                </p>
-
-                {/* Main Filter Search Box widget */}
-                <div className="max-w-4xl mx-auto bg-white border border-slate-200 p-3 sm:p-4 rounded-2xl shadow-xl text-slate-800 grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-                  
-                  {/* Search input text */}
-                  <div className="relative md:col-span-2">
-                    <input
-                      type="text"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-805 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
-                      placeholder={t.searchPlaceholder}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  </div>
-
-                  {/* Category select */}
-                  <select
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-705 focus:outline-none focus:border-blue-500"
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                  >
-                    <option value="all">{t.allTypes}</option>
-                    <option value="house">{t.house}</option>
-                    <option value="land">{t.land}</option>
-                    <option value="commercial">{t.commercial}</option>
-                    <option value="rental">{t.rental}</option>
-                    <option value="investment">{t.investment}</option>
-                  </select>
-
-                  {/* Price select */}
-                  <select
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-705 focus:outline-none focus:border-blue-550"
-                    value={selectedPriceRange}
-                    onChange={(e) => setSelectedPriceRange(e.target.value)}
-                  >
-                    <option value="all">{currentLanguage === 'en' ? 'All Prices' : 'Tous les prix'}</option>
-                    <option value="under-50k">{currentLanguage === 'en' ? 'Under $50k USD' : 'Moins de $50k USD'}</option>
-                    <option value="50k-150k">$50k - $150k USD</option>
-                    <option value="150k-350k">$150k - $350k USD</option>
-                    <option value="350k-plus">{currentLanguage === 'en' ? 'Above $350k USD' : 'Plus de $350k USD'}</option>
-                  </select>
-                </div>
-              </div>
-            </section>
-
-            {/* Dynamic Intro/Homepage Text from Page Manager Block */}
-            {(() => {
-              const homePageObj = pages.find(p => p.slug === 'home' || p.isHomepage);
-              if (homePageObj?.sections && homePageObj.sections.length > 0) {
-                return <PageSectionsRenderer sections={homePageObj.sections} properties={properties} currentLanguage={currentLanguage} onViewDetails={handleViewPropertyDetails} />;
-              }
+          (() => {
+            const homePageObj = pages.find(p => p.slug === 'home' || p.isHomepage);
+            if (homePageObj?.sections && homePageObj.sections.length > 0) {
               return (
+                <div className="w-full animate-in fade-in duration-300">
+                  <PageSectionsRenderer 
+                    sections={homePageObj.sections} 
+                    properties={properties} 
+                    currentLanguage={currentLanguage} 
+                    onViewDetails={handleViewPropertyDetails}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedType={selectedType}
+                    setSelectedType={setSelectedType}
+                    selectedPriceRange={selectedPriceRange}
+                    setSelectedPriceRange={setSelectedPriceRange}
+                    t={t}
+                  />
+                </div>
+              );
+            }
+
+            // Normal Fallback Layout if Database sections are completely empty
+            return (
+              <div className="space-y-12 animate-in fade-in duration-300 pb-14">
+                {/* Elegant Hero Search Banner Section */}
+                <section className="relative bg-[#0f172a] text-white py-14 sm:py-20 overflow-hidden">
+                  {/* Abstract decorative graphic elements */}
+                  <div className="absolute inset-x-0 -bottom-24 h-48 bg-gradient-to-t from-slate-50 to-transparent"></div>
+                  <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-blue-900/15 blur-3xl"></div>
+                  <div className="absolute -right-20 top-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
+
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-mono mb-4">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+                      {currentLanguage === 'en' ? 'Bilateral Land Registry Audits' : currentLanguage === 'fr' ? 'Audits de Cadastre Bilatéraux' : 'Uhakiki Rasmi wa Ardhi'}
+                    </span>
+                    
+                    <h2 className="font-sans font-black text-3xl sm:text-5xl tracking-tight max-w-3xl mx-auto leading-tight text-white mb-4">
+                      {t.heroTitle}
+                    </h2>
+                    <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
+                      {t.heroSubtitle}
+                    </p>
+
+                    {/* Main Filter Search Box widget */}
+                    <div className="max-w-4xl mx-auto bg-white border border-slate-200 p-3 sm:p-4 rounded-2xl shadow-xl text-slate-805 grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+                      {/* Search input text */}
+                      <div className="relative md:col-span-2">
+                        <input
+                          type="text"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-805 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+                          placeholder={t.searchPlaceholder}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+                      </div>
+
+                      {/* Category select */}
+                      <select
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-705 focus:outline-none focus:border-blue-500"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                      >
+                        <option value="all">{t.allTypes}</option>
+                        <option value="house">{t.house}</option>
+                        <option value="land">{t.land}</option>
+                        <option value="commercial">{t.commercial}</option>
+                        <option value="rental">{t.rental}</option>
+                        <option value="investment">{t.investment}</option>
+                      </select>
+
+                      {/* Price select */}
+                      <select
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-705 focus:outline-none focus:border-blue-550"
+                        value={selectedPriceRange}
+                        onChange={(e) => setSelectedPriceRange(e.target.value)}
+                      >
+                        <option value="all">{currentLanguage === 'en' ? 'All Prices' : 'Tous les prix'}</option>
+                        <option value="under-50k">{currentLanguage === 'en' ? 'Under $50k USD' : 'Moins de $50k USD'}</option>
+                        <option value="50k-150k">$50k - $150k USD</option>
+                        <option value="150k-350k">$150k - $350k USD</option>
+                        <option value="350k-plus">{currentLanguage === 'en' ? 'Above $350k USD' : 'Plus de $350k USD'}</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Default Text/Company prologue message */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
                     <span className="text-[10px] font-mono font-bold tracking-wider text-slate-400 block uppercase mb-1">
@@ -278,60 +295,73 @@ export default function App() {
                     </p>
                   </div>
                 </section>
-              );
-            })()}
 
-            {/* Public Properties Grid */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
-              <div className="flex justify-between items-end border-b border-slate-200 pb-3.5 mb-6">
-                <div>
-                  <h3 className="font-sans font-extrabold text-slate-900 text-lg sm:text-xl">
-                    {t.publicListings}
-                  </h3>
-                  <p className="text-slate-450 text-xs mt-0.5 font-mono">
-                    {filteredProperties.length} active listings verified
-                  </p>
-                </div>
+                {/* Public Properties Grid */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+                  <div className="flex justify-between items-end border-b border-slate-200 pb-3.5 mb-6">
+                    <div>
+                      <h3 className="font-sans font-extrabold text-slate-900 text-lg sm:text-xl">
+                        {t.publicListings}
+                      </h3>
+                      <p className="text-slate-450 text-xs mt-0.5 font-mono">
+                        {filteredProperties.length} active listings verified
+                      </p>
+                    </div>
+                  </div>
+
+                  {isLoading ? (
+                    <div className="py-20 text-center font-mono text-xs text-slate-400">
+                      {t.loading}
+                    </div>
+                  ) : filteredProperties.length === 0 ? (
+                    <div className="py-12 bg-white rounded-2xl border border-slate-200 text-center p-8 max-w-md mx-auto">
+                      <span className="text-2xl">🔍</span>
+                      <h4 className="font-sans font-bold text-slate-700 mt-2 text-sm">{t.noProperties}</h4>
+                      <p className="text-xs text-slate-404 mt-1">
+                        Try adjusting your criteria or search inputs to find matching holdings.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredProperties.map((property) => (
+                        <PropertyCard
+                          key={property.id}
+                          property={property}
+                          currentLanguage={currentLanguage}
+                          onViewDetails={handleViewPropertyDetails}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
               </div>
-
-              {isLoading ? (
-                <div className="py-20 text-center font-mono text-xs text-slate-400">
-                  {t.loading}
-                </div>
-              ) : filteredProperties.length === 0 ? (
-                <div className="py-12 bg-white rounded-2xl border border-slate-200 text-center p-8 max-w-md mx-auto">
-                  <span className="text-2xl">🔍</span>
-                  <h4 className="font-sans font-bold text-slate-700 mt-2 text-sm">{t.noProperties}</h4>
-                  <p className="text-xs text-slate-404 mt-1">
-                    Try adjusting your criteria or search inputs to find matching holdings.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProperties.map((property) => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      currentLanguage={currentLanguage}
-                      onViewDetails={handleViewPropertyDetails}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        ) : pages.some(p => p.slug === currentView) ? (
+            );
+          })()
+        ) : pages.some(p => p.slug === (currentView === 'about' ? 'about-us' : currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView)) ? (
           /* ==========================================
               DYNAMIC CUSTOM PAGE ROUTER
           ========================================== */
           (() => {
-            const matchedPl = pages.find(p => p.slug === currentView);
+            const mappedSlug = currentView === 'about' ? 'about-us' : currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView;
+            const matchedPl = pages.find(p => p.slug === mappedSlug);
             if (!matchedPl) return null;
             
             if (matchedPl.sections && matchedPl.sections.length > 0) {
               return (
                 <div className="w-full animate-in fade-in duration-300">
-                  <PageSectionsRenderer sections={matchedPl.sections} properties={properties} currentLanguage={currentLanguage} onViewDetails={handleViewPropertyDetails} />
+                  <PageSectionsRenderer 
+                    sections={matchedPl.sections} 
+                    properties={properties} 
+                    currentLanguage={currentLanguage} 
+                    onViewDetails={handleViewPropertyDetails}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedType={selectedType}
+                    setSelectedType={setSelectedType}
+                    selectedPriceRange={selectedPriceRange}
+                    setSelectedPriceRange={setSelectedPriceRange}
+                    t={t}
+                  />
                 </div>
               );
             }
