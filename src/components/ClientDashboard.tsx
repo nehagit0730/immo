@@ -40,12 +40,79 @@ export default function ClientDashboard({ user, currentLanguage, onViewDetails }
 
   const t = translations[currentLanguage];
 
+  // Helper to compress image file using canvas and return both a compressed Blob and the base64 URL
+  const compressImage = (file: File): Promise<{ blob: Blob; dataUrl: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawUrl = e.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const maxWidth = 800;
+            const maxHeight = 600;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ blob: file, dataUrl: rawUrl });
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const base64Url = canvas.toDataURL('image/jpeg', 0.7);
+            
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve({ blob, dataUrl: base64Url });
+              } else {
+                resolve({ blob: file, dataUrl: rawUrl });
+              }
+            }, 'image/jpeg', 0.7);
+          } catch (err) {
+            console.warn('Canvas compression failure', err);
+            resolve({ blob: file, dataUrl: rawUrl });
+          }
+        };
+        img.onerror = () => resolve({ blob: file, dataUrl: rawUrl });
+        img.src = rawUrl;
+      };
+      reader.onerror = () => resolve({ blob: file, dataUrl: typeof reader.result === 'string' ? reader.result : '' });
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (file: File, callback: (url: string) => void) => {
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
+      // 1. Compress image first
+      const { blob, dataUrl } = await compressImage(file);
+      
+      // Create compressed File from Blob to pass custom name
+      const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+        type: "image/jpeg"
+      });
+
+      const formData = new FormData();
+      formData.append('image', compressedFile);
+
+      // 2. Try uploading compressed file to server
       const res = await ibFetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -55,12 +122,25 @@ export default function ClientDashboard({ user, currentLanguage, onViewDetails }
         const data = await res.json();
         callback(data.url);
       } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to upload image');
+        // If server rejected or returned non-ok status, fall back to compressed base64 immediately!
+        console.warn('Server upload rejected image, falling back to offline compressed base64 data-url');
+        callback(dataUrl);
       }
     } catch (err) {
-      console.error('Upload error:', err);
-      alert('Error uploading image');
+      console.error('Server upload failed, falling back to offline compressed base64 data-url:', err);
+      // Fallback to base64 if there is a network error or any crash
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            callback(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (fallbackErr) {
+        console.error('Even local fast-read failed:', fallbackErr);
+        alert('Error uploading image');
+      }
     } finally {
       setIsUploading(false);
     }

@@ -327,12 +327,20 @@ const defaultUsers: User[] = [
   }
 ];
 
+// In-memory cache to guarantee database state persistence even if localStorage is full/blocked due to base64 images
+let simulatedDbCache: LocalDatabaseSchema | null = null;
+
 // Load Database from localStorage
 function getLocalDatabase(): LocalDatabaseSchema {
+  if (simulatedDbCache) {
+    return simulatedDbCache;
+  }
+
   const stored = localStorage.getItem('ib_db');
   if (stored) {
     try {
-      return JSON.parse(stored);
+      simulatedDbCache = JSON.parse(stored);
+      return simulatedDbCache!;
     } catch (e) {
       console.error('Failed to parse local simulated db, resetting to defaults', e);
     }
@@ -353,6 +361,7 @@ function getLocalDatabase(): LocalDatabaseSchema {
       totalInquiries: 48
     }
   };
+  simulatedDbCache = initialData;
   saveLocalDatabase(initialData);
   return initialData;
 }
@@ -365,6 +374,9 @@ function saveLocalDatabase(db: LocalDatabaseSchema) {
   db.stats.pendingProperties = db.properties.filter(p => p.status === 'pending').length;
   db.stats.rejectedProperties = db.properties.filter(p => p.status === 'rejected').length;
   db.stats.totalUsers = db.users.length;
+  
+  // Always update in-memory cache
+  simulatedDbCache = db;
   
   try {
     localStorage.setItem('ib_db', JSON.stringify(db));
@@ -935,11 +947,57 @@ support@immoburundi.bi | +257 22 22 45 45`;
           name = fileObj.name || name;
           size = `${Math.round(fileObj.size / 1024)} KB`;
           try {
-            url = await new Promise<string>((resolve, reject) => {
+            const rawUrl = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onload = () => resolve(reader.result as string);
               reader.onerror = () => reject(new Error('Failed to read file'));
               reader.readAsDataURL(fileObj);
+            });
+
+            // Compress image down to max 800x600 size to save localStorage quota
+            url = await new Promise<string>((resolve) => {
+              if (typeof window === 'undefined' || typeof document === 'undefined') {
+                resolve(rawUrl);
+                return;
+              }
+              const img = new window.Image();
+              img.onload = () => {
+                try {
+                  const canvas = document.createElement('canvas');
+                  let width = img.width;
+                  let height = img.height;
+                  const maxWidth = 800;
+                  const maxHeight = 600;
+
+                  if (width > height) {
+                    if (width > maxWidth) {
+                      height = Math.round((height * maxWidth) / width);
+                      width = maxWidth;
+                    }
+                  } else {
+                    if (height > maxHeight) {
+                      width = Math.round((width * maxHeight) / height);
+                      height = maxHeight;
+                    }
+                  }
+
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+                  if (!ctx) {
+                    resolve(rawUrl);
+                    return;
+                  }
+                  ctx.drawImage(img, 0, 0, width, height);
+                  const compressed = canvas.toDataURL('image/jpeg', 0.6);
+                  resolve(compressed);
+                } catch (err) {
+                  console.warn('Canvas compression failure', err);
+                  resolve(rawUrl);
+                }
+              };
+              img.onerror = () => resolve(rawUrl);
+              img.src = rawUrl;
             });
           } catch (e) {
             console.warn('[IMMO BURUNDI API REDIRECT] Failed to read uploaded file as base64 data-url. Using generic unsplash fallback.', e);

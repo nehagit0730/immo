@@ -26,6 +26,64 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
   const [loadingMedia, setLoadingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper inside component to compress image
+  const compressImage = (file: File): Promise<{ blob: Blob; dataUrl: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawUrl = e.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const maxWidth = 800;
+            const maxHeight = 600;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ blob: file, dataUrl: rawUrl });
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const base64Url = canvas.toDataURL('image/jpeg', 0.7);
+            
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve({ blob, dataUrl: base64Url });
+              } else {
+                resolve({ blob: file, dataUrl: rawUrl });
+              }
+            }, 'image/jpeg', 0.7);
+          } catch (err) {
+            console.warn('Canvas compression failure', err);
+            resolve({ blob: file, dataUrl: rawUrl });
+          }
+        };
+        img.onerror = () => resolve({ blob: file, dataUrl: rawUrl });
+        img.src = rawUrl;
+      };
+      reader.onerror = () => resolve({ blob: file, dataUrl: typeof reader.result === 'string' ? reader.result : '' });
+      reader.readAsDataURL(file);
+    });
+  };
+
   const fetchMedia = async () => {
     setLoadingMedia(true);
     try {
@@ -43,23 +101,44 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
 
   const handleUpload = async (file: File) => {
     setLocalUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
     try {
+      // 1. Compress image
+      const { blob, dataUrl } = await compressImage(file);
+      
+      const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+        type: "image/jpeg"
+      });
+
+      const formData = new FormData();
+      formData.append('image', compressedFile);
+
+      // 2. Try posting to server
       const res = await ibFetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
+
       if (res.ok) {
         const data = await res.json();
         onChange(data.url);
       } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to upload image');
+        console.warn('Server upload rejected image, falling back to offline compressed base64 data-url');
+        onChange(dataUrl);
       }
     } catch (e) {
-      console.error('Upload error:', e);
-      alert('Error uploading image');
+      console.error('Server upload failed, falling back to offline compressed base64 data-url:', e);
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            onChange(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (fallbackErr) {
+        console.error('Local photo read failed:', fallbackErr);
+        alert('Error uploading image');
+      }
     } finally {
       setLocalUploading(false);
     }
