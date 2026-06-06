@@ -1714,6 +1714,28 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         defaultSettings = { body: 'This block is dedicated to informative text. You can adjust background colors, sizes, alignment, and preview everything immediately.' };
       } else if (type === 'property_list') {
         defaultSettings = { heading: 'Premium Verified Properties', subheading: 'Explore active listings verified directly on the ground by IMMO BURUNDI in Bujumbura, Gitega and Rumonge.', limit: '3', typeFilter: 'all', showOnlyVerified: true };
+      } else if (type === 'team_profile') {
+        defaultSettings = { heading: 'Our Licensed Auditing Experts', subheading: 'Fully certified legal counsel & cadastral surveyor team coordinate validations', members: [
+          { name: 'Sylvain Ndayishimiye', role: 'Chief Land Registrar Audit Officer', bio: '15+ years cross-referencing title deeds at Gitega national archives.', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Estella Kaneza', role: 'Sovereist Boundary Surveyor, GPS', bio: 'Senior geodesist confirming precise UTM and GPS coordinates on sight.', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Aimé Ndizeye', role: 'Executive Diaspora Coordinator', bio: 'Facilitates escrow and secure electronic leasing contracts for expats.', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' }
+        ]};
+      } else if (type === 'process_steps') {
+        defaultSettings = { heading: 'Our Secure Title Verification Workflow', subheading: 'Every single listing on Immo Burundi goes through these rigorous security stages to eliminate fraud or double allocation', steps: [
+          { number: '01', title: 'Document Submission', desc: 'Owners submit digital cadastral papers and national identity deeds.' },
+          { number: '02', title: 'Registrar Check', desc: 'Our team verifies the historical registry list directly in Bujumbura.' },
+          { number: '03', title: 'GPS Demarcation', desc: 'We physically measure coordinates on the ground to match official maps.' },
+          { number: '04', title: 'Verified Stamp', desc: 'The listing is certified \'System Verified\' and published live.' }
+        ]};
+      } else if (type === 'stats_grid') {
+        defaultSettings = { heading: 'Immo Burundi in numbers', subheading: 'Unrivaled real estate validation figures across Burundi since 2018', stats: [
+          { label: 'Land Audits Done', value: '480+' },
+          { label: 'BIF Capital Secured', value: '95.4 Billion' },
+          { label: 'Diaspora Transactions', value: '120+' },
+          { label: 'Zero Fraud Rate', value: '100%' }
+        ]};
+      } else if (type === 'contact_form_banner') {
+        defaultSettings = { heading: 'Secure Your Free Advisory Consult Session', subheading: 'Speak to an official cadastral validation attorney live in Bujumbura or via Microsoft Teams. Enter your parameters to proceed.', buttonText: 'Schedule Free Call' };
       } else {
         defaultSettings = { title: 'High-Tech Block', subtitle: 'Dynamic templates content' };
       }
@@ -2062,7 +2084,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             <div className="p-4 border-t border-slate-800 space-y-3.5 shrink-0">
               <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-extrabold uppercase">Block Sections Catalog</span>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list'] as PageSection['type'][]).map((type) => (
+                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list', 'team_profile', 'process_steps', 'stats_grid', 'contact_form_banner'] as PageSection['type'][]).map((type) => (
                   <button
                     key={type}
                     type="button"
@@ -2664,6 +2686,213 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           </div>
         );
 
+      case 'team_profile': {
+        const members = s.members && s.members.length > 0 ? s.members : [
+          { name: 'Sylvain Ndayishimiye', role: 'Chief Registrar Audit Officer', bio: '15+ years cross-referencing title deeds at Gitega archives.', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Estella Kaneza', role: 'Sovereist Boundary Surveyor, GPS', bio: 'Senior geodesist confirming precise UTM and GPS coordinates.', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
+          { name: 'Aimé Ndizeye', role: 'Executive Diaspora Coordinator', bio: 'Facilitates escrow and secure electronic leasing contracts.', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' }
+        ];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Team Section Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subheading Copy</label>
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold font-mono">Team Members (3 Persons)</span>
+              {members.map((member: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">Member #{idx + 1}</span>
+                  <input 
+                    type="text" 
+                    value={member.name || ''} 
+                    onChange={(e) => {
+                      const newMembers = [...members];
+                      newMembers[idx] = { ...newMembers[idx], name: e.target.value };
+                      updateFn('members', newMembers);
+                    }} 
+                    placeholder="Name"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-sans" 
+                  />
+                  <input 
+                    type="text" 
+                    value={member.role || ''} 
+                    onChange={(e) => {
+                      const newMembers = [...members];
+                      newMembers[idx] = { ...newMembers[idx], role: e.target.value };
+                      updateFn('members', newMembers);
+                    }} 
+                    placeholder="Professional Title/Role"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-sans" 
+                  />
+                  <textarea 
+                    rows={2} 
+                    value={member.bio || ''} 
+                    onChange={(e) => {
+                      const newMembers = [...members];
+                      newMembers[idx] = { ...newMembers[idx], bio: e.target.value };
+                      updateFn('members', newMembers);
+                    }} 
+                    placeholder="Short biography"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-sans" 
+                  />
+                  <AdminImageUpload
+                    value={member.avatar || ''}
+                    onChange={(url) => {
+                      const newMembers = [...members];
+                      newMembers[idx] = { ...newMembers[idx], avatar: url };
+                      updateFn('members', newMembers);
+                    }}
+                    label="Avatar photo URL"
+                    placeholder="Upload avatar image"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'process_steps': {
+        const steps = s.steps && s.steps.length > 0 ? s.steps : [
+          { number: '01', title: 'Document Submission', desc: 'Owners submit digital cadastral papers and national identity deeds.' },
+          { number: '02', title: 'Registrar Check', desc: 'Our team verifies the historical registry list directly in Bujumbura.' },
+          { number: '03', title: 'GPS Demarcation', desc: 'We physically measure coordinates on the ground to match official maps.' },
+          { number: '04', title: 'Verified Stamp', desc: 'The listing is certified \'System Verified\' and published live.' }
+        ];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Process Section Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subheading Explanation</label>
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold font-mono">Process Steps (4 Milestones)</span>
+              {steps.map((step: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-855 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold">Step Step #{idx + 1}</span>
+                  <div className="flex gap-1.5 font-mono">
+                    <input 
+                      type="text" 
+                      value={step.number || `0${idx + 1}`} 
+                      onChange={(e) => {
+                        const newSteps = [...steps];
+                        newSteps[idx] = { ...newSteps[idx], number: e.target.value };
+                        updateFn('steps', newSteps);
+                      }} 
+                      placeholder="Step tag"
+                      className="w-12 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-center text-slate-200" 
+                    />
+                    <input 
+                      type="text" 
+                      value={step.title || ''} 
+                      onChange={(e) => {
+                        const newSteps = [...steps];
+                        newSteps[idx] = { ...newSteps[idx], title: e.target.value };
+                        updateFn('steps', newSteps);
+                      }} 
+                      placeholder="Milestone Title"
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                  </div>
+                  <textarea 
+                    rows={2} 
+                    value={step.desc || ''} 
+                    onChange={(e) => {
+                      const newSteps = [...steps];
+                      newSteps[idx] = { ...newSteps[idx], desc: e.target.value };
+                      updateFn('steps', newSteps);
+                    }} 
+                    placeholder="Short description"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'stats_grid': {
+        const stats = s.stats && s.stats.length > 0 ? s.stats : [
+          { label: 'Land Audits Done', value: '480+' },
+          { label: 'BIF Capital Secured', value: '95.4 Billion' },
+          { label: 'Diaspora Transactions', value: '120+' },
+          { label: 'Zero Fraud Rate', value: '100%' }
+        ];
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Stats Section Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subheading Copy</label>
+              <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div className="border-t border-slate-800 pt-3 space-y-3">
+              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold font-mono">Metrics Grid (4 values)</span>
+              {stats.map((stat: any, idx: number) => (
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-855 space-y-2">
+                  <span className="text-[9px] font-mono text-slate-500 font-bold font-mono">Stat #{idx + 1}</span>
+                  <div className="grid grid-cols-2 gap-1.5 font-mono">
+                    <input 
+                      type="text" 
+                      value={stat.value || ''} 
+                      onChange={(e) => {
+                        const newStats = [...stats];
+                        newStats[idx] = { ...newStats[idx], value: e.target.value };
+                        updateFn('stats', newStats);
+                      }} 
+                      placeholder="e.g. 480+"
+                      className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                    <input 
+                      type="text" 
+                      value={stat.label || ''} 
+                      onChange={(e) => {
+                        const newStats = [...stats];
+                        newStats[idx] = { ...newStats[idx], label: e.target.value };
+                        updateFn('stats', newStats);
+                      }} 
+                      placeholder="e.g. Land Audits"
+                      className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'contact_form_banner': {
+        return (
+          <div className="space-y-3.5">
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Advisory Consultation Heading</label>
+              <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subtitle guidance instructions</label>
+              <textarea rows={3} value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+            <div>
+              <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Button Call-To-Action Text</label>
+              <input type="text" value={s.buttonText || ''} onChange={(e) => updateFn('buttonText', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
+            </div>
+          </div>
+        );
+      }
+
       default:
         return (
           <div className="text-[10px] text-slate-500 font-mono leading-normal">
@@ -2844,6 +3073,78 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </div>
             <div className="text-[8.5px] text-blue-600 font-mono text-center font-bold mt-1 tracking-wide">
               Show Limit: {s.limit || '3'} • Filter: {s.typeFilter || 'all'} • Verified Only: {s.showOnlyVerified !== false ? 'Yes' : 'No'}
+            </div>
+          </div>
+        )}
+
+        {sec.type === 'team_profile' && (
+          <div className="space-y-2.5 text-center mt-2 py-1.5 border-t border-b border-slate-100">
+            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Licensed Auditing Experts'}</h4>
+            <p className="text-[9px] opacity-70 leading-none">{s.subheading || 'Certified surveyor team validations'}</p>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {(s.members || [
+                { name: 'Sylvain Ndayishimiye', role: 'Chief Audit Officer' },
+                { name: 'Estella Kaneza', role: 'Sovereist GPS Geodesist' },
+                { name: 'Aimé Ndizeye', role: 'Diaspora Coordinator' }
+              ]).slice(0, 3).map((m: any, idx: number) => (
+                <div key={idx} className="bg-slate-50 p-1.5 rounded border border-slate-150 text-[8px] truncate">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 mx-auto mb-1 overflow-hidden">
+                    <img src={m.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} className="w-full h-full object-cover" />
+                  </div>
+                  <p className="font-bold text-slate-950 truncate leading-none">{m.name}</p>
+                  <p className="text-[7px] text-blue-600 truncate opacity-90 mt-0.5 leading-none">{m.role}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sec.type === 'process_steps' && (
+          <div className="space-y-2 text-center mt-2 py-1.5 border-t border-b border-slate-100">
+            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Secure Verification Workflow'}</h4>
+            <div className="flex justify-between items-center px-4 pt-1.5 max-w-xs mx-auto font-mono text-[8.5px] text-slate-500 font-bold">
+              {(s.steps || [
+                { title: 'Deeds Check' },
+                { title: 'Registrar Search' },
+                { title: 'GPS Boundary' },
+                { title: 'Live stamp' }
+              ]).slice(0, 4).map((st: any, idx: number) => (
+                <div key={idx} className="flex flex-col items-center">
+                  <div className="w-4 h-4 rounded-full bg-blue-600 text-white text-[8px] flex items-center justify-center font-bold">0{idx + 1}</div>
+                  <span className="text-[7px] text-slate-850 truncate max-w-[45px] mt-1 leading-none">{st.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sec.type === 'stats_grid' && (
+          <div className="space-y-2 text-center mt-2 py-1.5 border-t border-b border-slate-100">
+            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Achievements'}</h4>
+            <div className="grid grid-cols-4 gap-1.5 pt-1">
+              {(s.stats || [
+                { value: '480+', label: 'Audits' },
+                { value: '95B', label: 'BIF Capital' },
+                { value: '120+', label: 'Diaspora' },
+                { value: '100%', label: 'Zero Fraud' }
+              ]).slice(0, 4).map((st: any, idx: number) => (
+                <div key={idx} className="bg-slate-50 border rounded p-1 text-[8px] truncate">
+                  <span className="font-extrabold text-blue-600 text-[10px] block leading-none">{st.value}</span>
+                  <span className="text-[7px] text-slate-400 block truncate mt-0.5 leading-none">{st.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sec.type === 'contact_form_banner' && (
+          <div className="bg-gradient-to-r from-slate-900 to-indigo-950 p-3 rounded-xl text-center text-white mt-2 space-y-1.5 shadow border border-slate-800">
+            <span className="text-[7.5px] font-mono tracking-widest text-slate-400 block uppercase">🔒 Protected Consult Panel</span>
+            <h5 className="font-extrabold text-[10px] text-white leading-none truncate">{s.heading || 'Secure Free Advisory Consult Session'}</h5>
+            <div className="flex gap-1 justify-center max-w-xs mx-auto pt-0.5">
+              <div className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[7.5px] text-white/50 w-12 truncate leading-none text-left">Full Name</div>
+              <div className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[7.5px] text-white/50 w-12 truncate leading-none text-left font-sans">Email</div>
+              <div className="bg-blue-600 text-[7px] font-bold text-white px-2 rounded font-sans uppercase tracking-wide py-0.5 shrink-0 leading-none flex items-center justify-center">{s.buttonText || 'Schedule'}</div>
             </div>
           </div>
         )}

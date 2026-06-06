@@ -41,7 +41,7 @@ export interface Property {
 
 export interface PageSection {
   id: string;
-  type: 'banner' | 'slideshow' | 'image_text' | 'columns' | 'gallery' | 'richtext' | 'brands' | 'faqs' | 'testimonials' | 'video' | 'single_image' | 'heading' | 'text' | 'property_list';
+  type: 'banner' | 'slideshow' | 'image_text' | 'columns' | 'gallery' | 'richtext' | 'brands' | 'faqs' | 'testimonials' | 'video' | 'single_image' | 'heading' | 'text' | 'property_list' | 'team_profile' | 'process_steps' | 'stats_grid' | 'contact_form_banner';
   backgroundColor: string;
   headingColor: string;
   textColor: string;

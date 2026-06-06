@@ -229,6 +229,84 @@ function VideoSection({ heading, coverImage, duration }: { heading?: string, cov
   );
 }
 
+function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHeadClass }: { heading: string, subheading?: string, buttonText?: string, fontSizeHeadClass: string }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  return (
+    <div className="max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden border border-slate-800 text-left">
+      <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none animate-pulse"></div>
+      <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
+
+      <div className="relative z-10 max-w-2xl mx-auto space-y-6 text-center sm:text-left">
+        <div className="space-y-3 text-center sm:text-left">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase border border-white/20">
+            🔒 Protected Advisor Access
+          </span>
+          <h2 className={`${fontSizeHeadClass} font-black tracking-tight text-white leading-tight`}>{heading}</h2>
+          {subheading && <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">{subheading}</p>}
+        </div>
+
+        {submitted ? (
+          <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-6 text-center space-y-3 max-w-md mx-auto animate-in zoom-in-95 duration-150">
+            <span className="text-3xl block">✓</span>
+            <h3 className="text-sm font-bold text-white">Consultation Requested Successfully</h3>
+            <p className="text-xs text-secondary text-slate-300">
+              Our legal registrar clerk will reach out within 2 hours to confirm your private advisory session.
+            </p>
+          </div>
+        ) : (
+          <form 
+            onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                required
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
+              />
+            </div>
+            <div className="relative">
+              <input
+                type="email"
+                required
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
+              />
+            </div>
+            <div className="relative">
+              <input
+                type="tel"
+                required
+                placeholder="Phone / WhatsApp"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
+              />
+            </div>
+            <div className="sm:col-span-3 text-center sm:text-left mt-2">
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-10 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer"
+              >
+                {buttonText}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function renderSectionContent(
   section: PageSection, 
   styles: { fontSizeHeadClass: string; fontSizeTextClass: string; headColorVal: string; txtColorVal: string },
@@ -671,6 +749,136 @@ function renderSectionContent(
             </div>
           )}
         </div>
+      );
+    }
+
+    case 'team_profile': {
+      const heading = settings.heading || 'Our Licensed Auditing Experts';
+      const subheading = settings.subheading || 'Fully certified legal counsel & cadastral surveyor team coordinate validations';
+      const members = settings.members && settings.members.length > 0
+        ? settings.members
+        : [
+            { name: 'Sylvain Ndayishimiye', role: 'Chief Land Registrar Audit Officer', bio: '15+ years cross-referencing title deeds at Gitega national archives.', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
+            { name: 'Estella Kaneza', role: 'Sovereign Boundary Surveyor, GPS', bio: 'Senior geodesist confirming precise UTM and GPS coordinates on sight.', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
+            { name: 'Aimé Ndizeye', role: 'Executive Diaspora Coordinator', bio: 'Facilitates escrow and secure electronic leasing contracts for expats.', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' }
+          ];
+
+      return (
+        <div className="space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-[10px] sm:text-xs font-mono font-black tracking-[0.25em] text-blue-650 uppercase block">Expert Advisory</span>
+            <h2 className={`${fontSizeHeadClass} ${headColorVal} font-black tracking-tight`}>{heading}</h2>
+            {subheading && <p className={`text-xs sm:text-sm ${txtColorVal} font-light max-w-2xl mx-auto`}>{subheading}</p>}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {members.map((member: any, idx: number) => (
+              <div key={idx} className="bg-white rounded-2xl border border-slate-200/85 p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center flex flex-col items-center space-y-4">
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-blue-500 rounded-full blur opacity-15 group-hover:opacity-25 transition-opacity"></div>
+                  <img
+                    src={member.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
+                    alt={member.name}
+                    className="w-24 h-24 rounded-full object-cover relative border-2 border-slate-100 shadow-md"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">{member.name}</h3>
+                  <p className="text-[11px] font-mono font-bold text-blue-600 uppercase tracking-widest mt-0.5">{member.role}</p>
+                </div>
+                <p className="text-xs text-slate-500 font-light leading-relaxed font-sans">{member.bio}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    case 'process_steps': {
+      const heading = settings.heading || 'Our Secure Title Verification Workflow';
+      const subheading = settings.subheading || 'Every single listing on Immo Burundi goes through these rigorous security stages to eliminate fraud or double allocation';
+      const steps = settings.steps && settings.steps.length > 0
+        ? settings.steps
+        : [
+            { number: '01', title: 'Document Submission', desc: 'Owners submit digital cadastral papers and national identity deeds.' },
+            { number: '02', title: 'Registrar Check', desc: 'Our team verifies the historical registry list directly in Bujumbura.' },
+            { number: '03', title: 'GPS Demarcation', desc: 'We physically measure coordinates on the ground to match official maps.' },
+            { number: '04', title: 'Verified Stamp', desc: 'The listing is certified \'System Verified\' and published live.' }
+          ];
+
+      return (
+        <div className="space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-[10px] sm:text-xs font-mono font-black tracking-[0.25em] text-blue-650 uppercase block">Rigorous Audit Protocol</span>
+            <h2 className={`${fontSizeHeadClass} ${headColorVal} font-black tracking-tight`}>{heading}</h2>
+            {subheading && <p className={`text-xs sm:text-sm ${txtColorVal} font-light max-w-2xl mx-auto`}>{subheading}</p>}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 max-w-6xl mx-auto relative text-center md:text-left">
+            {/* Connecting line in desktop view */}
+            <div className="hidden md:block absolute top-[44px] left-[12%] right-[12%] h-0.5 bg-slate-200 z-0" />
+
+            {steps.map((step: any, idx: number) => (
+              <div key={idx} className="relative z-10 flex flex-col items-center md:items-start space-y-4">
+                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-black font-mono text-sm shadow-lg border-4 border-white">
+                  {step.number || `0${idx + 1}`}
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight">{step.title}</h3>
+                  <p className="text-xs text-slate-500 font-light leading-relaxed font-sans">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    case 'stats_grid': {
+      const heading = settings.heading || 'Immo Burundi in numbers';
+      const subheading = settings.subheading || 'Unrivaled real estate validation figures across Burundi since 2018';
+      const stats = settings.stats && settings.stats.length > 0
+        ? settings.stats
+        : [
+            { label: 'Land Audits Done', value: '480+' },
+            { label: 'BIF Capital Secured', value: '95.4 Billion' },
+            { label: 'Diaspora Transactions', value: '120+' },
+            { label: 'Zero Fraud Rate', value: '100%' }
+          ];
+
+      return (
+        <div className="space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-[10px] sm:text-xs font-mono font-black tracking-[0.25em] text-blue-650 uppercase block">Verified Authority</span>
+            <h2 className={`${fontSizeHeadClass} ${headColorVal} font-black tracking-tight`}>{heading}</h2>
+            {subheading && <p className={`text-xs sm:text-sm ${txtColorVal} font-light max-w-2xl mx-auto`}>{subheading}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 max-w-5xl mx-auto">
+            {stats.map((stat: any, idx: number) => (
+              <div key={idx} className="bg-white border border-slate-200/80 rounded-2xl p-6 text-center shadow-xs hover:shadow-md transition-shadow relative">
+                <span className="text-2xl sm:text-4xl font-black text-blue-600 font-display block select-all">{stat.value}</span>
+                <span className="text-[10px] sm:text-xs font-mono font-bold tracking-wider text-slate-400 uppercase mt-2 block">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    case 'contact_form_banner': {
+      const heading = settings.heading || 'Secure Your Free Advisory Consult Session';
+      const subheading = settings.subheading || 'Speak to an official cadastral validation attorney live in Bujumbura or via Microsoft Teams. Enter your parameters to proceed.';
+      const buttonText = settings.buttonText || 'Schedule Free Call';
+
+      return (
+        <ContactFormBannerSection
+          heading={heading}
+          subheading={subheading}
+          buttonText={buttonText}
+          fontSizeHeadClass={fontSizeHeadClass}
+        />
       );
     }
 
