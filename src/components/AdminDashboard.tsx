@@ -38,8 +38,8 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxWidth = 800;
-            const maxHeight = 600;
+            const maxWidth = 640;
+            const maxHeight = 480;
 
             if (width > height) {
               if (width > maxWidth) {
@@ -62,7 +62,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
             }
             ctx.drawImage(img, 0, 0, width, height);
             
-            const base64Url = canvas.toDataURL('image/jpeg', 0.7);
+            const base64Url = canvas.toDataURL('image/jpeg', 0.55);
             
             canvas.toBlob((blob) => {
               if (blob) {
@@ -70,7 +70,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
               } else {
                 resolve({ blob: file, dataUrl: rawUrl });
               }
-            }, 'image/jpeg', 0.7);
+            }, 'image/jpeg', 0.55);
           } catch (err) {
             console.warn('Canvas compression failure', err);
             resolve({ blob: file, dataUrl: rawUrl });

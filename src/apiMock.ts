@@ -941,20 +941,37 @@ support@immoburundi.bi | +257 22 22 45 45`;
       let name = `uploaded_asset_${generateId()}.jpg`;
       let size = `${Math.floor(Math.random() * 500) + 120} KB`;
 
-      if (init && init.body && init.body instanceof FormData) {
-        const fileObj = init.body.get('image');
-        if (fileObj && fileObj instanceof File) {
-          name = fileObj.name || name;
-          size = `${Math.round(fileObj.size / 1024)} KB`;
+      const isFormData = init && init.body && (
+        init.body instanceof FormData ||
+        (typeof init.body === 'object' && 
+         init.body !== null && 
+         typeof (init.body as any).get === 'function' && 
+         typeof (init.body as any).append === 'function')
+      );
+
+      if (isFormData) {
+        const fileObj = (init!.body as any).get('image');
+        const isFileOrBlob = fileObj && (
+          fileObj instanceof File || 
+          fileObj instanceof Blob ||
+          (typeof fileObj === 'object' && 
+           fileObj !== null && 
+           typeof (fileObj as any).slice === 'function' &&
+           'name' in fileObj)
+        );
+
+        if (isFileOrBlob) {
+          name = (fileObj as any).name || name;
+          size = (fileObj as any).size ? `${Math.round((fileObj as any).size / 1024)} KB` : size;
           try {
             const rawUrl = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onload = () => resolve(reader.result as string);
               reader.onerror = () => reject(new Error('Failed to read file'));
-              reader.readAsDataURL(fileObj);
+              reader.readAsDataURL(fileObj as Blob);
             });
 
-            // Compress image down to max 800x600 size to save localStorage quota
+            // Compress image down to max 640x480 size to save localStorage quota (essential to prevent QuotaExceededError!)
             url = await new Promise<string>((resolve) => {
               if (typeof window === 'undefined' || typeof document === 'undefined') {
                 resolve(rawUrl);
@@ -966,8 +983,8 @@ support@immoburundi.bi | +257 22 22 45 45`;
                   const canvas = document.createElement('canvas');
                   let width = img.width;
                   let height = img.height;
-                  const maxWidth = 800;
-                  const maxHeight = 600;
+                  const maxWidth = 640;
+                  const maxHeight = 480;
 
                   if (width > height) {
                     if (width > maxWidth) {
@@ -989,7 +1006,7 @@ support@immoburundi.bi | +257 22 22 45 45`;
                     return;
                   }
                   ctx.drawImage(img, 0, 0, width, height);
-                  const compressed = canvas.toDataURL('image/jpeg', 0.6);
+                  const compressed = canvas.toDataURL('image/jpeg', 0.55); // compressed to save quota
                   resolve(compressed);
                 } catch (err) {
                   console.warn('Canvas compression failure', err);
