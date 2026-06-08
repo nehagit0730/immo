@@ -649,12 +649,13 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   });
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
+    <div className={`min-h-[calc(100vh-4rem)] ${editorPage ? 'h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden' : ''} bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans`}>
       
       {/* ==========================================
           Futuristic Left Sidebar Options
       ========================================== */}
-      <aside className="w-full md:w-80 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 select-none">
+      {!editorPage && (
+        <aside className="w-full md:w-80 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 select-none animate-in slide-in-from-left duration-300">
         <div className="p-6 space-y-8">
           
           {/* Dashboard Header Branding badge */}
@@ -789,11 +790,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           </button>
         </div>
       </aside>
+      )}
 
       {/* ==========================================
           Main Content Dynamic Sections Router
       ========================================== */}
-      <main className="flex-grow p-6 sm:p-8 overflow-y-auto max-w-full">
+      <main className={`flex-grow ${editorPage ? 'p-0 h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden' : 'p-6 sm:p-8 overflow-y-auto'} max-w-full`}>
         {isLoading ? (
           <div className="h-96 flex flex-col items-center justify-center space-y-4 text-center">
             <RefreshCw className="w-8 h-8 text-slate-500 animate-spin" />
@@ -1378,13 +1380,15 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
 
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Eye Preview button */}
-                  <button 
-                    onClick={() => setPreviewPage(p)}
-                    className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
-                    title="Live preview mockup page"
+                  <a 
+                    href={p.slug === 'home' || p.isHomepage ? '/' : `/${p.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center animate-pulse"
+                    title="Open live page preview in new tab"
                   >
                     <Eye className="w-4 h-4" />
-                  </button>
+                  </a>
 
                   {/* Duplicate button */}
                   <button 
@@ -1904,7 +1908,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     };
 
     return (
-      <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4 animate-in fade-in duration-300">
+      <div className="h-full flex flex-col space-y-4 p-4 lg:p-6 animate-in fade-in duration-300 overflow-hidden bg-slate-950 text-slate-100">
         
         {/* Builder Status Bar header */}
         <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-3xl shrink-0">
@@ -1938,8 +1942,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         {/* Workspace content split view */}
         <div className="flex-grow flex flex-col lg:flex-row gap-4 overflow-hidden h-full">
           
-          {/* LEFT BUILDER SIDEBAR PANEL (CONTROLS & COMPONENT LIST) */}
-          <div className="w-full lg:w-96 shrink-0 bg-slate-900 border border-slate-800 rounded-3xl flex flex-col overflow-y-auto max-h-[80vh] lg:max-h-full">
+          {/* Column 1: LEFT BUILDER SIDEBAR PANEL (CONTROLS & COMPONENT LIST) */}
+          <div className="w-full lg:w-[330px] shrink-0 bg-slate-900 border border-slate-800 rounded-3xl flex flex-col overflow-hidden h-full shadow-lg">
             
             <div className="p-4 border-b border-slate-800 font-mono text-[10px] text-slate-450 uppercase tracking-widest font-extrabold flex items-center justify-between">
               <span>Section Elements Stack</span>
@@ -2179,11 +2183,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </div>
           </div>
 
-          {/* ACTIVE SECTION DETAILED ATTRIBUTES EDIT DRAWER AND PREVIEW SPLIT */}
-          <div className="flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
-            
-            {/* Active section settings panel */}
-            <div className="w-full md:w-80 shrink-0 bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col overflow-y-auto">
+          {/* Column 2: MIDDLE BUILDER SIDEBAR PANEL (ACTIVE SECTION SETTINGS) */}
+          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col overflow-hidden h-full shadow-lg">
               <div className="border-b border-slate-800 pb-3 mb-4 flex justify-between items-center shrink-0">
                 <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block">Element details</span>
                 {activeSection && <span className="text-[9px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-extrabold">{activeSection.type}</span>}
@@ -2264,8 +2265,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               )}
             </div>
 
-            {/* LIVE HIGH-FIDELITY PREVIEW MOCKUP CONTAINER */}
-            <div className="flex-grow bg-slate-950 border border-slate-850 rounded-3xl overflow-hidden flex flex-col relative">
+            {/* Column 3: RIGHT BUILDER PANEL (LIVE HIGH-FIDELITY PREVIEW MOCKUP CONTAINER) */}
+            <div className="flex-grow bg-slate-950 border border-slate-850 rounded-3xl overflow-hidden flex flex-col relative h-full shadow-inner">
               <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
                 <span className="text-[9px] font-mono text-slate-450 block uppercase tracking-wider font-extrabold flex items-center gap-1.5">
                   <Monitor className="w-3.5 h-3.5 text-blue-400 animate-pulse" /> Interactive Visual Prototype Canvas
@@ -2304,10 +2305,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                 )}
               </div>
             </div>
-
           </div>
         </div>
-      </div>
     );
   }
 

@@ -32,7 +32,14 @@ export default function App() {
     return (stored as Language) || 'en';
   });
 
-  const [currentView, setCurrentView] = useState('home'); // active view slug
+  const [currentView, setCurrentView] = useState(() => {
+    try {
+      const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      return path || 'home';
+    } catch {
+      return 'home';
+    }
+  }); // active view slug
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [previousView, setPreviousView] = useState<string>('home');
   const [properties, setProperties] = useState<Property[]>([]);
@@ -93,6 +100,19 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        setCurrentView(path || 'home');
+      } catch (err) {
+        console.error('Error on popstate navigation change:', err);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleLanguageChange = (lang: Language) => {
     setCurrentLanguage(lang);
   };
@@ -102,8 +122,14 @@ export default function App() {
     // Auto redirect to correct workspace tab
     if (authenticatedUser.role === 'admin') {
       setCurrentView('admin-dashboard');
+      try {
+        window.history.pushState({ view: 'admin-dashboard' }, '', '/admin-dashboard');
+      } catch {}
     } else {
       setCurrentView('client-dashboard');
+      try {
+        window.history.pushState({ view: 'client-dashboard' }, '', '/client-dashboard');
+      } catch {}
     }
   };
 
@@ -111,10 +137,19 @@ export default function App() {
     setUser(null);
     setCurrentView('home');
     localStorage.removeItem('ib_user');
+    try {
+      window.history.pushState({ view: 'home' }, '', '/');
+    } catch {}
   };
 
   const handleNavigate = (view: string) => {
     setCurrentView(view);
+    try {
+      const urlPath = view === 'home' ? '/' : `/${view}`;
+      window.history.pushState({ view }, '', urlPath);
+    } catch (e) {
+      console.error('Error saving history navigation step:', e);
+    }
   };
 
   const handleViewPropertyDetails = (id: string) => {
