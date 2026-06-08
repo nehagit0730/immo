@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Property } from '../types';
 import { Language, translations } from '../translations';
 import { ShieldCheck, MapPin, Eye, Phone, Mail, User, Compass, Info, Building, LandPlot, Key, Landmark, X } from 'lucide-react';
+import { getThemeSettings } from '../theme';
 
 interface PropertyCardProps {
   key?: string;
@@ -27,6 +28,15 @@ export default function PropertyCard({
   const [modalOpen, setModalOpen] = useState(false);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const t = translations[currentLanguage];
+  const { colors } = getThemeSettings();
+
+  const getBorderColorClass = (bgClass: string) => {
+    return bgClass.replace('bg-', 'border-l-');
+  };
+
+  const getBorderColorBothClass = (bgClass: string) => {
+    return bgClass.replace('bg-', 'border-');
+  };
 
   // Safely extract property images list to prevent exceptions if empty or undefined
   const images = property.images && Array.isArray(property.images) && property.images.length > 0
@@ -76,7 +86,7 @@ export default function PropertyCard({
       {/* Verification Badge absolute overlay */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5 items-start">
         {property.verified ? (
-          <span className="inline-flex items-center bg-blue-750 text-white text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-lg shadow-sm gap-1">
+          <span className={`inline-flex items-center ${colors.primaryBg} text-white text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-lg shadow-sm gap-1`}>
             <ShieldCheck className="w-3.5 h-3.5 fill-current" />
             {t.verifiedBadge}
           </span>
@@ -138,7 +148,7 @@ export default function PropertyCard({
 
           <h3 
             onClick={() => onViewDetails ? onViewDetails(property.id) : setModalOpen(true)}
-            className="font-sans font-bold text-slate-900 group-hover:text-blue-700 transition-colors text-base line-clamp-1 mb-1.5 cursor-pointer"
+            className={`font-sans font-bold text-slate-900 group-hover:${colors.primaryText} transition-colors text-base line-clamp-1 mb-1.5 cursor-pointer`}
           >
             {property.title}
           </h3>
@@ -218,7 +228,7 @@ export default function PropertyCard({
               </button>
               <button
                 onClick={() => onViewDetails?.(property.id)}
-                className="flex-1 flex items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-[10px] sm:text-xs tracking-wider uppercase transition-all shadow-sm cursor-pointer hover:shadow-md"
+                className={`flex-1 flex items-center justify-center gap-1 ${colors.primaryBg} ${colors.primaryHover} text-white font-bold py-3 rounded-xl text-[10px] sm:text-xs tracking-wider uppercase transition-all shadow-sm cursor-pointer hover:shadow-md`}
               >
                 {t.viewDetails}
               </button>
@@ -266,7 +276,7 @@ export default function PropertyCard({
                   </h2>
                   <div className="flex items-center gap-2 mb-6">
                     {property.verified ? (
-                      <span className="inline-flex items-center bg-blue-700 text-white text-[10px] font-extrabold px-3 py-1 rounded-xl gap-1 uppercase tracking-wider">
+                      <span className={`inline-flex items-center ${colors.primaryBg} text-white text-[10px] font-extrabold px-3 py-1 rounded-xl gap-1 uppercase tracking-wider`}>
                         <ShieldCheck className="w-3.5 h-3.5 fill-current" />
                         {t.verifiedBadge} Status
                       </span>
@@ -297,7 +307,7 @@ export default function PropertyCard({
                         <button
                           key={idx}
                           onClick={() => setActiveImageIdx(idx)}
-                          className={`w-2 h-2 rounded-full cursor-pointer transition-all ${activeImageIdx === idx ? 'bg-blue-500 w-5' : 'bg-slate-500'}`}
+                          className={`w-2 h-2 rounded-full cursor-pointer transition-all ${activeImageIdx === idx ? `${colors.primaryBg} w-5` : 'bg-slate-500'}`}
                         />
                       ))}
                     </div>
@@ -311,7 +321,7 @@ export default function PropertyCard({
                       <button
                         key={idx}
                         onClick={() => setActiveImageIdx(idx)}
-                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${activeImageIdx === idx ? 'border-blue-500 scale-102' : 'border-slate-850 opacity-50 hover:opacity-80'}`}
+                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${activeImageIdx === idx ? `${getBorderColorBothClass(colors.primaryBg)} scale-102` : 'border-slate-850 opacity-50 hover:opacity-80'}`}
                       >
                         <img src={img} alt="Thumb" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                       </button>
@@ -346,26 +356,26 @@ export default function PropertyCard({
 
                   {/* Fact sheet metadata */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 border-l-blue-700 shadow-sm">
+                    <div className={`bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 ${getBorderColorClass(colors.primaryBg)} shadow-sm`}>
                       <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">City Region</span>
                       <span className="font-bold text-slate-800 text-sm flex items-center gap-1 mt-1 font-display">
-                        <MapPin className="w-4 h-4 text-blue-600" />
+                        <MapPin className={`w-4 h-4 ${colors.primaryText}`} />
                         {property.city}
                       </span>
                     </div>
-                    <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 border-l-blue-700 shadow-sm">
+                    <div className={`bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 ${getBorderColorClass(colors.primaryBg)} shadow-sm`}>
                       <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Street Address</span>
                       <span className="font-semibold text-slate-700 text-xs truncate block mt-1">
                         {property.location}
                       </span>
                     </div>
-                    <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 border-l-blue-700 shadow-sm">
+                    <div className={`bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 ${getBorderColorClass(colors.primaryBg)} shadow-sm`}>
                       <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Living Details</span>
                       <span className="font-semibold text-slate-800 text-xs mt-1 flex items-center gap-1">
                         🛌 {property.bedrooms || '—'} {t.pRooms} / 🚿 {property.bathrooms || '—'} {t.pBaths}
                       </span>
                     </div>
-                    <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 border-l-blue-700 shadow-sm">
+                    <div className={`bg-white p-3.5 rounded-2xl border border-slate-200/80 border-l-4 ${getBorderColorClass(colors.primaryBg)} shadow-sm`}>
                       <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Floor Area</span>
                       <span className="font-semibold text-slate-800 text-xs mt-1 flex items-center gap-1">
                         📐 {property.area || '—'}
@@ -374,8 +384,8 @@ export default function PropertyCard({
                   </div>
 
                   {/* Contact outreach details */}
-                  <div className="bg-blue-50/40 border border-blue-100/60 rounded-2xl p-4.5 space-y-3 shadow-xs">
-                    <span className="text-[10px] font-mono font-black text-blue-800 tracking-widest uppercase flex items-center gap-1.5">
+                  <div className={`${colors.lightBg} border ${colors.lightBorder} rounded-2xl p-4.5 space-y-3 shadow-xs`}>
+                    <span className={`text-[10px] font-mono font-black ${colors.primaryText} tracking-widest uppercase flex items-center gap-1.5`}>
                       <Phone className="w-4 h-4" />
                       {t.ownerDetails}
                     </span>
@@ -384,7 +394,7 @@ export default function PropertyCard({
                         <User className="w-4 h-4 text-slate-400 bg-white p-0.5 rounded-lg border border-slate-200" />
                         <span className="truncate">{property.ownerName}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-blue-900 font-bold">
+                      <div className={`flex items-center gap-1.5 ${colors.primaryText} font-bold`}>
                         <span>📞 {property.ownerPhone}</span>
                       </div>
                       <div className="flex items-center gap-2 text-slate-650 truncate col-span-1 sm:col-span-2">
@@ -403,7 +413,7 @@ export default function PropertyCard({
                         href={`https://maps.google.com/?q=${property.gpsLocation}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-650 font-bold hover:underline"
+                        className={`${colors.primaryText} font-bold hover:underline`}
                       >
                         {property.gpsLocation} 🗺️
                       </a>

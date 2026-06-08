@@ -23,6 +23,7 @@ import {
   ArrowLeft 
 } from 'lucide-react';
 import { ibFetch } from '../apiMock';
+import { getThemeSettings } from '../theme';
 
 interface PropertyDetailViewProps {
   property: Property;
@@ -48,6 +49,15 @@ export default function PropertyDetailView({
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   const t = translations[currentLanguage];
+  const { colors } = getThemeSettings();
+
+  const getBorderColorClass = (bgClass: string) => {
+    return bgClass.replace('bg-', 'border-l-');
+  };
+
+  const getBorderColorBothClass = (bgClass: string) => {
+    return bgClass.replace('bg-', 'border-');
+  };
 
   const images = property.images && Array.isArray(property.images) && property.images.length > 0
     ? property.images
@@ -72,11 +82,11 @@ export default function PropertyDetailView({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'house': return <Building className="w-5 h-5 text-blue-600" />;
-      case 'land': return <LandPlot className="w-5 h-5 text-blue-600" />;
-      case 'commercial': return <Landmark className="w-5 h-5 text-blue-600" />;
-      case 'rental': return <Key className="w-5 h-5 text-blue-600" />;
-      default: return <Building className="w-5 h-5 text-blue-600" />;
+      case 'house': return <Building className={`w-5 h-5 ${colors.primaryText}`} />;
+      case 'land': return <LandPlot className={`w-5 h-5 ${colors.primaryText}`} />;
+      case 'commercial': return <Landmark className={`w-5 h-5 ${colors.primaryText}`} />;
+      case 'rental': return <Key className={`w-5 h-5 ${colors.primaryText}`} />;
+      default: return <Building className={`w-5 h-5 ${colors.primaryText}`} />;
     }
   };
 
@@ -133,15 +143,15 @@ export default function PropertyDetailView({
       <div className="mb-6 flex justify-between items-center">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-blue-700 transition-colors cursor-pointer group"
+          className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:${colors.primaryText} transition-colors cursor-pointer group`}
         >
           <ArrowLeft className="w-4 h-4 group-hover:translate-x-[-3px] transition-transform" />
           {currentLanguage === 'en' ? 'Back to Listings' : currentLanguage === 'fr' ? 'Retour aux Annonces' : 'Rudi kwenye Orodha'}
         </button>
 
         {property.verified && (
-          <span className="flex items-center gap-1 bg-blue-750/10 text-blue-800 text-[10px] uppercase font-black px-3 py-1.5 rounded-lg border border-blue-200">
-            <ShieldCheck className="w-4 h-4 fill-current text-blue-600" />
+          <span className={`flex items-center gap-1 ${colors.lightBg} ${colors.primaryText} text-[10px] uppercase font-black px-3 py-1.5 rounded-lg border ${colors.lightBorder}`}>
+            <ShieldCheck className={`w-4 h-4 fill-current ${colors.primaryText}`} />
             {currentLanguage === 'en' ? 'Fully Certified Listing' : 'Annonce Entièrement Certifiée'}
           </span>
         )}
@@ -162,10 +172,8 @@ export default function PropertyDetailView({
 
           <h1 className="font-sans font-black text-slate-900 text-2xl sm:text-4xl tracking-tight leading-tight">
             {property.title}
-          </h1>
-
-          <div className="flex items-center gap-1.5 text-slate-500 text-xs sm:text-sm font-medium">
-            <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          </h1>          <div className="flex items-center gap-1.5 text-slate-500 text-xs sm:text-sm font-medium">
+            <MapPin className={`w-4 h-4 ${colors.primaryText} flex-shrink-0`} />
             <span>{property.location}, <strong className="text-slate-800">{property.city} (Burundi)</strong></span>
           </div>
         </div>
@@ -176,10 +184,10 @@ export default function PropertyDetailView({
           <div className="text-3xl font-black text-slate-900 tracking-tight leading-none">
             {pricePrimary}
           </div>
-          <div className="text-sm font-mono text-blue-600 font-bold mt-1.5">
+          <div className={`text-sm font-mono ${colors.primaryText} font-bold mt-1.5`}>
             {priceSecondary}
           </div>
-          <div className="text-[10px] text-slate-400 mt-2 font-mono">
+          <div className="text-[10px] text-slate-440 mt-2 font-mono">
             {currentLanguage === 'en' ? 'Official Central Bank Index System Sync' : 'Indexation synchronisée Banque Centrale'}
           </div>
         </div>
@@ -240,7 +248,7 @@ export default function PropertyDetailView({
                     key={idx}
                     onClick={() => setActiveImageIdx(idx)}
                     className={`relative w-24 aspect-4/3 rounded-xl overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${
-                      activeImageIdx === idx ? 'border-blue-600 scale-95 shadow-md' : 'border-slate-200/80 grayscale opacity-75 hover:grayscale-0 hover:opacity-100'
+                      activeImageIdx === idx ? `${getBorderColorBothClass(colors.primaryBg)} scale-95 shadow-md` : 'border-slate-200/80 grayscale opacity-75 hover:grayscale-0 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="thumbnail" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
@@ -285,7 +293,7 @@ export default function PropertyDetailView({
           {/* Detailed Narrative Section */}
           <div className="space-y-4">
             <h2 className="font-sans font-black text-slate-900 text-lg sm:text-xl border-b pb-2.5 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className={`w-5 h-5 ${colors.primaryText}`} />
               {currentLanguage === 'en' ? 'Property Description' : 'Description de la propriété'}
             </h2>
             <p className="text-xs sm:text-sm text-slate-650 leading-relaxed font-sans whitespace-pre-wrap">
@@ -294,8 +302,8 @@ export default function PropertyDetailView({
           </div>
 
           {/* Land-Office Symmetrical Conformity Certificate Container */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-750 space-y-4">
-            <div className="flex items-center gap-2 text-blue-800">
+          <div className={`bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm border-l-4 ${getBorderColorClass(colors.primaryBg)} space-y-4`}>
+            <div className={`flex items-center gap-2 ${colors.primaryText}`}>
               <ShieldCheck className="w-5 h-5 fill-current" />
               <h3 className="font-sans font-black text-sm uppercase tracking-wide">
                 {currentLanguage === 'en' ? 'MUNICIPAL REGISTRATION STATUS' : 'STATUT D\'ENREGISTREMENT MUNICIPAL'}
@@ -337,7 +345,7 @@ export default function PropertyDetailView({
           {property.gpsLocation && (
             <div className="bg-[#0f172a] text-white rounded-2xl p-6 border border-slate-800 shadow-sm space-y-4">
               <div className="flex justify-between items-center">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-mono uppercase tracking-widest">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${colors.lightBg} ${colors.primaryText} border ${colors.lightBorder} text-[10px] font-mono uppercase tracking-widest`}>
                   <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '8s' }} />
                   {t.coordinates}
                 </span>
@@ -367,7 +375,7 @@ export default function PropertyDetailView({
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.gpsLocation)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-sm"
+                    className={`inline-flex items-center gap-2 ${colors.primaryBg} ${colors.primaryHover} text-white text-xs font-bold px-4 py-2.5 rounded-xl uppercase tracking-wider transition-colors shadow-sm`}
                   >
                     🗺️ Open in Google Maps
                   </a>
@@ -384,13 +392,13 @@ export default function PropertyDetailView({
           {/* Owner Profile Spot */}
           <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-5">
             <h3 className="font-sans font-black text-slate-900 text-base uppercase border-b pb-2 tracking-wide flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" />
+              <User className={`w-4 h-4 ${colors.primaryText}`} />
               {t.ownerDetails}
             </h3>
 
             <div className="space-y-4 text-xs font-sans">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-105 flex items-center justify-center text-blue-700 font-black shrink-0">
+                <div className={`w-8 h-8 rounded-full ${colors.lightBg} flex items-center justify-center ${colors.primaryText} font-black shrink-0`}>
                   {property.ownerName.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -407,7 +415,7 @@ export default function PropertyDetailView({
                   </div>
                   <button
                     onClick={() => handleCopy(property.ownerPhone, 'phone')}
-                    className="text-[10px] text-blue-600 hover:underline font-bold"
+                    className={`text-[10px] ${colors.primaryText} hover:underline font-bold`}
                   >
                     {copySuccess === 'phone' ? 'Copied!' : 'Copy'}
                   </button>
@@ -420,7 +428,7 @@ export default function PropertyDetailView({
                   </div>
                   <button
                     onClick={() => handleCopy(property.ownerEmail, 'email')}
-                    className="text-[10px] text-blue-600 hover:underline font-bold shrink-0"
+                    className={`text-[10px] ${colors.primaryText} hover:underline font-bold shrink-0`}
                   >
                     {copySuccess === 'email' ? 'Copied!' : 'Copy'}
                   </button>
@@ -432,7 +440,7 @@ export default function PropertyDetailView({
           {/* Symmetrical Direct Simulated Query Inquiry Form */}
           <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-5">
             <h3 className="font-sans font-black text-slate-900 text-base uppercase border-b pb-2 tracking-wide flex items-center gap-2">
-              <Send className="w-4 h-4 text-blue-600" />
+              <Send className={`w-4 h-4 ${colors.primaryText}`} />
               {currentLanguage === 'en' ? 'Submit Inquiry' : 'Soumettre une demande'}
             </h3>
 
@@ -442,7 +450,7 @@ export default function PropertyDetailView({
                 <div className="text-xs">
                   <span className="font-bold block">Inquiry Submitted Successfully!</span>
                   <p className="mt-1 leading-normal text-slate-600">
-                    Your interest statement has been recorded and simulated outbound notification has been delivered.
+                     Your interest statement has been recorded and simulated outbound notification has been delivered.
                   </p>
                 </div>
               </div>
@@ -455,7 +463,7 @@ export default function PropertyDetailView({
                     required
                     value={inquiryName}
                     onChange={(e) => setInquiryName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-medium"
                     placeholder="Enter full name"
                   />
                 </div>
@@ -467,7 +475,7 @@ export default function PropertyDetailView({
                     required
                     value={inquiryEmail}
                     onChange={(e) => setInquiryEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-medium"
                     placeholder="name@example.com"
                   />
                 </div>
@@ -478,7 +486,7 @@ export default function PropertyDetailView({
                     type="text"
                     value={inquiryPhone}
                     onChange={(e) => setInquiryPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-medium"
                     placeholder="+257 60 00 00 00"
                   />
                 </div>
@@ -490,14 +498,14 @@ export default function PropertyDetailView({
                     rows={4}
                     value={inquiryMessage}
                     onChange={(e) => setInquiryMessage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800 font-medium leading-relaxed"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-medium leading-relaxed"
                     placeholder="I am interested in this verified holding and want to request survey index paperwork..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl uppercase tracking-widest text-center cursor-pointer shadow-sm transition-all text-xs flex justify-center items-center gap-2"
+                  className={`w-full ${colors.primaryBg} ${colors.primaryHover} text-white font-bold py-3.5 rounded-xl uppercase tracking-widest text-center cursor-pointer shadow-sm transition-all text-xs flex justify-center items-center gap-2`}
                 >
                   <Send className="w-4 h-4" />
                   Send Inquiries

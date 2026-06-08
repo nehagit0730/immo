@@ -7,6 +7,7 @@ import {
   ShieldAlert, CheckCircle2, Search, ArrowRight, Video, Users, Check,
   Compass, MapPin, Sparkles, Trophy, Award, Lock, BookOpen, Quote
 } from 'lucide-react';
+import { getThemeSettings } from '../theme';
 
 interface PageSectionsRendererProps {
   sections: PageSection[];
@@ -36,6 +37,8 @@ export default function PageSectionsRenderer({
   t
 }: PageSectionsRendererProps) {
   if (!sections || sections.length === 0) return null;
+
+  const { colors } = getThemeSettings();
 
   return (
     <div className="w-full space-y-0 relative bg-slate-50/20">
@@ -99,6 +102,7 @@ export default function PageSectionsRenderer({
 // Custom specialized components to avoid nested hooks warning & ensure majestic design
 function SlideshowSection({ slides, fontSizeHeadClass, fontSizeTextClass }: { slides: any[], fontSizeHeadClass: string, fontSizeTextClass: string }) {
   const [curSlide, setCurSlide] = useState(0);
+  const { colors } = getThemeSettings();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -154,7 +158,7 @@ function SlideshowSection({ slides, fontSizeHeadClass, fontSizeTextClass }: { sl
           <button
             key={idx}
             onClick={() => setCurSlide(idx)}
-            className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === curSlide ? 'bg-blue-500 w-12 shadow-lg shadow-blue-500/50' : 'bg-white/30 w-3'}`}
+            className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === curSlide ? `${colors.primaryBg} w-12 shadow-lg` : 'bg-white/30 w-3'}`}
           />
         ))}
       </div>
@@ -214,6 +218,7 @@ function FaqsSection({ qasList, heading, subheading, fontSizeHeadClass, headColo
 
 function VideoSection({ heading, coverImage, duration }: { heading?: string, coverImage?: string, duration?: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const { colors } = getThemeSettings();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 text-center font-sans">
@@ -232,8 +237,8 @@ function VideoSection({ heading, coverImage, duration }: { heading?: string, cov
         <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/25 transition-colors" />
         
         {/* Pulsing Play Button with Luxurious Backdrop glass glow */}
-        <div className="relative z-10 w-22 h-22 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-2xl transform group-hover:scale-108 transition-all duration-300 border-4 border-white/20">
-          <div className="absolute inset-0 rounded-full bg-blue-500/45 animate-ping pointer-events-none" />
+        <div className={`relative z-10 w-22 h-22 rounded-full ${colors.primaryBg} ${colors.primaryHover} text-white flex items-center justify-center shadow-2xl transform group-hover:scale-108 transition-all duration-300 border-4 border-white/20`}>
+          <div className={`absolute inset-0 rounded-full ${colors.primaryBg}/45 animate-ping pointer-events-none`} />
           <Play className="w-8 h-8 fill-white translate-x-0.5" />
         </div>
         
@@ -250,6 +255,7 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const { colors } = getThemeSettings();
 
   return (
     <div className="w-full bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-20 sm:py-28 px-6 sm:px-16 text-white relative overflow-hidden text-left border-b border-slate-800">
@@ -289,7 +295,7 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
                     placeholder="Sylvain Ndayishimiye"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all text-left font-sans"
+                    className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-slate-400 focus:bg-white/20 transition-all text-left font-sans"
                   />
                 </div>
                 <div className="space-y-1">
@@ -300,7 +306,7 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all text-left font-sans"
+                    className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-slate-400 focus:bg-white/20 transition-all text-left font-sans"
                   />
                 </div>
               </div>
@@ -312,12 +318,12 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
                   placeholder="+257 (9x) or WhatsApp link"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all text-left font-sans"
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-slate-400 focus:bg-white/20 transition-all text-left font-sans"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full px-6 py-4 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer flex items-center justify-center gap-2"
+                className={`w-full px-6 py-4 rounded-xl font-bold ${colors.primaryBg} text-white ${colors.primaryHover} hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer flex items-center justify-center gap-2`}
               >
                 <span>{buttonText}</span> <ArrowRight className="w-4 h-4" />
               </button>
@@ -345,6 +351,7 @@ function renderSectionContent(
 ) {
   const settings = section.settings || {};
   const { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal } = styles;
+  const { colors } = getThemeSettings();
 
   switch (section.type) {
     case 'banner': {
@@ -362,7 +369,7 @@ function renderSectionContent(
           
           <div className="relative z-20 max-w-7xl mx-auto w-full space-y-6 font-sans">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase backdrop-blur-md border border-white/20">
-              <Award className="w-3.5 h-3.5 text-blue-400" /> OFFICIAL LICENSED PORTAL
+              <Award className={`w-3.5 h-3.5 ${colors.primaryText}`} /> OFFICIAL LICENSED PORTAL
             </span>
             <h1 className={`${fontSizeHeadClass} font-black drop-shadow-md leading-[1.1] text-white tracking-tight max-w-4xl mx-auto`}>
               {settings.title || 'Dynamic High-Tech Banner'}
@@ -373,7 +380,7 @@ function renderSectionContent(
             {settings.buttonText && (
               <div className="pt-2">
                 <button 
-                  className="px-8 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer"
+                  className={`px-8 py-3.5 rounded-xl font-bold ${colors.primaryBg} text-white ${colors.primaryHover} hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer`}
                 >
                   {settings.buttonText}
                 </button>
@@ -382,19 +389,19 @@ function renderSectionContent(
 
             {/* Custom Interactive Search Filter Cards - High-end Glassmorphic Design */}
             {setSearchQuery && (
-              <div className="mt-12 mx-auto bg-white/95 backdrop-blur-md border border-slate-205/60 p-4 sm:p-5 rounded-3xl shadow-2xl text-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full max-w-4xl text-left relative z-30">
+              <div className="mt-12 mx-auto bg-white/95 backdrop-blur-md border border-slate-255/60 p-4 sm:p-5 rounded-3xl shadow-2xl text-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full max-w-4xl text-left relative z-30">
                 {/* Search input text */}
                 <div className="relative md:col-span-2 select-text font-sans">
                   <span className="text-[8.5px] font-mono text-slate-400 uppercase tracking-widest block mb-1">Keywords</span>
                   <div className="relative">
                     <input
                       type="text"
-                      className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-sans"
+                      className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-sans"
                       placeholder={t?.searchPlaceholder || "Search location, title, owner..."}
                       value={searchQuery || ''}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+                    <Search className={`w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none`} />
                   </div>
                 </div>
 
@@ -402,7 +409,7 @@ function renderSectionContent(
                 <div className="space-y-1 font-sans">
                   <span className="text-[8.5px] font-mono text-slate-400 uppercase tracking-widest block">Type</span>
                   <select
-                    className="w-full bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                     value={selectedType || 'all'}
                     onChange={(e) => setSelectedType && setSelectedType(e.target.value)}
                   >
@@ -419,7 +426,7 @@ function renderSectionContent(
                 <div className="space-y-1 font-sans">
                   <span className="text-[8.5px] font-mono text-slate-400 uppercase tracking-widest block">Price Range</span>
                   <select
-                    className="w-full bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                     value={selectedPriceRange || 'all'}
                     onChange={(e) => setSelectedPriceRange && setSelectedPriceRange(e.target.value)}
                   >
