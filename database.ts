@@ -506,6 +506,18 @@ const prebuiltHomeSections: PageSection[] = [
     }
   },
   {
+    id: "sec_home_calculator",
+    type: "finances_calculator",
+    backgroundColor: "bg-slate-50/50",
+    headingColor: "text-slate-905",
+    textColor: "text-slate-650",
+    fontSize: "lg",
+    settings: {
+      title: "Diaspora Capital & Mortgage Estimator",
+      subtitle: "Leverage premium local metrics to forecast real estate yields, downpayments, and monthly bank interest charges seamlessly before committing."
+    }
+  },
+  {
     id: "sec_home_columns",
     type: "columns",
     backgroundColor: "bg-slate-50 text-slate-800",
@@ -653,9 +665,22 @@ export function getDatabase(): DatabaseSchema {
   // Self-heal loaded database sections if they missing
   let changed = false;
   const homePage = db.pages.find((p: any) => p.id === 'home' || p.slug === 'home');
-  if (homePage && (!homePage.sections || homePage.sections.length === 0)) {
-    homePage.sections = prebuiltHomeSections;
-    changed = true;
+  if (homePage) {
+    if (!homePage.sections || homePage.sections.length === 0) {
+      homePage.sections = prebuiltHomeSections;
+      changed = true;
+    } else if (!homePage.sections.some((s: any) => s.type === 'finances_calculator')) {
+      const propIdx = homePage.sections.findIndex((s: any) => s.type === 'property_list');
+      const calcSec = prebuiltHomeSections.find((s: any) => s.type === 'finances_calculator');
+      if (calcSec) {
+        if (propIdx !== -1) {
+          homePage.sections.splice(propIdx + 1, 0, calcSec);
+        } else {
+          homePage.sections.push(calcSec);
+        }
+        changed = true;
+      }
+    }
   }
 
   const aboutPage = db.pages.find((p: any) => p.id === 'about' || p.slug === 'about-us');

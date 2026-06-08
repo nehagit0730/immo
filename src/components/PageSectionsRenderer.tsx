@@ -5,7 +5,8 @@ import PropertyCard from './PropertyCard';
 import { 
   ChevronRight, ChevronLeft, ChevronDown, HelpCircle, Star, Play, 
   ShieldAlert, CheckCircle2, Search, ArrowRight, Video, Users, Check,
-  Compass, MapPin, Sparkles, Trophy, Award, Lock, BookOpen, Quote
+  Compass, MapPin, Sparkles, Trophy, Award, Lock, BookOpen, Quote,
+  DollarSign, Calculator, Percent, TrendingUp, Coins
 } from 'lucide-react';
 import { getThemeSettings } from '../theme';
 
@@ -330,6 +331,534 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
             </form>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function FinancesCalculatorSection({ 
+  properties = [], 
+  currentLanguage = 'en', 
+  fontSizeHeadClass, 
+  headColorVal, 
+  txtColorVal 
+}: { 
+  properties?: Property[], 
+  currentLanguage?: Language, 
+  fontSizeHeadClass: string, 
+  headColorVal: string, 
+  txtColorVal: string 
+}) {
+  const [activeTab, setActiveTab] = useState<'mortgage' | 'yield'>('mortgage');
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('custom');
+  
+  const [propertyPrice, setPropertyPrice] = useState<number>(150000);
+  const [currency, setCurrency] = useState<'USD' | 'BIF'>('USD');
+  const [downpaymentPct, setDownpaymentPct] = useState<number>(20);
+  const [durationYears, setDurationYears] = useState<number>(15);
+  const [interestRate, setInterestRate] = useState<number>(12); // Average mortgage rate in Burundi: ~12%
+  
+  // Yield estimate
+  const [expectedMonthlyRent, setExpectedMonthlyRent] = useState<number>(1100);
+  const [maintenancePct, setMaintenancePct] = useState<number>(2.5);
+
+  const EXCHANGE_RATE = 2855;
+
+  // React to selecting an existing property
+  useEffect(() => {
+    if (selectedPropertyId && selectedPropertyId !== 'custom') {
+      const prop = properties.find(p => p.id === selectedPropertyId);
+      if (prop) {
+        setCurrency(prop.currency);
+        setPropertyPrice(prop.price);
+        if (prop.currency === 'USD') {
+          // Estimate rent around 8% gross annual yield
+          const rent = Math.round((prop.price * 0.08) / 12);
+          setExpectedMonthlyRent(rent || 500);
+        } else {
+          const rent = Math.round((prop.price * 0.081) / 12);
+          setExpectedMonthlyRent(rent || 1000000);
+        }
+      }
+    }
+  }, [selectedPropertyId, properties]);
+
+  // Handle currency toggling
+  const handleCurrencyChange = (newCurr: 'USD' | 'BIF') => {
+    if (newCurr === currency) return;
+    if (newCurr === 'BIF') {
+      setPropertyPrice(Math.round(propertyPrice * EXCHANGE_RATE));
+      setExpectedMonthlyRent(Math.round(expectedMonthlyRent * EXCHANGE_RATE));
+    } else {
+      setPropertyPrice(Math.round(propertyPrice / EXCHANGE_RATE));
+      setExpectedMonthlyRent(Math.round(expectedMonthlyRent / EXCHANGE_RATE));
+    }
+    setCurrency(newCurr);
+  };
+
+  // Calculations for Mortgage
+  const downpaymentAmt = Math.round(propertyPrice * (downpaymentPct / 100));
+  const loanPrincipal = Math.max(0, propertyPrice - downpaymentAmt);
+  const monthlyInterestRate = (interestRate / 100) / 12;
+  const totalMonths = durationYears * 12;
+  
+  let monthlyPayment = 0;
+  if (loanPrincipal > 0) {
+    if (monthlyInterestRate > 0) {
+      monthlyPayment = (loanPrincipal * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths)) / 
+                       (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
+    } else {
+      monthlyPayment = loanPrincipal / totalMonths;
+    }
+  }
+
+  const totalPaid = monthlyPayment * totalMonths;
+  const totalInterest = Math.max(0, totalPaid - loanPrincipal);
+  const monthlySalaryNeeded = monthlyPayment / 0.35; // payment should be max 35% of income
+
+  // Calculations for Yield
+  const annualRentIncome = expectedMonthlyRent * 12;
+  const annualMaintenance = propertyPrice * (maintenancePct / 100);
+  const grossYield = propertyPrice > 0 ? (annualRentIncome / propertyPrice) * 100 : 0;
+  const netYield = propertyPrice > 0 ? ((annualRentIncome - annualMaintenance) / propertyPrice) * 100 : 0;
+
+  // Rating of yield
+  let yieldRatingLabel = currentLanguage === 'en' ? 'Preservation Stable Asset' : 'Actif de Préservation Stable';
+  let yieldRatingColor = 'text-blue-700 bg-blue-50/80 border-blue-200';
+  let stars = '⭐';
+  if (netYield >= 9.0) {
+    yieldRatingLabel = currentLanguage === 'en' ? 'Superb Venture (High Yielding!)' : 'Performant / Investissement d\'Élite';
+    yieldRatingColor = 'text-emerald-700 bg-emerald-50/80 border-emerald-200';
+    stars = '⭐⭐⭐';
+  } else if (netYield >= 6.0) {
+    yieldRatingLabel = currentLanguage === 'en' ? 'Strong Stable Rental Return' : 'Rendement Moyen Satisfaisant';
+    yieldRatingColor = 'text-amber-700 bg-amber-50/80 border-amber-200';
+    stars = '⭐⭐';
+  }
+
+  const formatMoney = (val: number) => {
+    if (currency === 'USD') {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    } else {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'BIF', maximumFractionDigits: 0 }).format(val).replace('BIF', 'Fbu');
+    }
+  };
+
+  const approvedList = properties.filter(p => p.status === 'approved');
+
+  // Translation helpers inside component for deep encapsulation
+  const dict = {
+    en: {
+      calcTitle: "Diaspora Capital & Mortgage Estimator",
+      calcSubtitle: "Leverage premium local metrics to forecast real estate yields, downpayments, and monthly bank interest charges seamlessly before committing.",
+      selectProp: "Connect Property Appraisal Listing:",
+      customOption: "Custom Simulation (Manual Inputs)",
+      btnMortgage: "Mortgage Estimator",
+      btnYield: "Rental Yield Forecast",
+      currType: "Active Currency",
+      propValue: "Estimated Property Price",
+      downPay: "Initial Down Payment",
+      duration: "Repayment Period",
+      years: "Years",
+      intRate: "Annual Bank Interest Rate",
+      estRent: "Expected Monthly Rent income",
+      expenses: "Annual Maintenance of Capital",
+      resultTitle: "Simulation Diagnostics",
+      estMonthly: "Estimated Monthly Installment",
+      downAmt: "Down Payment Needed",
+      principal: "Net Loan Principal",
+      interestPaid: "Total Bank Interest Over Term",
+      salaryReq: "Recommended Safe Monthly Salary",
+      grossRentYield: "Gross Rental Yield",
+      netRentYield: "Net Yield (After Expenses)",
+      rating: "Diaspora Asset Score Rating",
+      bankMatch: "Burundi Commercial Banks supporting loans:",
+      disclaimer: "* Estimates are computed bilingually using average local coefficients (repayment limits up to 20 years). Please verify real active rates directly at BRB (Banque de la République du Burundi) or participating partners."
+    },
+    fr: {
+      calcTitle: "Simulateur de Mensualités & Rendement Diaspora",
+      calcSubtitle: "Utilisez nos algorithmes de calcul basés sur les coefficients du marché burundais afin de projeter vos mensualités, apports et taux de rentabilité.",
+      selectProp: "Associer avec une Fiche active du Catalogue :",
+      customOption: "Simulation Libre (Saisie Manuelle)",
+      btnMortgage: "Mensualités de Crédit",
+      btnYield: "Rendement Locatif Estimé",
+      currType: "Devise d'Évaluation",
+      propValue: "Prix estimé de la Propriété",
+      downPay: "Apport Initial Requis",
+      duration: "Durée de l'Emprunt",
+      years: "Ans",
+      intRate: "Taux d'Intérêt Bancaire Annuel",
+      estRent: "Loyer Mensuel Attendu",
+      expenses: "Charges Annuelles & Maintenance",
+      resultTitle: "Diagnostics de l'Estimation",
+      estMonthly: "Mensualité Estimée",
+      downAmt: "Apport Initial Nécessaire",
+      principal: "Principal du Prêt Net",
+      interestPaid: "Total Intérêts Bancaires",
+      salaryReq: "Salaire Mensuel Recommandé (Sûr)",
+      grossRentYield: "Rendement Locatif Brut",
+      netRentYield: "Rendement Net (Après Charges)",
+      rating: "Indice Diaspora Protect",
+      bankMatch: "Banques commerciales agréées du Burundi :",
+      disclaimer: "* Les simulations sont fournies à titre indicatif selon les critères moyens burundais. Veuillez confirmer vos conditions particulières auprès de la BRB ou de vos conseillers agréés."
+    },
+    sw: {
+      calcTitle: "Kikokotoo cha Mikopo & Uwekezaji",
+      calcSubtitle: "Kadiria kwa urahisi malipo ya kila mwezi, amana ya kwanza, na mavuno ya ukodishaji kabla ya kuwekeza nchini Burundi.",
+      selectProp: "Chagua Mali kutoka kwenye Orodha:",
+      customOption: "Uigaji wa Kawaida (Weka Maelezo Yako)",
+      btnMortgage: "Kadirio la Mkopo",
+      btnYield: "Mavuno ya Ukodishaji",
+      currType: "Sarafu Inayotumika",
+      propValue: "Thamani ya Mali",
+      downPay: "Amana ya Kwanza",
+      duration: "Muda wa Malipo",
+      years: "Miaka",
+      intRate: "Kiwango cha Riba kwa Mwaka",
+      estRent: "Kodi ya Kila Mwezi Inayotarajiwa",
+      expenses: "Gharama za Matengenezo kwa Mwaka",
+      resultTitle: "Matokeo ya Makadirio",
+      estMonthly: "Malipo ya Kila Mwezi",
+      downAmt: "Amana Inayohitajika",
+      principal: "Kiasi Halisi cha Mkopo",
+      interestPaid: "Jumla ya Riba ya Banki",
+      salaryReq: "Mshahara wa Kila Mwezi Unaopendekezwa",
+      grossRentYield: "Mavuno Ghafi ya Ukodishaji",
+      netRentYield: "Mavuno Halisi ya Ukodishaji",
+      rating: "Ukadiriaji wa Uwekezaji",
+      bankMatch: "Mabenki ya Burundi yanayotoa Mikopo ya Nyumba:",
+      disclaimer: "* Makadirio haya ni ya kielelezo kulingana na fomula za kifedha. Wasiliana na Benki Kuu ya Burundi (BRB) kwa viwango sahihi."
+    }
+  };
+
+  const l = dict[currentLanguage] || dict.en;
+
+  return (
+    <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden p-6 sm:p-10 text-left font-sans text-slate-800 space-y-8 relative">
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600" />
+      
+      {/* Upper Title */}
+      <div className="space-y-4">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-800 font-mono text-[9px] tracking-[0.2em] font-black uppercase border border-indigo-150">
+          <Calculator className="w-3.5 h-3.5 text-indigo-700" /> {currentLanguage === 'en' ? 'SMART FINANCIAL DECISIONS' : 'ASSISTANCE FINANCIÈRE DIASPORA'}
+        </span>
+        <h2 className={`${fontSizeHeadClass} ${headColorVal} font-black tracking-tight leading-none`}>
+          {l.calcTitle}
+        </h2>
+        <p className={`text-xs sm:text-sm ${txtColorVal} leading-relaxed max-w-3xl font-light`}>
+          {l.calcSubtitle}
+        </p>
+      </div>
+
+      {/* Catalog Selector Panel */}
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div className="md:col-span-8 space-y-1.5 text-left">
+          <label className="block text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider">{l.selectProp}</label>
+          <select
+            value={selectedPropertyId}
+            onChange={(e) => setSelectedPropertyId(e.target.value)}
+            className="w-full bg-white border border-slate-250 rounded-xl px-3 py-3 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm"
+          >
+            <option value="custom">💼 {l.customOption}</option>
+            {approvedList.map(p => (
+              <option key={p.id} value={p.id}>
+                🏠 [{p.city} - {p.type.replace('_', ' ').toUpperCase()}] {p.title} ({p.currency === 'USD' ? `$${p.price.toLocaleString()}` : `${p.price.toLocaleString()} Fbu`})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="md:col-span-4 space-y-1.5 text-left">
+          <label className="block text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider">{l.currType}</label>
+          <div className="grid grid-cols-2 bg-white border border-slate-200 p-1.5 rounded-xl">
+            <button
+              onClick={() => handleCurrencyChange('USD')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${currency === 'USD' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-650 hover:bg-slate-100'}`}
+            >
+              USD ($)
+            </button>
+            <button
+              onClick={() => handleCurrencyChange('BIF')}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${currency === 'BIF' ? 'bg-indigo-650 text-white shadow-xs' : 'text-slate-650 hover:bg-slate-100'}`}
+            >
+              BIF (Fbu)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Double tab header */}
+      <div className="flex border-b border-slate-200 pb-0.5 gap-2">
+        <button
+          onClick={() => setActiveTab('mortgage')}
+          className={`px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-black transition-all border-b-2 uppercase tracking-wider cursor-pointer flex items-center gap-2 ${
+            activeTab === 'mortgage' 
+              ? 'border-indigo-600 text-indigo-700 font-extrabold' 
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-350'
+          }`}
+        >
+          <Coins className="w-4.5 h-4.5" />
+          {l.btnMortgage}
+        </button>
+        <button
+          onClick={() => setActiveTab('yield')}
+          className={`px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-black transition-all border-b-2 uppercase tracking-wider cursor-pointer flex items-center gap-2 ${
+            activeTab === 'yield' 
+              ? 'border-indigo-600 text-indigo-700 font-extrabold' 
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-350'
+          }`}
+        >
+          <TrendingUp className="w-4.5 h-4.5" />
+          {l.btnYield}
+        </button>
+      </div>
+
+      {/* Main Interactive Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        
+        {/* Sliders Control Panel */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          {/* Slider 1: Property Value */}
+          <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.propValue}</span>
+              <span className="text-base font-black text-indigo-600 select-all font-mono">{formatMoney(propertyPrice)}</span>
+            </div>
+            <input
+              type="range"
+              min={currency === 'USD' ? 10000 : 30000000}
+              max={currency === 'USD' ? 1200000 : 3000000000}
+              step={currency === 'USD' ? 5000 : 15000000}
+              value={propertyPrice}
+              onChange={(e) => {
+                setPropertyPrice(Number(e.target.value));
+                setSelectedPropertyId('custom'); // revert selection to custom input
+              }}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+            />
+            <div className="flex justify-between text-[10px] font-mono text-slate-400">
+              <span>{formatMoney(currency === 'USD' ? 10000 : 30000000)}</span>
+              <span>{formatMoney(currency === 'USD' ? 1200000 : 3000000000)}</span>
+            </div>
+          </div>
+
+          {activeTab === 'mortgage' ? (
+            <>
+              {/* Slider 2: Downpayment % */}
+              <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.downPay} ({downpaymentPct}%)</span>
+                  <span className="text-sm font-extrabold text-slate-600 font-mono">{formatMoney(downpaymentAmt)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="90"
+                  step="5"
+                  value={downpaymentPct}
+                  onChange={(e) => setDownpaymentPct(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>10% (Min appraisal)</span>
+                  <span>90% (Max deposit code)</span>
+                </div>
+              </div>
+
+              {/* Slider 3: Duration Years */}
+              <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.duration}</span>
+                  <span className="text-base font-black text-indigo-600 font-mono">{durationYears} {l.years}</span>
+                </div>
+                <input
+                  type="range"
+                  min="3"
+                  max="25"
+                  step="1"
+                  value={durationYears}
+                  onChange={(e) => setDurationYears(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>3 {l.years}</span>
+                  <span>25 {l.years} (BRB Max term)</span>
+                </div>
+              </div>
+
+              {/* Slider 4: Interest Rate */}
+              <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.intRate}</span>
+                  <span className="text-base font-black text-indigo-600 font-mono">{interestRate}% p.a.</span>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="18"
+                  step="0.5"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>5% (Diaspora Special)</span>
+                  <span>18% (Commercial market cap)</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Slider 2b: Expected Rental Income */}
+              <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.estRent}</span>
+                  <span className="text-base font-black text-indigo-600 select-all font-mono">{formatMoney(expectedMonthlyRent)} / m</span>
+                </div>
+                <input
+                  type="range"
+                  min={currency === 'USD' ? 100 : 300000}
+                  max={currency === 'USD' ? 15000 : 45000000}
+                  step={currency === 'USD' ? 50 : 150000}
+                  value={expectedMonthlyRent}
+                  onChange={(e) => setExpectedMonthlyRent(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>{formatMoney(currency === 'USD' ? 100 : 300000)} / m</span>
+                  <span>{formatMoney(currency === 'USD' ? 15000 : 45000000)} / m</span>
+                </div>
+              </div>
+
+              {/* Slider 3b: Maintenance Coefficient */}
+              <div className="space-y-3 bg-slate-50/50 p-5 rounded-2xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-705 uppercase tracking-wide">{l.expenses}</span>
+                  <span className="text-base font-black text-indigo-600 font-mono">{maintenancePct}% of asset p.a.</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="8"
+                  step="0.5"
+                  value={maintenancePct}
+                  onChange={(e) => setMaintenancePct(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>0.5% (Bare ground plot)</span>
+                  <span>8.0% (Equipped villa & legal tax)</span>
+                </div>
+              </div>
+            </>
+          )}
+
+        </div>
+
+        {/* Diagnostic Results Board */}
+        <div className="lg:col-span-5 bg-gradient-to-b from-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-lg border border-slate-800 text-left">
+          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-lg border border-indigo-500/20">📊</div>
+            <h3 className="text-sm sm:text-base font-black uppercase tracking-wider text-slate-100">{l.resultTitle}</h3>
+          </div>
+
+          {activeTab === 'mortgage' ? (
+            <div className="space-y-5">
+              
+              {/* Highlight Big Result */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">{l.estMonthly}</span>
+                <span className="text-3xl sm:text-[34px] font-black tracking-tight text-white block select-all font-mono">
+                  {formatMoney(monthlyPayment)}
+                </span>
+                <span className="text-xs text-indigo-300 font-sans font-light tracking-normal block">
+                  / {currentLanguage === 'en' ? 'month over' : 'mois pendant'} {durationYears} {currentLanguage === 'en' ? 'yrs' : 'ans'}
+                </span>
+              </div>
+
+              {/* Dynamic breakdown lines */}
+              <div className="space-y-3 pt-3 border-t border-slate-800/80">
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="text-slate-450 font-light">{l.downAmt}</span>
+                  <span className="font-extrabold font-mono text-slate-200">{formatMoney(downpaymentAmt)}</span>
+                </div>
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="text-slate-450 font-light">{l.principal}</span>
+                  <span className="font-extrabold font-mono text-slate-200">{formatMoney(loanPrincipal)}</span>
+                </div>
+                <div className="flex justify-between text-xs font-sans">
+                  <span className="text-slate-450 font-light">{l.interestPaid}</span>
+                  <span className="font-extrabold font-mono text-indigo-300">{formatMoney(totalInterest)}</span>
+                </div>
+                <div className="flex justify-between text-xs font-sans pt-3 border-t border-slate-800/60">
+                  <span className="text-slate-350 font-black">{l.salaryReq}</span>
+                  <span className="font-black font-mono text-emerald-400">{formatMoney(monthlySalaryNeeded)}</span>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <div className="space-y-5">
+              
+              {/* Highlight Rental Big Results */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold block">{l.grossRentYield}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-indigo-300 font-mono block">
+                    {grossYield.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold block">{l.netRentYield}</span>
+                  <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono block">
+                    {netYield.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Asset Score Badge */}
+              <div className={`p-4 rounded-2xl border ${yieldRatingColor} space-y-1.5 transition-all text-left`}>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider block opacity-95">{l.rating}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-xs sm:text-sm">{yieldRatingLabel}</span>
+                  <span className="font-mono text-xs font-bold leading-none">{stars}</span>
+                </div>
+              </div>
+
+              {/* Simple math values */}
+              <div className="space-y-2.5 text-xs text-slate-350 border-t border-slate-800/80 pt-4 font-light leading-relaxed">
+                <div className="flex justify-between">
+                  <span>{currentLanguage === 'en' ? 'Projected Gross Rent / Year:' : 'Revenu Habitation Brut / An :'}</span>
+                  <span className="font-mono font-bold text-white">{formatMoney(annualRentIncome)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>{currentLanguage === 'en' ? 'Asset Expenses / Year:' : 'Charges Annuelles Estimées :'}</span>
+                  <span className="font-mono text-red-300">{formatMoney(annualMaintenance)}</span>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* Affiliated Burundi Bank reference logos */}
+          <div className="space-y-2 pt-4 border-t border-slate-800 text-left">
+            <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 block">{l.bankMatch}</span>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {['BANCOBU', 'CRDB Burundi', 'KCB Burundi', 'BCB', 'Ecobank'].map(bank => (
+                <span key={bank} className="bg-slate-800 text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg text-slate-300 select-all">
+                  🏦 {bank}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom regulatory disclaimer */}
+          <p className="text-[9px] font-sans font-light leading-relaxed text-slate-500 pt-1">
+            {l.disclaimer}
+          </p>
+
+        </div>
+
       </div>
     </div>
   );
@@ -968,6 +1497,18 @@ function renderSectionContent(
           subheading={subheading}
           buttonText={buttonText}
           fontSizeHeadClass={fontSizeHeadClass}
+        />
+      );
+    }
+
+    case 'finances_calculator': {
+      return (
+        <FinancesCalculatorSection
+          properties={properties}
+          currentLanguage={currentLanguage}
+          fontSizeHeadClass={fontSizeHeadClass}
+          headColorVal={headColorVal}
+          txtColorVal={txtColorVal}
         />
       );
     }

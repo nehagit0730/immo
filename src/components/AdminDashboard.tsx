@@ -1815,6 +1815,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         ]};
       } else if (type === 'contact_form_banner') {
         defaultSettings = { heading: 'Secure Your Free Advisory Consult Session', subheading: 'Speak to an official cadastral validation attorney live in Bujumbura or via Microsoft Teams. Enter your parameters to proceed.', buttonText: 'Schedule Free Call' };
+      } else if (type === 'finances_calculator') {
+        defaultSettings = { title: 'Diaspora Capital & Mortgage Estimator', subtitle: 'Leverage premium local metrics to forecast real estate yields, downpayments, and monthly bank interest charges seamlessly before committing.' };
       } else {
         defaultSettings = { title: 'High-Tech Block', subtitle: 'Dynamic templates content' };
       }
@@ -2163,7 +2165,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             <div className="p-4 border-t border-slate-800 space-y-3.5 shrink-0">
               <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-extrabold uppercase">Block Sections Catalog</span>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list', 'team_profile', 'process_steps', 'stats_grid', 'contact_form_banner'] as PageSection['type'][]).map((type) => (
+                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list', 'team_profile', 'process_steps', 'stats_grid', 'contact_form_banner', 'finances_calculator'] as PageSection['type'][]).map((type) => (
                   <button
                     key={type}
                     type="button"
