@@ -54,13 +54,16 @@ export default function PageSectionsRenderer({
           fontSizeHeadClass = 'text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-none';
         }
 
-        const commonStyle = `${bgVal} w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-100/50 last:border-0 transition-all overflow-hidden relative`;
+        const isFullWidthSection = ['banner', 'slideshow', 'single_image', 'contact_form_banner'].includes(section.type);
+        const commonStyle = `${bgVal} w-full border-b border-slate-100/50 last:border-0 transition-all overflow-hidden relative ${
+          isFullWidthSection ? 'py-0 px-0' : 'py-16 sm:py-24 px-4 sm:px-6 lg:px-8'
+        }`;
 
         return (
           <div key={section.id || idx} className={commonStyle}>
             {/* Ambient subtle gradient blur behind sections */}
             <div className="absolute top-0 left-1/4 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
-            <div className="max-w-7xl mx-auto relative z-10">
+            <div className={isFullWidthSection ? 'w-full relative z-10' : 'max-w-7xl mx-auto relative z-10'}>
               {renderSectionContent(
                 section, 
                 { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, 
@@ -97,9 +100,9 @@ function SlideshowSection({ slides, fontSizeHeadClass, fontSizeTextClass }: { sl
   const slide = slides[curSlide] || slides[0];
 
   return (
-    <div className="relative rounded-3xl h-[450px] sm:h-[550px] overflow-hidden shadow-2xl group border border-slate-200/50">
+    <div className="relative w-full h-[500px] sm:h-[650px] lg:h-[750px] overflow-hidden group">
       <div 
-        className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out transform group-hover:scale-102"
+        className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out transform group-hover:scale-101"
         style={{ backgroundImage: `url(${slide.image})` }}
       />
       
@@ -107,14 +110,14 @@ function SlideshowSection({ slides, fontSizeHeadClass, fontSizeTextClass }: { sl
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-950/20" />
       
       {/* Overlay text */}
-      <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-16 text-left text-white z-10 max-w-3xl space-y-4">
-        <span className="inline-flex self-start items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[10px] tracking-widest uppercase backdrop-blur-md border border-white/20">
+      <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-20 lg:p-32 text-left text-white z-10 max-w-7xl mx-auto w-full space-y-5">
+        <span className="inline-flex self-start items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[10px] tracking-widest uppercase backdrop-blur-md border border-white/20 animate-pulse">
           📍 Curated Portfolio Highlight
         </span>
-        <h2 className={`${fontSizeHeadClass} font-black tracking-tight drop-shadow-md leading-tight text-white`}>
+        <h2 className={`${fontSizeHeadClass} font-black tracking-tight drop-shadow-md leading-[1.1] text-white max-w-4xl`}>
           {slide.title}
         </h2>
-        <p className={`${fontSizeTextClass} font-normal max-w-xl text-slate-300 leading-relaxed font-sans`}>
+        <p className={`${fontSizeTextClass} font-normal max-w-2xl text-slate-300 leading-relaxed font-sans`}>
           {slide.desc}
         </p>
       </div>
@@ -136,12 +139,12 @@ function SlideshowSection({ slides, fontSizeHeadClass, fontSizeTextClass }: { sl
       </button>
 
       {/* Modern thin line Indicators */}
-      <div className="absolute bottom-6 left-8 sm:left-16 flex gap-2.5 z-20">
+      <div className="absolute bottom-8 left-8 sm:left-20 lg:left-32 flex gap-2.5 z-20">
         {slides.map((_: any, idx: number) => (
           <button
             key={idx}
             onClick={() => setCurSlide(idx)}
-            className={`h-1 rounded-full transition-all duration-350 cursor-pointer ${idx === curSlide ? 'bg-white w-10' : 'bg-white/30 w-3'}`}
+            className={`h-1.5 rounded-full transition-all duration-350 cursor-pointer ${idx === curSlide ? 'bg-white w-12' : 'bg-white/30 w-3'}`}
           />
         ))}
       </div>
@@ -236,72 +239,68 @@ function ContactFormBannerSection({ heading, subheading, buttonText, fontSizeHea
   const [phone, setPhone] = useState('');
 
   return (
-    <div className="max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden border border-slate-800 text-left">
+    <div className="w-full bg-gradient-to-br from-slate-900 to-indigo-950 py-16 sm:py-24 px-6 sm:px-16 text-white relative overflow-hidden text-left">
       <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none animate-pulse"></div>
       <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
 
-      <div className="relative z-10 max-w-2xl mx-auto space-y-6 text-center sm:text-left">
-        <div className="space-y-3 text-center sm:text-left">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase border border-white/20">
+      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div className="lg:col-span-5 space-y-4 text-center lg:text-left">
+          <span className="inline-flex self-start mx-auto lg:mx-0 items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase border border-white/20">
             🔒 Protected Advisor Access
           </span>
           <h2 className={`${fontSizeHeadClass} font-black tracking-tight text-white leading-tight`}>{heading}</h2>
           {subheading && <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">{subheading}</p>}
         </div>
 
-        {submitted ? (
-          <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-6 text-center space-y-3 max-w-md mx-auto animate-in zoom-in-95 duration-150">
-            <span className="text-3xl block">✓</span>
-            <h3 className="text-sm font-bold text-white">Consultation Requested Successfully</h3>
-            <p className="text-xs text-secondary text-slate-300">
-              Our legal registrar clerk will reach out within 2 hours to confirm your private advisory session.
-            </p>
-          </div>
-        ) : (
-          <form 
-            onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2"
-          >
-            <div className="relative">
-              <input
-                type="text"
-                required
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
-              />
+        <div className="lg:col-span-7 w-full">
+          {submitted ? (
+            <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-8 text-center space-y-3 max-w-md mx-auto animate-in zoom-in-95 duration-150">
+              <span className="text-3xl block text-emerald-400">✓</span>
+              <h3 className="text-sm font-bold text-white">Consultation Requested Successfully</h3>
+              <p className="text-xs text-slate-300">
+                Our legal registrar clerk will reach out within 2 hours to confirm your private advisory session.
+              </p>
             </div>
-            <div className="relative">
-              <input
-                type="email"
-                required
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
-              />
-            </div>
-            <div className="relative">
+          ) : (
+            <form 
+              onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
+              className="bg-white/5 border border-white/10 backdrop-blur-md p-6 sm:p-8 rounded-2xl space-y-4 max-w-xl mx-auto lg:ml-auto"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  required
+                  placeholder="Full Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-xs text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-colors text-left font-sans"
+                />
+                <input
+                  type="email"
+                  required
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-xs text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-colors text-left font-sans"
+                />
+              </div>
               <input
                 type="tel"
                 required
                 placeholder="Phone / WhatsApp"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:bg-white/10 transition-colors text-left"
+                className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-xs text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-colors text-left font-sans"
               />
-            </div>
-            <div className="sm:col-span-3 text-center sm:text-left mt-2">
               <button
                 type="submit"
-                className="w-full sm:w-auto px-10 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer"
+                className="w-full px-6 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg transition-all font-sans text-xs tracking-widest uppercase shadow-md duration-250 cursor-pointer"
               >
                 {buttonText}
               </button>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -329,20 +328,20 @@ function renderSectionContent(
       const bannerBg = settings.imageUrl || 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80';
       const overlayColor = settings.overlayColor || 'rgba(15, 23, 42, 0.75)';
       return (
-        <div className="relative rounded-3xl p-10 sm:p-24 text-center overflow-hidden min-h-[460px] flex flex-col justify-center items-center text-white shadow-2xl group border border-slate-850/10">
+        <div className="relative w-full text-center overflow-hidden min-h-[500px] sm:min-h-[600px] flex flex-col justify-center items-center text-white group py-20 sm:py-32 px-6">
           {/* Zoomable Absolute Background Wrapper */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transform group-hover:scale-102 transition-transform duration-1000 ease-out z-0" 
+            className="absolute inset-0 bg-cover bg-center transform group-hover:scale-101 transition-transform duration-1000 ease-out z-0" 
             style={{ backgroundImage: `url(${bannerBg})` }}
           />
           {/* Custom Overlay */}
           <div className="absolute inset-0 z-10" style={{ backgroundColor: overlayColor }}></div>
           
-          <div className="relative z-20 max-w-3xl mx-auto space-y-6">
+          <div className="relative z-20 max-w-7xl mx-auto w-full space-y-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase backdrop-blur-md border border-white/20">
               ⚡ Verified Portal Standard
             </span>
-            <h1 className={`${fontSizeHeadClass} font-black drop-shadow-md leading-[1.1] text-white tracking-tight`}>
+            <h1 className={`${fontSizeHeadClass} font-black drop-shadow-md leading-[1.1] text-white tracking-tight max-w-4xl mx-auto`}>
               {settings.title || 'Dynamic High-Tech Banner'}
             </h1>
             <p className={`${fontSizeTextClass} opacity-90 leading-relaxed font-sans max-w-2xl mx-auto font-light`}>
@@ -648,16 +647,16 @@ function renderSectionContent(
 
     case 'single_image': {
       return (
-        <div className="max-w-4xl mx-auto text-center space-y-4">
-          <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-xl">
+        <div className="w-full text-center">
+          <div className="w-full overflow-hidden">
             <img 
               src={settings.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80'} 
               alt={settings.caption || 'Immo Burundi Media'} 
-              className="w-full max-h-[500px] object-cover hover:scale-[1.01] transition-transform duration-500"
+              className="w-full h-[350px] sm:h-[480px] lg:h-[600px] object-cover hover:scale-[1.01] transition-transform duration-500"
               referrerPolicy="no-referrer"
             />
           </div>
-          {settings.caption && <p className="text-[11px] font-mono font-semibold tracking-widest text-slate-400 text-center uppercase">{settings.caption}</p>}
+          {settings.caption && <p className="text-[11px] font-mono font-semibold tracking-widest text-slate-400 text-center uppercase py-4 bg-slate-50/50">{settings.caption}</p>}
         </div>
       );
     }
