@@ -45,6 +45,13 @@ export default function App() {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
 
+  // Properties portal sub-states
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [selectedVerification, setSelectedVerification] = useState('all');
+  const [mobileViewTab, setMobileViewTab] = useState<'grid' | 'map'>('grid');
+  const [mapStyle, setMapStyle] = useState<'vector' | 'cadaster'>('vector');
+  const [hoveredPropId, setHoveredPropId] = useState<string | null>(null);
+
   const t = translations[currentLanguage];
 
   // Persist session and language selection
@@ -342,12 +349,8 @@ export default function App() {
               DEDICATED PROPERTIES PORTAL / CATALOG
              ========================================== */
           (() => {
-            // Local state inside immediate block for Properties UI
-            const [selectedCity, setSelectedCity] = useState('all');
-            const [selectedVerification, setSelectedVerification] = useState('all');
-            const [mobileViewTab, setMobileViewTab] = useState<'grid' | 'map'>('grid');
-            const [mapStyle, setMapStyle] = useState<'vector' | 'cadaster'>('vector');
-            const [hoveredPropId, setHoveredPropId] = useState<string | null>(null);
+            const propertiesPageObj = pages.find(p => p.slug === 'properties' || p.id === 'properties');
+            const pageBuilderSections = propertiesPageObj?.sections || [];
 
             // Conversion helpers
             const EXCHANGE_RATE = 2855;
@@ -392,9 +395,29 @@ export default function App() {
 
             return (
               <div className="w-full bg-[#f8fafc]/30 animate-in fade-in duration-300 pb-20 select-text font-sans text-slate-800">
+                {/* 1. Page Builder Custom Sections (if defined for 'properties') */}
+                {pageBuilderSections.length > 0 && (
+                  <div className="w-full border-b border-slate-200 bg-white shadow-xs pb-6">
+                    <PageSectionsRenderer 
+                      sections={pageBuilderSections} 
+                      properties={properties} 
+                      currentLanguage={currentLanguage} 
+                      onViewDetails={handleViewPropertyDetails}
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      selectedType={selectedType}
+                      setSelectedType={setSelectedType}
+                      selectedPriceRange={selectedPriceRange}
+                      setSelectedPriceRange={setSelectedPriceRange}
+                      t={t}
+                    />
+                  </div>
+                )}
+
+                {/* 2. Interactive Map & Grid Catalog Block */}
                 {/* Immersive Sub-Header Map Banner */}
                 <div className="bg-[#0f172a] text-white border-b border-slate-800 relative py-12 px-4 shadow-inner">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-955/40 via-transparent to-indigo-955/35 mix-blend-color-burn pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-transparent to-indigo-950/35 mix-blend-color-burn pointer-events-none"></div>
                   <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="text-left space-y-2 max-w-xl">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-white font-mono text-[9px] tracking-[0.2em] font-extrabold uppercase border border-white/20 backdrop-blur-md">
@@ -434,11 +457,11 @@ export default function App() {
                     {/* Top Row: Search Input */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center">
                       <div className="relative md:col-span-6 text-left">
-                        <label className="block text-[8px] font-mono font-bold text-slate-450 uppercase tracking-widest mb-1">Keywords / Location Name</label>
+                        <label className="block text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1">Keywords / Location Name</label>
                         <div className="relative">
                           <input
                             type="text"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-xs text-slate-808 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-sans"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all font-sans"
                             placeholder={t.searchPlaceholder}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -448,9 +471,9 @@ export default function App() {
                       </div>
 
                       <div className="md:col-span-3 text-left">
-                        <label className="block text-[8px] font-mono font-bold text-slate-450 uppercase tracking-widest mb-1">{t.allTypes}</label>
+                        <label className="block text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1">{t.allTypes}</label>
                         <select
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs text-slate-705 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                           value={selectedType}
                           onChange={(e) => setSelectedType(e.target.value)}
                         >
@@ -464,9 +487,9 @@ export default function App() {
                       </div>
 
                       <div className="md:col-span-3 text-left">
-                        <label className="block text-[8px] font-mono font-bold text-slate-455 uppercase tracking-widest mb-1">Price Filter limit</label>
+                        <label className="block text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1">Price Filter limit</label>
                         <select
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs text-slate-705 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xs text-slate-700 font-medium focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                           value={selectedPriceRange}
                           onChange={(e) => setSelectedPriceRange(e.target.value)}
                         >
@@ -483,14 +506,14 @@ export default function App() {
                     <div className="border-t border-slate-100 pt-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 text-left">
                       {/* Left: City Filter Toggles */}
                       <div className="space-y-1">
-                        <span className="text-[8.5px] font-mono font-extrabold text-slate-450 uppercase tracking-wider block mb-1">CADASTRAL SECTORS / DISTRICTS</span>
+                        <span className="text-[8.5px] font-mono font-extrabold text-slate-400 uppercase tracking-wider block mb-1">CADASTRAL SECTORS / DISTRICTS</span>
                         <div className="flex flex-wrap gap-1.5">
                           <button
                             onClick={() => setSelectedCity('all')}
                             className={`px-3 py-1.5 rounded-xl text-xs font-medium tracking-wide transition-all cursor-pointer ${
                               selectedCity === 'all' 
                                 ? `${colors.primaryBg} text-white font-bold shadow-xs` 
-                                : 'bg-slate-105 text-slate-600 hover:bg-slate-200'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
                             All Regions ({properties.filter(p => p.status === 'approved').length})
@@ -504,7 +527,7 @@ export default function App() {
                                 className={`px-4 py-1.5 rounded-xl text-xs font-medium tracking-wide transition-all cursor-pointer ${
                                   selectedCity.toLowerCase() === city.toLowerCase()
                                     ? `${colors.primaryBg} text-white font-bold shadow-xs` 
-                                    : 'bg-slate-105 text-slate-600 hover:bg-slate-200'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                               >
                                 {city} ({count})
@@ -516,14 +539,14 @@ export default function App() {
 
                       {/* Right: Verification Status Filter */}
                       <div className="space-y-1">
-                        <span className="text-[8.5px] font-mono font-extrabold text-slate-450 uppercase tracking-wider block mb-1">CERTIFICATION INTEGRITY STATUS</span>
-                        <div className="flex bg-slate-100/80 p-0.5 rounded-xl w-fit border border-slate-200/50">
+                        <span className="text-[8.5px] font-mono font-extrabold text-slate-400 uppercase tracking-wider block mb-1">CERTIFICATION INTEGRITY STATUS</span>
+                        <div className="flex bg-slate-100/80 p-0.5 rounded-xl w-fit border border-slate-200">
                           <button
                             onClick={() => setSelectedVerification('all')}
                             className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
                               selectedVerification === 'all' 
                                 ? 'bg-white text-slate-800 shadow-xs font-bold' 
-                                : 'text-slate-500 hover:text-slate-850'
+                                : 'text-slate-500 hover:text-slate-800'
                             }`}
                           >
                             Show All
@@ -533,7 +556,7 @@ export default function App() {
                             className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors cursor-pointer flex items-center gap-1 ${
                               selectedVerification === 'verified' 
                                 ? 'bg-emerald-650 text-white shadow-xs font-bold' 
-                                : 'text-slate-500 hover:text-slate-850'
+                                : 'text-slate-500 hover:text-slate-800'
                             }`}
                           >
                             🛡️ Verified
@@ -543,7 +566,7 @@ export default function App() {
                             className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
                               selectedVerification === 'unverified' 
                                 ? 'bg-slate-900 text-white shadow-xs font-bold' 
-                                : 'text-slate-500 hover:text-slate-850'
+                                : 'text-slate-500 hover:text-slate-800'
                             }`}
                           >
                             Self-Reported
@@ -589,10 +612,10 @@ export default function App() {
                       {/* Active Filter Pill Status feedback */}
                       <div className="flex justify-between items-center border-b border-slate-200/80 pb-3">
                         <div className="text-left">
-                          <h2 className="font-sans font-black text-slate-805 text-lg uppercase tracking-tight">
+                          <h2 className="font-sans font-black text-slate-800 text-lg uppercase tracking-tight">
                             {currentLanguage === 'en' ? 'Verified Public Registers' : 'Fichier Cadastral Actif'}
                           </h2>
-                          <div className="flex items-center gap-2 mt-0.5 font-mono text-slate-450 text-[9.5px] uppercase font-bold">
+                          <div className="flex items-center gap-2 mt-0.5 font-mono text-slate-400 text-[9.5px] uppercase font-bold">
                             <span>{catalogProperties.length} verified targets matching filters</span>
                             {selectedCity !== 'all' && (
                               <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-lg font-sans">
@@ -606,8 +629,8 @@ export default function App() {
                       {catalogProperties.length === 0 ? (
                         <div className="py-24 bg-white rounded-3xl border border-slate-200/80 text-center p-10 max-w-lg mx-auto shadow-sm">
                           <span className="text-4xl block mb-3 animate-bounce">🔍</span>
-                          <h4 className="font-sans font-black text-slate-750 text-base">{t.noProperties}</h4>
-                          <p className="text-xs text-slate-405 mt-2 leading-relaxed font-light">
+                          <h4 className="font-sans font-black text-slate-700 text-base">{t.noProperties}</h4>
+                          <p className="text-xs text-slate-400 mt-2 leading-relaxed font-light">
                             {currentLanguage === 'en' 
                               ? 'Change your search criteria or clear the region toggles to browse more approved records.'
                               : 'Veuillez modifier votre filtre de recherche ou effacer les filtres régionaux pour voir d\'autres parcelles.'}
@@ -651,7 +674,7 @@ export default function App() {
 
                     {/* Highly Polished Interactive SVG Map Panel */}
                     <div className={`lg:col-span-5 ${mobileViewTab === 'grid' ? 'hidden lg:block' : 'block'} sticky top-24 z-10`}>
-                      <div className="bg-[#0f172a] text-white rounded-3xl border border-slate-850 p-5 shadow-lg flex flex-col space-y-4">
+                      <div className="bg-[#0f172a] text-white rounded-3xl border border-slate-800 p-5 shadow-lg flex flex-col space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="text-left">
                             <span className="text-[8px] font-mono text-blue-400 block uppercase tracking-widest font-bold">Interactive Geographic Tracker</span>
@@ -678,7 +701,7 @@ export default function App() {
                         </div>
 
                         {/* Visual SVG Stage */}
-                        <div className="aspect-square relative w-full bg-[#090d16] border border-slate-850 rounded-2xl overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                        <div className="aspect-square relative w-full bg-[#090d16] border border-slate-800 rounded-2xl overflow-hidden shadow-inner flex flex-col items-center justify-center">
                           {/* Beautiful grid layer */}
                           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-15"></div>
                           
@@ -724,9 +747,9 @@ export default function App() {
                             <g className="text-[#475569] font-mono text-[8px] font-bold select-none pointer-events-none opacity-80 uppercase tracking-widest">
                               <text x="52" y="145" className="fill-slate-500">Bujumbura</text>
                               <text x="135" y="165" className="fill-slate-500 text-center">Gitega</text>
-                              <text x="58" y="225" className="fill-slate-505">Rumonge</text>
+                              <text x="58" y="225" className="fill-slate-500">Rumonge</text>
                               <text x="110" y="75" className="fill-slate-500">Ngozi</text>
-                              <text x="195" y="115" className="fill-slate-505">Muyinga</text>
+                              <text x="195" y="115" className="fill-slate-500">Muyinga</text>
                             </g>
                           </svg>
 
@@ -768,7 +791,7 @@ export default function App() {
 
                             // Color map based on property selection
                             let pinColor = p.verified ? 'fill-emerald-500' : 'fill-slate-400';
-                            let strokeColor = p.verified ? 'stroke-emerald-400' : 'stroke-slate-350';
+                            let strokeColor = p.verified ? 'stroke-emerald-400' : 'stroke-slate-300';
 
                             return (
                               <div
@@ -821,14 +844,14 @@ export default function App() {
                               <span>Verified Audits</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 rounded-full bg-slate-450 inline-block animate-pulse"></span>
+                              <span className="w-2 h-2 rounded-full bg-slate-400 inline-block animate-pulse"></span>
                               <span>Declarative</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Interactive hint block */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4.5 text-xs text-slate-350 leading-relaxed text-left flex items-start gap-2.5">
+                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4.5 text-xs text-slate-300 leading-relaxed text-left flex items-start gap-2.5">
                           <span className="text-sm">💡</span>
                           <p className="font-sans font-light">
                             <strong>Dynamic Sync:</strong> Hovering or clicking on coordinates/pins on the map highlights corresponding property cards. Green points represent fully checked documents.
