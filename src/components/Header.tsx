@@ -67,6 +67,16 @@ export default function Header({
               {t.navHome}
             </button>
             <button 
+              onClick={() => handleLinkClick('properties')}
+              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
+                currentView === 'properties' 
+                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
+                  : 'text-slate-600'
+              }`}
+            >
+              {t.navProperties}
+            </button>
+            <button 
               onClick={() => handleLinkClick('about')}
               className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
                 currentView === 'about' 
@@ -226,10 +236,18 @@ export default function Header({
           <button 
             onClick={() => handleLinkClick('home')}
             className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
-              currentView === 'home' ? 'bg-blue-50 text-blue-700 font-extrabold' : 'text-slate-600 hover:bg-slate-50/80'
+              currentView === 'home' ? `bg-slate-50 ${colors.primaryText} font-extrabold` : 'text-slate-600 hover:bg-slate-50/80'
             }`}
           >
             {t.navHome}
+          </button>
+          <button 
+            onClick={() => handleLinkClick('properties')}
+            className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
+              currentView === 'properties' ? `bg-slate-50 ${colors.primaryText} font-extrabold` : 'text-slate-600 hover:bg-slate-50/80'
+            }`}
+          >
+            {t.navProperties}
           </button>
           <button 
             onClick={() => handleLinkClick('about')}

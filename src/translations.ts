@@ -3,6 +3,7 @@ export const translations = {
   en: {
     appName: "IMMO BURUNDI",
     navHome: "Home",
+    navProperties: "Properties",
     navAbout: "About Us",
     navDisclaimer: "Verification Disclaimer",
     navAgreement: "Service Agreement",
@@ -70,6 +71,7 @@ export const translations = {
   fr: {
     appName: "IMMO BURUNDI",
     navHome: "Accueil",
+    navProperties: "Propriétés",
     navAbout: "À Propos",
     navDisclaimer: "Clause de Non-Responsabilité",
     navAgreement: "Contrat de Service",
@@ -137,6 +139,7 @@ export const translations = {
   sw: {
     appName: "IMMO BURUNDI",
     navHome: "Nyumbani",
+    navProperties: "Mali",
     navAbout: "Kuhusu Sisi",
     navDisclaimer: "Kanusho la Uhakiki",
     navAgreement: "Mkataba wa Huduma",

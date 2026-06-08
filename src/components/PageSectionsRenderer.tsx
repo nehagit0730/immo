@@ -497,6 +497,34 @@ function renderSectionContent(
             { icon: '⚡', title: 'Instant Brokerage', desc: 'Secure real estate connections in Bujumbura, Gitega and beyond.' },
             { icon: '📂', title: 'Frictionless Contracts', desc: 'Electronically signed service agreement with legal standards.' }
           ];
+
+      const getGridColsClass = (desktop: number, tablet: number, mobile: number) => {
+        let mobileClass = 'grid-cols-1';
+        if (mobile === 2) mobileClass = 'grid-cols-2';
+
+        let tabletClass = 'md:grid-cols-2';
+        if (tablet === 1) tabletClass = 'md:grid-cols-1';
+        else if (tablet === 2) tabletClass = 'md:grid-cols-2';
+        else if (tablet === 3) tabletClass = 'md:grid-cols-3';
+        else if (tablet === 4) tabletClass = 'md:grid-cols-4';
+
+        let desktopClass = 'lg:grid-cols-3';
+        if (desktop === 1) desktopClass = 'lg:grid-cols-1';
+        else if (desktop === 2) desktopClass = 'lg:grid-cols-2';
+        else if (desktop === 3) desktopClass = 'lg:grid-cols-3';
+        else if (desktop === 4) desktopClass = 'lg:grid-cols-4';
+        else if (desktop === 5) desktopClass = 'lg:grid-cols-5';
+        else if (desktop === 6) desktopClass = 'lg:grid-cols-6';
+
+        return `${mobileClass} ${tabletClass} ${desktopClass}`;
+      };
+
+      const columnsGridClass = getGridColsClass(
+        Number(settings.colsDesktop || 3),
+        Number(settings.colsTablet || 2),
+        Number(settings.colsMobile || 1)
+      );
+
       return (
         <div className="space-y-16 font-sans">
           {settings.heading && (
@@ -510,7 +538,7 @@ function renderSectionContent(
               {settings.subheading && <p className={`text-sm sm:text-base ${txtColorVal} font-light max-w-2xl mx-auto leading-relaxed`}>{settings.subheading}</p>}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+          <div className={`grid ${columnsGridClass} gap-6 md:gap-8 pt-4`}>
             {items.map((item: any, idx: number) => (
               <div 
                 key={idx} 
@@ -520,8 +548,8 @@ function renderSectionContent(
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl mb-6 shadow-inner border border-blue-100/40">
                   {item.icon || '📌'}
                 </div>
-                <h3 className="text-lg font-black text-slate-900 mb-3 font-display">{item.title || 'Column Title'}</h3>
-                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-sans font-light">{item.desc || 'Provide column descriptions.'}</p>
+                <h3 className="text-lg font-black text-[#0f172a] mb-3 font-display">{item.title || 'Column Title'}</h3>
+                <p className="text-xs sm:text-sm text-[#475569] leading-relaxed font-sans font-light">{item.desc || 'Provide column descriptions.'}</p>
               </div>
             ))}
           </div>

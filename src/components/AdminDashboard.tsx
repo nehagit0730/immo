@@ -2542,7 +2542,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           { icon: '📂', title: 'Frictionless Contracts', desc: 'Electronically signed service agreement with legal standards.' }
         ];
         return (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Columns Section Heading</label>
               <input type="text" value={s.heading || ''} onChange={(e) => updateFn('heading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
@@ -2551,11 +2551,83 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <label className="block text-[9.5px] font-mono text-slate-450 uppercase mb-1">Subheading explanation</label>
               <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
+
+            {/* Grid Layout Controls for Desktop, Tablet, and Mobile */}
+            <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+              <span className="text-[10px] font-mono text-slate-400 uppercase block font-bold">Responsive Column Controls</span>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Mobile View</label>
+                  <select 
+                    value={s.colsMobile || '1'} 
+                    onChange={(e) => updateFn('colsMobile', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200"
+                  >
+                    <option value="1">1 Col</option>
+                    <option value="2">2 Cols</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Tablet View</label>
+                  <select 
+                    value={s.colsTablet || '2'} 
+                    onChange={(e) => updateFn('colsTablet', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200"
+                  >
+                    <option value="1">1 Col</option>
+                    <option value="2">2 Cols</option>
+                    <option value="3">3 Cols</option>
+                    <option value="4">4 Cols</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Desktop View</label>
+                  <select 
+                    value={s.colsDesktop || '3'} 
+                    onChange={(e) => updateFn('colsDesktop', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200"
+                  >
+                    <option value="1">1 Col</option>
+                    <option value="2">2 Cols</option>
+                    <option value="3">3 Cols</option>
+                    <option value="4">4 Cols</option>
+                    <option value="5">5 Cols</option>
+                    <option value="6">6 Cols</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="border-t border-slate-800 pt-3 space-y-3">
-              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Edit Columns (Max 3)</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Edit Column Items ({cols.length})</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newCols = [...cols, { icon: '📌', title: 'New Option', desc: 'Describe this feature detail.' }];
+                    updateFn('columns', newCols);
+                  }}
+                  className="px-2 py-1 bg-blue-900 border border-blue-800 text-slate-200 hover:bg-blue-850 rounded text-[9px] font-bold font-mono uppercase tracking-wider cursor-pointer transition-colors"
+                >
+                  ＋ Add Column Item
+                </button>
+              </div>
+
               {cols.map((col: any, idx: number) => (
-                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
-                  <span className="text-[9px] font-mono text-slate-500 font-bold">Column Column #{idx + 1}</span>
+                <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2 relative group">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-mono text-slate-500 font-bold">Column Item #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newCols = cols.filter((_: any, i: number) => i !== idx);
+                        updateFn('columns', newCols);
+                      }}
+                      className="text-[9.5px] text-red-400 hover:text-red-300 font-semibold font-mono tracking-wider cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
                   <div className="flex gap-1.5">
                     <input 
                       type="text" 
@@ -2565,8 +2637,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         newCols[idx] = { ...newCols[idx], icon: e.target.value };
                         updateFn('columns', newCols);
                       }} 
-                      placeholder="Icon (e.g. 🛡️)"
-                      className="w-10 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-center text-slate-200" 
+                      placeholder="Icon"
+                      className="w-10 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-center text-slate-200 font-mono" 
                     />
                     <input 
                       type="text" 
@@ -2577,7 +2649,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         updateFn('columns', newCols);
                       }} 
                       placeholder="Title"
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 font-semibold" 
                     />
                   </div>
                   <textarea 
@@ -2588,8 +2660,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                       newCols[idx] = { ...newCols[idx], desc: e.target.value };
                       updateFn('columns', newCols);
                     }} 
-                    placeholder="Short description description"
-                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200" 
+                    placeholder="Short description text"
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200 leading-normal" 
                   />
                 </div>
               ))}
