@@ -1,0 +1,432 @@
+{
+  "users": [
+    {
+      "id": "admin",
+      "email": "admin@immoburundi.bi",
+      "name": "Administrator",
+      "phone": "+257 22 22 45 45",
+      "role": "admin",
+      "createdAt": "2026-06-09T04:41:34.187Z"
+    },
+    {
+      "id": "user_david",
+      "email": "client@immoburundi.bi",
+      "name": "David Nduwimana",
+      "phone": "+257 79 99 88 77",
+      "role": "client",
+      "createdAt": "2026-06-09T04:41:34.187Z"
+    }
+  ],
+  "properties": [
+    {
+      "id": "p1",
+      "title": "Luxury 5-Bedroom Villa at Kiriri Hills",
+      "description": "Breathtaking luxury villa situated in the exclusive Kiriri Hillside district, overlooking the magnificent Lake Tanganyika and the Bujumbura city skyline. Features high-security compound walls, premium marble flooring, an open-concept kitchen, elegant terraces, a swimming pool, and pristine verified land title documents. Ready for immediate relocation.",
+      "price": 320000,
+      "currency": "USD",
+      "type": "house",
+      "location": "Avenue de la Colline, Kiriri",
+      "city": "Bujumbura",
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "area": "450 sqm",
+      "images": [
+        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
+      ],
+      "ownerId": "admin",
+      "ownerName": "Immo Burundi Brokerage",
+      "ownerPhone": "+257 22 22 45 45",
+      "ownerEmail": "brokerage@immoburundi.bi",
+      "status": "approved",
+      "verified": true,
+      "gpsLocation": "-3.3768, 29.3812",
+      "createdAt": "2026-05-30T04:41:34.187Z"
+    },
+    {
+      "id": "p2",
+      "title": "Modern Commercial Office Complex in Rohero I",
+      "description": "A premium 3-level commercial building strategically located in Rohero I, the central banking and administrative heart of Bujumbura. Generous parking capacity, dynamic open-floor space, integrated fiber optic networks, central solar backing generators, and fully verified urban planning authorizations. Ideal for embassies, major NGOs, or corporate headquarters.",
+      "price": 850000,
+      "currency": "USD",
+      "type": "commercial",
+      "location": "Boulevard de l'Uprona, Rohero I",
+      "city": "Bujumbura",
+      "area": "1200 sqm",
+      "images": [
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"
+      ],
+      "ownerId": "admin",
+      "ownerName": "Immo Burundi Brokerage",
+      "ownerPhone": "+257 22 22 45 45",
+      "ownerEmail": "brokerage@immoburundi.bi",
+      "status": "approved",
+      "verified": true,
+      "gpsLocation": "-3.3854, 29.3644",
+      "createdAt": "2026-06-04T04:41:34.187Z"
+    },
+    {
+      "id": "p3",
+      "title": "Pristine Beachfront Investment Land in Rumonge",
+      "description": "Incredible prime investment parcel right on the sandy shores of Lake Tanganyika, located just outside Rumonge town. Highly desirable for constructing a beachfront resort, luxury lodging, or private vacation villas. Official land registry blueprints and title deeds are verified and authenticated with local registry offices. Water and power connections already set up near the roadside line.",
+      "price": 180000000,
+      "currency": "BIF",
+      "type": "investment",
+      "location": "Route de Rumonge, Beachfront Zone",
+      "city": "Rumonge",
+      "area": "2500 sqm",
+      "images": [
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80"
+      ],
+      "ownerId": "admin",
+      "ownerName": "Immo Burundi Brokerage",
+      "ownerPhone": "+257 22 22 45 45",
+      "ownerEmail": "brokerage@immoburundi.bi",
+      "status": "approved",
+      "verified": true,
+      "gpsLocation": "-3.9712, 29.4355",
+      "createdAt": "2026-05-28T04:41:34.187Z"
+    },
+    {
+      "id": "p4",
+      "title": "Elegant 3-Bedroom Rental Apartment in Kinindo",
+      "description": "Fully furnished, high-end 3-bedroom, 2.5-bathroom rental apartment situated in a secure apartment gated community in Kinindo. High-speed WiFi, modern climate controls (air conditioning), backup solar power inverter, and automated security monitoring systems. Rental price listed is per month, including professional waste collection and community garden maintenance.",
+      "price": 2400000,
+      "currency": "BIF",
+      "type": "rental",
+      "location": "Avenue de la Plage, Kinindo",
+      "city": "Bujumbura",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": "180 sqm",
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80"
+      ],
+      "ownerId": "admin",
+      "ownerName": "Immo Burundi Brokerage",
+      "ownerPhone": "+257 22 22 45 45",
+      "ownerEmail": "brokerage@immoburundi.bi",
+      "status": "approved",
+      "verified": false,
+      "gpsLocation": "-3.4124, 29.3511",
+      "createdAt": "2026-06-06T04:41:34.187Z"
+    },
+    {
+      "id": "p5",
+      "title": "Excellent Farming & Agricultural Plot in Gitega",
+      "description": "Fertile, high-elevation farming and development land situated in Gitega, the political capital of Burundi. Perfect soil conditions for coffee planting, cash crops, or building an expansive suburban homestead. Securely fenced with official cadaster demarcations. The property includes clear access roads connecting to the National Route.",
+      "price": 65000000,
+      "currency": "BIF",
+      "type": "land",
+      "location": "Karera Development Sector",
+      "city": "Gitega",
+      "area": "5000 sqm",
+      "images": [
+        "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "ownerId": "user_david",
+      "ownerName": "David Nduwimana",
+      "ownerPhone": "+257 79 99 88 77",
+      "ownerEmail": "david@immoburundi.bi",
+      "status": "pending",
+      "verified": false,
+      "gpsLocation": "-3.4285, 29.9248",
+      "createdAt": "2026-06-09T04:41:34.187Z"
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "slug": "home",
+      "title": {
+        "en": "Welcome to IMMO BURUNDI",
+        "fr": "Bienvenue chez IMMO BURUNDI",
+        "sw": "Karibu kwenye IMMO BURUNDI"
+      },
+      "content": {
+        "en": "Discover the most secure, verified, and professional real estate platform in Burundi. Whether you are looking for a luxury villa in Bujumbura, commercial spaces in Gitega, beachfront investment plots in Rumonge, or professional brokerage assistance, IMMO BURUNDI connects verified owners and clients with absolute transparency. Experience the difference of premium verified documents and active support.",
+        "fr": "Découvrez la plateforme immobilière la plus sécurisée, vérifiée et professionnelle du Burundi. Que vous recherchiez une villa de luxe à Bujumbura, des espaces commerciaux à Gitega, des terrains d'investissement au bord du lac à Rumonge, ou une assistance en courtage professionnel, IMMO BURUNDI met en relation des propriétaires vérifiés et des clients en toute transparence.",
+        "sw": "Gundua jukwaa la mali isiyohamishika lililolindwa zaidi, lililoidhinishwa na la kitaaluma nchini Burundi. Iwe unatafuta jumba la kifahari huko Bujumbura, maeneo ya biashara huko Gitega, viwanja vya uwekezaji kando ya ziwa huko Rumonge, au usaidizi wa udalali wa kitaalamu, IMMO BURUNDI inaunganisha wamiliki waliothibitishwa na wateja kwa uwazi kabisa."
+      },
+      "isHomepage": true,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z",
+      "sections": [
+        {
+          "id": "sec_home_banner",
+          "type": "banner",
+          "backgroundColor": "bg-slate-900 text-white",
+          "headingColor": "text-white",
+          "textColor": "text-slate-300",
+          "fontSize": "display",
+          "settings": {
+            "title": "Find Your Secure Dream Property in Burundi",
+            "subtitle": "IMMO BURUNDI is the premier fully verified real estate marketplace. Every title deed is auditable, and every compound is inspected on-site by our local agents.",
+            "imageUrl": "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+            "buttonText": "Explore Real Estate"
+          }
+        },
+        {
+          "id": "sec_home_featured",
+          "type": "property_list",
+          "backgroundColor": "bg-white",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-500",
+          "fontSize": "lg",
+          "settings": {
+            "heading": "Premium Verified Properties",
+            "subheading": "Every property list item has verified cadastral records checked independently by elite agents on location.",
+            "limit": "3",
+            "typeFilter": "all",
+            "showOnlyVerified": true
+          }
+        },
+        {
+          "id": "sec_home_calculator",
+          "type": "finances_calculator",
+          "backgroundColor": "bg-slate-50/50",
+          "headingColor": "text-slate-905",
+          "textColor": "text-slate-650",
+          "fontSize": "lg",
+          "settings": {
+            "title": "Diaspora Capital & Mortgage Estimator",
+            "subtitle": "Leverage premium local metrics to forecast real estate yields, downpayments, and monthly bank interest charges seamlessly before committing."
+          }
+        },
+        {
+          "id": "sec_home_columns",
+          "type": "columns",
+          "backgroundColor": "bg-slate-50 text-slate-800",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-650",
+          "fontSize": "md",
+          "settings": {
+            "heading": "Burundi's Trusted Real Estate Standards",
+            "subheading": "Connecting diaspora investors, private-sector landlords, and active local buyers.",
+            "columns": [
+              {
+                "icon": "🛡️",
+                "title": "Cadaster Verifications",
+                "desc": "Direct title review and matching at national property registry records in Rohero."
+              },
+              {
+                "icon": "🔑",
+                "title": "Electronic Escrow Agreements",
+                "desc": "Legally standard bilingual contracts signed electronically to bypass double allocation."
+              },
+              {
+                "icon": "✈️",
+                "title": "Diaspora Support Hub",
+                "desc": "Drone inspections, physical land checks, boundaries mapping, and active broker assistance."
+              }
+            ]
+          }
+        },
+        {
+          "id": "sec_home_testimonials",
+          "type": "testimonials",
+          "backgroundColor": "bg-white",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-600",
+          "fontSize": "md",
+          "settings": {
+            "heading": "Endorsed by Diaspora & Residents",
+            "testimonials": [
+              {
+                "text": "IMMO BURUNDI saved us from an urban double-allocation trap in Kiriri! Their local title validation is essential.",
+                "author": "Gérard Sindayigaya",
+                "role": "Diaspora Investor"
+              },
+              {
+                "text": "Quickest rental broker response rate in Kinindo. Signed bilingual service contract on Sunday and got keys Monday.",
+                "author": "Clara Kaneza",
+                "role": "Corporate Secretary"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sec_home_brands",
+          "type": "brands",
+          "backgroundColor": "bg-slate-50 text-slate-400",
+          "headingColor": "text-slate-400",
+          "textColor": "text-slate-400",
+          "fontSize": "sm",
+          "settings": {
+            "brands": [
+              "CADASTRE NATIONAL",
+              "OBR BURUNDI",
+              "BANQUE COMMERCIALE",
+              "REGIDESO"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "about",
+      "slug": "about",
+      "title": {
+        "en": "About IMMO BURUNDI",
+        "fr": "À Propos de IMMO BURUNDI",
+        "sw": "Kuhusu IMMO BURUNDI"
+      },
+      "content": {
+        "en": "IMMO BURUNDI is a modern real estate marketplace and brokerage platform designed to improve transparency, accessibility, and trust in the real estate sector of Burundi.\n\nOur mission is to connect property owners, buyers, tenants, investors, and agents through a secure and professional digital platform.\n\nWe provide:\n* Property listings\n* Property verification services\n* Rental support\n* Property promotion\n* Real estate brokerage assistance\n* Digital property management solutions\n\nOur platform combines technology, verification processes, and professional oversight to help reduce fraud and improve confidence in property transactions.\n\nIMMO BURUNDI supports:\n* Houses\n* Land\n* Commercial properties\n* Rental properties\n* Investment opportunities\n\nOur multilingual platform supports English, French, Swahili. We are committed to Transparency, Security, Professionalism, Reliable service, and Innovation in real estate technology.\n\n**Important Notice:** Property verification statuses are based on documents and information presented to IMMO BURUNDI at the time of verification and do not constitute a government ownership guarantee.",
+        "fr": "IMMO BURUNDI est un marché immobilier moderne et une plateforme de courtage conçus pour améliorer la transparence, l'accessibilité et la confiance dans le secteur de l'immobilier au Burundi.\n\nNotre mission est de connecter les propriétaires de biens, les acheteurs, les locataires, les investisseurs et les agents grâce à une plateforme numérique sécurisée et professionnelle.\n\nNous fournissons :\n* Annonces immobilières\n* Services de vérification de propriété\n* Support de location\n* Promotion immobilière\n* Assistance en courtage de biens immobiliers\n* Solutions de gestion de propriété numérique\n\nNotre plateforme associe la technologie, les processus de vérification et la supervision professionnelle pour aider à réduire la fraude et améliorer la confiance dans les transactions immobilières.\n\nIMMO BURUNDI prend en charge :\n* Les maisons / villas\n* Les terrains / parcelles\n* Les propriétés commerciales\n* Les habitations en location\n* Les opportunités d'investissement\n\nNotre plateforme multilingue prend en charge le français, l'anglais et le swahili. Nous nous engageons à la transparence, à la sécurité, au professionnalisme et au service fiable.",
+        "sw": "IMMO BURUNDI ni soko la kisasa la mali isiyohamishika na jukwaa la udalali lililoundwa ili kuboresha uwazi, upatikanaji, na uaminifu katika sekta ya mali isiyohamishika nchini Burundi.\n\nDhamira yetu ni kuunganisha wamiliki wa mali, wanunuzi, wapangaji, wawekezaji, na mawakala kupitia jukwaa la kisasa la dijiti lililo salama na la kitaalamu.\n\nTunatoa:\n* Orodha za mali\n* Huduma za uhakiki wa hati za mali\n* Usaidizi wa kupangisha\n* Matangazo ya mali\n* Usaidizi wa udalali wa mali isiyohamishika\n* Suluhisho za usimamizi wa mali kidijiti\n\nUsaidizi wetu unachanganya teknolojia, michakato ya uhakiki, na usimamizi wa kitaalamu ili kusaidia kupunguza utapeli na kuongeza uaminifu katika miamala ya mali.\n\nIMMO BURUNDI inasaidia:\n* Nyumba za kuishi\n* Viwanja/Ardhi\n* Mali za kibiashara\n* Nyumba za kukodisha\n* Fursa za uwekezaji"
+      },
+      "isHomepage": false,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z",
+      "sections": [
+        {
+          "id": "sec_about_banner",
+          "type": "banner",
+          "backgroundColor": "bg-gradient-to-r from-blue-900 to-slate-950 text-white border-none",
+          "headingColor": "text-white",
+          "textColor": "text-slate-200",
+          "fontSize": "lg",
+          "settings": {
+            "title": "About IMMO BURUNDI S.A.R.L",
+            "subtitle": "Spearheading digital safety, boundary validation, and professional brokerage in the property sector of Burundi.",
+            "imageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+            "buttonText": "Read Our Framework"
+          }
+        },
+        {
+          "id": "sec_about_mission",
+          "type": "image_text",
+          "backgroundColor": "bg-white",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-650",
+          "fontSize": "md",
+          "settings": {
+            "heading": "Corporate Mission & Local Support",
+            "body": "IMMO BURUNDI is a private-sector real estate technology marketplace and professional brokerage provider built to improve transparency and confidence in Burundi's property market.\n\nOperating from Boulevard de l'Uprona, Rohero, Bujumbura, our team conducts physical ground checks, coordinates with national registry representatives, and assists buyers with bilingual paperless contracts to eliminate duplication fraud and create a reliable local hub.",
+            "imageUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+            "alignment": "left"
+          }
+        },
+        {
+          "id": "sec_about_featured_land",
+          "type": "property_list",
+          "backgroundColor": "bg-slate-50",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-600",
+          "fontSize": "md",
+          "settings": {
+            "heading": "Elite Land & Investment Portfolios",
+            "subheading": "Direct beachfront and agricultural plots configured with absolute cadaster boundary guarantees.",
+            "limit": "3",
+            "typeFilter": "land",
+            "showOnlyVerified": false
+          }
+        },
+        {
+          "id": "sec_about_faqs",
+          "type": "faqs",
+          "backgroundColor": "bg-white",
+          "headingColor": "text-slate-900",
+          "textColor": "text-slate-655",
+          "fontSize": "md",
+          "settings": {
+            "heading": "Answers to Common Concerns",
+            "faqs": [
+              {
+                "q": "How does IMMO BURUNDI verify boundary coordinates?",
+                "a": "IMMO BURUNDI coordinates with national cadaster checkers who inspect GPS markers and physical border drawings on-site."
+              },
+              {
+                "q": "Are standard listings free to post?",
+                "a": "Yes! Basic listings are free, whereas full physical document verification and banner promotions have standard flat-rate options."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "disclaimer",
+      "slug": "verification-disclaimer",
+      "title": {
+        "en": "Property Verification Disclaimer",
+        "fr": "Clause d'Exclusion de Responsabilité de Vérification",
+        "sw": "Kanusho la Uhakiki wa Mali"
+      },
+      "content": {
+        "en": "### Official Verification Disclaimer\n\nIMMO BURUNDI performs document verification based on the documents, records, and information presented by the property owner, representative, agent, or seller at the time of verification.\n\nA property marked as **\"Verified\"** or **\"Fully Verified\"** means that IMMO BURUNDI reviewed and verified the authenticity and consistency of the submitted documents to the best of its operational ability at the time of review.\n\nHowever, IMMO BURUNDI does not guarantee:\n1. Future legal ownership disputes\n2. Hidden claims or undisclosed third-party rights\n3. Government registry errors\n4. Forged documents not reasonably detectable\n5. Changes occurring after verification\n6. Fraudulent information intentionally concealed by the owner or seller\n\nVerification status is therefore based solely on the documents and information made available to IMMO BURUNDI during the verification process.\n\n#### Users are strongly encouraged to:\n* Conduct independent legal due diligence\n* Consult qualified legal professionals\n* Confirm ownership records with relevant government authorities before completing transactions\n\nIMMO BURUNDI shall not be held legally responsible for disputes, losses, fraud, or ownership conflicts arising from false, incomplete, hidden, or altered information provided by property owners, sellers, agents, or third parties.",
+        "fr": "### Clause officielle de non-responsabilité pour la vérification\n\nIMMO BURUNDI effectue la vérification des documents sur la base des documents, dossiers et informations présentés par le propriétaire, le représentant, l'agent ou le vendeur du bien au moment de la vérification.\n\nUn bien marqué comme **\"Vérifié\"** ou **\"Entièrement Vérifié\"** signifie qu'IMMO BURUNDI a examiné et vérifié l'authenticité et la cohérence des documents soumis au mieux de ses capacités opérationnelles au moment de l'examen.\n\nCependant, IMMO BURUNDI ne garantit pas :\n1. Les futurs litiges juridiques de propriété\n2. Les réclamations cachées ou les droits de tiers non divulgués\n3. Les erreurs du registre gouvernemental\n4. Les documents falsifiés non détectables de manière raisonnable\n5. Les changements survenant après la vérification\n6. Les informations frauduleuses intentionnellement dissimulées par le propriétaire ou le vendeur\n\n#### Il est fortement conseillé aux utilisateurs de :\n* Mener des vérifications juridiques indépendantes\n* Consulter des professionnels du droit qualifiés\n* Confirmer les registres de propriété auprès des autorités gouvernementales compétentes avant de conclure des transactions.",
+        "sw": "### Kanusho Rasmi la Uhakiki wa Hati\n\nIMMO BURUNDI hufanya uhakiki wa nyaraka kulingana na hati, rekodi, na habari zilizowasilishwa na mmiliki wa mali, mwakilishi, wakala, au muuzaji wakati wa uhakiki.\n\nMali iliyowekwa alama kama **\"Imethibitishwa\"** au **\"Imethibitishwa Kikamilifu\"** inamaanisha kuwa IMMO BURUNDI ilikagua na kuthibitisha ukweli na uthabiti wa hati zilizowasilishwa kwa uwezo wake wote wakati wa ukaguzi.\n\nHata hivyo, IMMO BURUNDI haidhamini:\n1. Migogoro ya umiliki wa kisheria ya baadaye\n2. Madai yaliyofichika au haki za watu wengine ambazo hazikutangazwa\n3. Makosa ya sajili ya serikali\n4. Hati za kughushi ambazo haziwezi kugundulika kwa urahisi\n5. Mabadiliko yanayotokea baada ya uhakiki\n6. Taarifa za udanganyifu zilizofichwa kwa makusudi na mmiliki au muuzaji"
+      },
+      "isHomepage": false,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z"
+    },
+    {
+      "id": "privacy",
+      "slug": "privacy-policy",
+      "title": {
+        "en": "Privacy Policy",
+        "fr": "Politique de Confidentialité",
+        "sw": "Sera ya Faragha"
+      },
+      "content": {
+        "en": "### IMMO BURUNDI PRIVACY POLICY\nEffective Date: June 1, 2026\n\nIMMO BURUNDI respects the privacy of all users, clients, agents, and visitors using our platform. This Privacy Policy explains how we collect, use, store, and protect your information. \n\nBy using IMMO BURUNDI services, you agree to the practices described in this Privacy Policy.\n\n#### 2.1 Information We Collect\nWe may collect the following information:\n* **Personal Information**: Full name, phone number, email address, physical address, and identification documents.\n* **Property Information**: Property details, deeds, ownership documents, GPS locations, and high-resolution photos/media.\n* **Payment Information**: Transaction references, payment proofs, and transactional histories.\n* **Technical Information**: Device characteristics, IP addresses, browser information, and application usage activity.\n\n#### 2.2 How We Use Information\nWe use collected information to:\n* Provide platform and marketing services\n* Publish approved property listings\n* Process strict property verification requests\n* Improve platform security and prevent fraud\n* Generate data-driven analytics and reports for sellers\n\n#### 2.3 Data Sharing\nIMMO BURUNDI does not sell personal information. Information is shared strictly with authorized operational staff and legal entities when required by law or local regulations.",
+        "fr": "### POLITIQUE DE CONFIDENTIALITÉ DE IMMO BURUNDI\nDate d'effet : 1er Juin 2026\n\nIMMO BURUNDI respecte la vie privée de tous les utilisateurs, clients, agents et visiteurs de notre plateforme. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations.\n\n#### 2.1 Informations que nous collectons\n* **Informations personnelles** : Nom complet, numéro de téléphone, adresse e-mail, adresse physique et documents d'identité.\n* **Informations sur le bien** : Détails du bien, titres de propriété, documents d'enregistrement, localisations GPS et médias/photos.\n* **Informations de paiement** : Références de transaction, preuves de paiement et historique.\n\n#### 2.2 Comment nous utilisons les informations\nNous utilisons ces données pour fournir des services de courtage et d'annonce, valider les processus de vérification et sécuriser la plateforme contre les fraudes.",
+        "sw": "### SERA YA FARAGHA YA IMMO BURUNDI\nTarehe ya Kuanza: Juni 1, 2026\n\nIMMO BURUNDI inaheshimu faragha ya watumiaji wote, wateja, mawakala, na wageni wanaotumia jukwaa letu. Sera hii ya faragha inaeleza jinsi tunavyokusanya, kutumia, na kulinda habari zako."
+      },
+      "isHomepage": false,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z"
+    },
+    {
+      "id": "terms",
+      "slug": "terms-and-conditions",
+      "title": {
+        "en": "Terms & Conditions",
+        "fr": "Conditions Générales",
+        "sw": "Sheria na Masharti"
+      },
+      "content": {
+        "en": "### IMMO BURUNDI TERMS & CONDITIONS\nEffective Date: June 1, 2026\n\nThese Terms & Conditions govern the use of the IMMO BURUNDI platform. By accessing or using the platform, users agree to comply with these terms.\n\n#### 3.1 Platform Purpose\nIMMO BURUNDI is a real estate marketplace and brokerage platform designed to list, advertise, and facilitate discovery, rental, and sales of properties in Burundi. IMMO BURUNDI is not a governmental land administration or title registry.\n\n#### 3.2 User Qualifications\nUsers must provide high-integrity, accurate representation documents. We enforce verification processes to keep the Burundian market reputable and clean.\n\n#### 3.3 Property Listings\nProperty owners, agents, and sellers are fully responsible for the legality, ownership deeds, and accurate mapping details. IMMO BURUNDI stores and audits the history of submissions and reserves the absolute right to suspend accounts or remove listings for misrepresentation.\n\n#### 3.4 Liability Limitation\nIMMO BURUNDI provides verification as a supportive oversight service. We shall not be held liable for legal property disputes, external title fraud, or governmental errors. Use of this platform is at the user's voluntary discretion.",
+        "fr": "### IMMO BURUNDI CONDITIONS GÉNÉRALES\nDate d'effet : 1er Juin 2026\n\nCes Conditions Générales régissent l'utilisation de la plateforme IMMO BURUNDI. En utilisant notre plateforme, vous acceptez de vous conformer à ces règles.\n\n#### 3.1 Objectif de la plateforme\nIMMO BURUNDI est un marché immobilier et un courtier professionnel destiné à publier des annonces immobilières, vérifier les origines cadastrales, et faciliter de manière sécurisée les transactions.",
+        "sw": "### SHERIA NA MASHARTI YA IMMO BURUNDI\nTarehe ya Kuanza: Juni 1, 2026\n\nSheria na Masharti haya yanasimamia matumizi ya jukwaa la IMMO BURUNDI. Kwa kutumia tovuti hii, unakubali kufuata sheria hizi."
+      },
+      "isHomepage": false,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z"
+    },
+    {
+      "id": "agreement",
+      "slug": "service-agreement",
+      "title": {
+        "en": "Service Agreement & Contract",
+        "fr": "Contrat de Prestation de Service",
+        "sw": "Mkataba wa Huduma"
+      },
+      "content": {
+        "en": "### IMMO BURUNDI SERVICE AGREEMENT & CONTRACT TEMPLATE\n\nThis legally binding Agreement is entered into between:\n\n#### COMPANY INFORMATION\n* **Company Name:** IMMO BURUNDI (Private Limited, Burundi)\n* **Address:** Boulevard de l'Uprona, Rohero, Bujumbura, Burundi\n* **Phone:** +257 22 22 45 45\n* **Email:** support@immoburundi.bi\n\n#### 4.1 Purpose of Agreement\nThis agreement defines the operational parameters of the real estate listing, brokerage support, legal document verification, and premium banner promotions provided by the Company to the client.\n\n#### 4.2 Fees & Commissions\nThe client agrees to pay:\n* Property Listing & Archiving fee options.\n* **Brokerage Commission**: A standard of **2% to 3%** commission upon successful closing of sales, or **1 month's rent** equivalent on verified long-term rentals handled by our agents.\n* Document Verification: Free for standard listing, $50 / 100,000 BIF flat-rate for physical ground tracking & cadaster report checks.\n\n#### 4.3 Governing Law\nThis Agreement is governed strictly by the laws of the Republic of Burundi. Active dispute resolutions shall be submitted to the competent tribunals of Bujumbura.",
+        "fr": "### ACCORD DE SERVICE ET MODÈLE DE CONTRAT IMMO BURUNDI\n\nCet accord de service est conclu entre IMMO BURUNDI et le Client soussigné :\n\n#### INFORMATIONS SUR LA SOCIÉTÉ\n* **Nom de l'entreprise :** IMMO BURUNDI S.A.R.L\n* **Adresse :** Boulevard de l'Uprona, Rohero, Bujumbura, Burundi\n* **Téléphone :** +257 22 22 45 45\n* **Email :** support@immoburundi.bi\n\n#### 4.1 Objet du contrat\nCet accord régit les services de référencement, d'assistance juridique de courtage et de promotion de bannières fournis par l'entreprise au client.",
+        "sw": "### MKATABA WA HUDUMA NA MASHARTI YA IMMO BURUNDI\n\nMkataba huu wa kisheria unawekwa kati ya Kampuni ya IMMO BURUNDI na Mteja:"
+      },
+      "isHomepage": false,
+      "systemPage": true,
+      "updatedAt": "2026-06-09T04:41:34.187Z"
+    }
+  ],
+  "emails": [],
+  "stats": {
+    "totalProperties": 5,
+    "approvedProperties": 4,
+    "pendingProperties": 1,
+    "rejectedProperties": 0,
+    "totalUsers": 2,
+    "totalViews": 1250,
+    "totalInquiries": 48
+  }
+}

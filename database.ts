@@ -55,7 +55,7 @@ const defaultPages: WebPage[] = [
   },
   {
     id: 'about',
-    slug: 'about-us',
+    slug: 'about',
     title: {
       en: 'About IMMO BURUNDI',
       fr: 'À Propos de IMMO BURUNDI',
@@ -683,7 +683,7 @@ export function getDatabase(): DatabaseSchema {
     }
   }
 
-  const aboutPage = db.pages.find((p: any) => p.id === 'about' || p.slug === 'about-us');
+  const aboutPage = db.pages.find((p: any) => p.id === 'about' || p.slug === 'about');
   if (aboutPage && (!aboutPage.sections || aboutPage.sections.length === 0)) {
     aboutPage.sections = prebuiltAboutSections;
     changed = true;

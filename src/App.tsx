@@ -900,12 +900,12 @@ export default function App() {
               </div>
             );
           })()
-        ) : pages.some(p => p.slug === (currentView === 'about' ? 'about-us' : currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView)) ? (
+        ) : pages.some(p => p.slug === (currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView)) ? (
           /* ==========================================
               DYNAMIC CUSTOM PAGE ROUTER
           ========================================== */
           (() => {
-            const mappedSlug = currentView === 'about' ? 'about-us' : currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView;
+            const mappedSlug = currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView;
             const matchedPl = pages.find(p => p.slug === mappedSlug);
             if (!matchedPl) return null;
             

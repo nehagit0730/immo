@@ -51,7 +51,7 @@ const defaultPages: WebPage[] = [
   },
   {
     id: 'about',
-    slug: 'about-us',
+    slug: 'about',
     title: {
       en: 'About IMMO BURUNDI',
       fr: 'À Propos de IMMO BURUNDI',
