@@ -7,7 +7,7 @@ import AuthModal from './components/AuthModal';
 import ClientDashboard from './components/ClientDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ContractDetails from './components/ContractDetails';
-import { Search, MapPin, Building2, Phone, Mail, Clock, HelpCircle, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, Building2, Phone, Mail, Clock, HelpCircle, ShieldAlert, CheckCircle2, Loader2 } from 'lucide-react';
 import { ibFetch } from './apiMock';
 import PageSectionsRenderer from './components/PageSectionsRenderer';
 import { getThemeSettings } from './theme';
@@ -96,6 +96,9 @@ export default function App() {
 
   useEffect(() => {
     fetchLandingData();
+  }, []);
+
+  useEffect(() => {
     // Scroll to top on navigation triggers
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView]);
@@ -209,7 +212,12 @@ export default function App() {
 
       {/* Render panel routing layout views */}
       <main className="flex-grow">
-        {currentView === 'property-details' && selectedPropertyId ? (() => {
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 min-h-[50vh] text-slate-500 space-y-4">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-xs font-mono tracking-widest uppercase animate-pulse">Loading holdings & cadasters...</p>
+          </div>
+        ) : currentView === 'property-details' && selectedPropertyId ? (() => {
           const matchedPProp = properties.find(p => p.id === selectedPropertyId);
           if (!matchedPProp) {
             return (
