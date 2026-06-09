@@ -422,14 +422,46 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   // Duplicate page
   const handleDuplicatePage = async (page: WebPage) => {
     try {
+      const defaultTitle = `${page.title.en} (Copy)`;
+      const chosenTitle = prompt(
+        currentLanguage === 'en'
+          ? 'Enter Title for the duplicated page:'
+          : 'Entrez le titre pour la page dupliquée :',
+        defaultTitle
+      );
+      if (chosenTitle === null) return;
+      const finalTitle = chosenTitle.trim() || defaultTitle;
+
+      const defaultSlug = `${page.slug}-copy`;
+      const chosenSlugRaw = prompt(
+        currentLanguage === 'en' 
+          ? 'Enter URL slug for the duplicated page:' 
+          : 'Entrez le slug URL pour la page dupliquée :',
+        defaultSlug
+      );
+      
+      if (chosenSlugRaw === null) return; // user cancelled duplication
+      
+      const chosenSlug = chosenSlugRaw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      if (!chosenSlug) {
+        alert(currentLanguage === 'en' ? 'Slug cannot be empty!' : 'Le slug ne peut pas être vide !');
+        return;
+      }
+
+      // Check if duplicate slug already exists
+      if (pages.some(p => p.slug === chosenSlug)) {
+        alert(currentLanguage === 'en' ? `The slug "/${chosenSlug}" is already in use by another page.` : `Le slug "/${chosenSlug}" est déjà utilisé.`);
+        return;
+      }
+
       const copyPayload = {
         title: {
-          en: `${page.title.en} (Copy)`,
-          fr: `${page.title.fr} (Copie)`,
-          sw: `${page.title.sw} (Nakala)`
+          en: finalTitle,
+          fr: page.title.fr ? `${page.title.fr} (Copie)` : finalTitle,
+          sw: page.title.sw ? `${page.title.sw} (Nakala)` : finalTitle
         },
         content: page.content,
-        slug: `${page.slug}-copy-${Math.floor(Math.random() * 1000)}`,
+        slug: chosenSlug,
         sections: page.sections ? JSON.parse(JSON.stringify(page.sections)) : []
       };
 
@@ -1948,6 +1980,59 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             <div className="p-4 border-b border-slate-800 font-mono text-[10px] text-slate-450 uppercase tracking-widest font-extrabold flex items-center justify-between">
               <span>Section Elements Stack</span>
               <span className="text-slate-500">{sections.length} blocks used</span>
+            </div>
+
+            {/* Page Core Settings (Title & Slug) */}
+            <div className="p-3.5 bg-slate-950 border-b border-slate-800/80 space-y-2.5 shrink-0">
+              <span className="text-[9px] font-mono text-[#38bdf8] uppercase block font-bold tracking-wider">⚙️ Page Settings (Title & Slug)</span>
+              
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">Page Title (EN)</label>
+                  <input 
+                    type="text" 
+                    value={editorPage.title.en || ''} 
+                    onChange={(e) => {
+                      setEditorPage({
+                        ...editorPage,
+                        title: { ...editorPage.title, en: e.target.value }
+                      });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium font-sans"
+                    placeholder="Page Title"
+                  />
+                </div>
+
+                {!editorPage.systemPage ? (
+                  <div>
+                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">URL Slug (Route Path)</label>
+                    <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-400">
+                      <span className="select-none text-slate-500 font-semibold font-mono">/</span>
+                      <input 
+                        type="text" 
+                        value={editorPage.slug || ''} 
+                        onChange={(e) => {
+                          const sanitizedSlug = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+                          setEditorPage({
+                            ...editorPage,
+                            slug: sanitizedSlug
+                          });
+                        }}
+                        className="w-full bg-transparent border-none text-white focus:outline-none ml-1 font-mono font-semibold"
+                        placeholder="slug"
+                      />
+                    </div>
+                    <p className="text-[8px] text-slate-500 font-mono mt-1">Will resolve to: <span className="text-[#38bdf8] font-bold">/{editorPage.slug || ''}</span></p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">URL Slug (System Reserved)</label>
+                    <div className="flex items-center bg-slate-900/50 border border-slate-800/50 rounded-lg p-1.5 text-xs text-slate-500 font-mono select-none">
+                      <span>/{editorPage.slug}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Quick Templates Trigger bar */}
