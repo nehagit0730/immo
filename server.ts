@@ -549,6 +549,23 @@ ${urls.map(u => `  <url>
       appType: 'spa',
     });
     app.use(vite.middlewares);
+    
+    // SPA Wildcard fallback for development page-previews / deep links
+    app.get('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      // Let other assets, static resources or API calls proceed
+      if (url.startsWith('/api') || url.startsWith('/uploads') || url.includes('.')) {
+        return next();
+      }
+      try {
+        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
