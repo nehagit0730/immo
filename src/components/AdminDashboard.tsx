@@ -332,6 +332,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   const [editorPage, setEditorPage] = useState<WebPage | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [previewPage, setPreviewPage] = useState<WebPage | null>(null);
+  const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Settings states
   const [themeSchema, setThemeSchema] = useState<ThemeSchema>('blue');
@@ -1972,23 +1973,38 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         </div>
 
         {/* Workspace content split view */}
-        <div className="flex-grow flex flex-col lg:flex-row gap-4 overflow-hidden h-full">
+        <div className="flex-grow flex flex-col lg:flex-row gap-5 overflow-hidden h-full">
           
           {/* Column 1: LEFT BUILDER SIDEBAR PANEL (CONTROLS & COMPONENT LIST) */}
-          <div className="w-full lg:w-[330px] shrink-0 bg-slate-900 border border-slate-800 rounded-3xl flex flex-col overflow-hidden h-full shadow-lg">
+          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden h-full shadow-lg">
             
-            <div className="p-4 border-b border-slate-800 font-mono text-[10px] text-slate-450 uppercase tracking-widest font-extrabold flex items-center justify-between">
-              <span>Section Elements Stack</span>
-              <span className="text-slate-500">{sections.length} blocks used</span>
+            {/* Header with Shopify design elements */}
+            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-blue-950/80 border border-blue-800/50 text-blue-400">
+                  <Layout className="w-4 h-4" />
+                </span>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-black block">Active Theme Customizer</span>
+                  <span className="text-[11.5px] font-bold text-white font-sans">Page Sections Stack</span>
+                </div>
+              </div>
+              <span className="text-[10.5px] font-mono px-2 py-0.5 rounded-full bg-slate-800/80 text-blue-300 font-bold border border-slate-700/50">
+                {sections.length} blocks
+              </span>
             </div>
 
-            {/* Page Core Settings (Title & Slug) */}
-            <div className="p-3.5 bg-slate-950 border-b border-slate-800/80 space-y-2.5 shrink-0">
-              <span className="text-[9px] font-mono text-[#38bdf8] uppercase block font-bold tracking-wider">⚙️ Page Settings (Title & Slug)</span>
+            {/* Page Core Settings (Title & Slug) with Premium WordPress styling */}
+            <div className="p-4 bg-slate-950/50 border-b border-slate-800/80 space-y-3 shrink-0">
+              <div className="flex items-center justify-between cursor-pointer">
+                <span className="text-[9.5px] font-mono text-blue-400 uppercase block font-bold tracking-wider flex items-center gap-1.5">
+                  <Settings className="w-3.5 h-3.5" /> 1. Page Metadata Configuration
+                </span>
+              </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div>
-                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">Page Title (EN)</label>
+                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Page Admin Title (EN)</label>
                   <input 
                     type="text" 
                     value={editorPage.title.en || ''} 
@@ -1998,15 +2014,15 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         title: { ...editorPage.title, en: e.target.value }
                       });
                     }}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium font-sans"
-                    placeholder="Page Title"
+                    className="w-full bg-slate-950 border border-slate-800 hover:border-slate-750 focus:border-blue-500 rounded-lg p-2 text-xs text-white focus:outline-none font-medium font-sans placeholder-slate-600 transition"
+                    placeholder="e.g. My Custom Land Page"
                   />
                 </div>
 
                 {!editorPage.systemPage ? (
                   <div>
-                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">URL Slug (Route Path)</label>
-                    <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-400">
+                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">URL Route Path (Slug)</label>
+                    <div className="flex items-center bg-slate-950 border border-slate-800 hover:border-slate-750 rounded-lg px-2.5 py-2 text-xs text-slate-400 transition">
                       <span className="select-none text-slate-500 font-semibold font-mono">/</span>
                       <input 
                         type="text" 
@@ -2022,12 +2038,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         placeholder="slug"
                       />
                     </div>
-                    <p className="text-[8px] text-slate-500 font-mono mt-1">Will resolve to: <span className="text-[#38bdf8] font-bold">/{editorPage.slug || ''}</span></p>
+                    <p className="text-[8.5px] text-slate-500 font-mono mt-1">Live Endpoint URL: <span className="text-[#38bdf8] font-bold">/{editorPage.slug || ''}</span></p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-0.5">URL Slug (System Reserved)</label>
-                    <div className="flex items-center bg-slate-900/50 border border-slate-800/50 rounded-lg p-1.5 text-xs text-slate-500 font-mono select-none">
+                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">URL Path (System Reserved Route)</label>
+                    <div className="flex items-center bg-slate-950/60 border border-slate-850/60 rounded-lg p-2 text-xs text-slate-500 font-mono select-none">
                       <span>/{editorPage.slug}</span>
                     </div>
                   </div>
@@ -2035,10 +2051,12 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               </div>
             </div>
 
-            {/* Quick Templates Trigger bar */}
-            <div className="p-3 bg-slate-950/40 border-b border-slate-800/60 space-y-1.5 shrink-0">
-              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold tracking-wider">🚀 Quick Page Presets (Replaces current)</span>
-              <div className="grid grid-cols-2 gap-1.5">
+            {/* Quick Templates Trigger bar (Shopify Style Preset Selector) */}
+            <div className="p-4 bg-slate-950/30 border-b border-slate-800/80 space-y-2 shrink-0">
+              <span className="text-[9.5px] font-mono text-slate-400 uppercase block font-bold tracking-wider flex items-center gap-1.5">
+                ⚡ 2. Shopify-Style Fast Layout Presets
+              </span>
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -2110,7 +2128,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                       setActiveSectionId('sec_1');
                     }
                   }}
-                  className="p-1.5 bg-blue-950/40 hover:bg-blue-900/60 border border-blue-900/20 text-blue-300 rounded-lg text-[9px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center"
+                  className="p-2 bg-blue-950/40 hover:bg-blue-900/60 border border-blue-900/20 text-blue-300 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center whitespace-nowrap"
                 >
                   🏢 Agency Home
                 </button>
@@ -2176,222 +2194,410 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                       setActiveSectionId('sec_11');
                     }
                   }}
-                  className="p-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-900/20 text-emerald-300 rounded-lg text-[9px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center"
+                  className="p-2 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-900/20 text-emerald-300 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center whitespace-nowrap"
                 >
                   🗺️ Land Plots
                 </button>
               </div>
             </div>
 
-            {/* List of active sections stack */}
-            <div className="p-4 flex-grow space-y-2.5 overflow-y-auto">
+            {/* List of active sections stack - Squarespace clean block indicators */}
+            <div className="p-4 flex-grow space-y-2 overflow-y-auto bg-slate-900">
+              <span className="text-[9.5px] font-mono tracking-widest text-slate-400 block font-bold uppercase mb-2">
+                📂 3. Content Blocks Stack
+              </span>
+              
               {sections.length === 0 ? (
-                <div className="py-6 text-center text-xs text-slate-500 font-mono leading-relaxed p-4 border border-dashed border-slate-800 rounded-2xl">
-                  Catalog stack is empty. Click a block catalog item below to add your very first visual section.
+                <div className="py-8 text-center text-xs text-slate-500 font-mono leading-relaxed p-4 border border-dashed border-slate-800 rounded-2xl bg-slate-950/30">
+                  Your store canvas is blank.<br />Click a theme slice block below to build your page hierarchy dynamically!
                 </div>
               ) : (
-                sections.map((sec, sIdx) => (
-                  <div 
-                    key={sec.id}
-                    className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${
-                      activeSectionId === sec.id 
-                        ? 'bg-slate-950 border-slate-450 text-white' 
-                        : 'bg-slate-900/50 border-slate-800 text-slate-350 hover:bg-slate-850/50'
-                    }`}
-                  >
+                sections.map((sec, sIdx) => {
+                  const isActive = activeSectionId === sec.id;
+                  return (
                     <div 
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={() => setActiveSectionId(sec.id)}
+                      key={sec.id}
+                      className={`group p-3 rounded-xl border transition-all flex flex-col gap-2 ${
+                        isActive 
+                          ? 'bg-slate-950 border-blue-500 shadow-md shadow-blue-900/10' 
+                          : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700/60 hover:bg-slate-900/80'
+                      }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-[10px] font-mono font-black text-slate-500">#{sIdx+1}</span>
-                        <div className="text-left">
-                          <span className="text-xs font-black block text-slate-100 uppercase font-mono">{sec.type}</span>
-                          <span className="text-[9.5px] text-slate-400 capitalize">{sec.fontSize} size • {sec.backgroundColor.includes('bg-white') ? 'Light style' : 'Premium Dark'}</span>
+                      <div 
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => setActiveSectionId(sec.id)}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className={`text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                            isActive ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
+                          }`}>
+                            #{sIdx+1}
+                          </span>
+                          <div className="text-left">
+                            <span className="text-xs font-bold block text-slate-200 group-hover:text-white uppercase font-mono">
+                              {sec.type.replace('_', ' ')}
+                            </span>
+                            <span className="text-[9px] text-slate-500 font-mono">
+                              {sec.backgroundColor.includes('bg-white') ? 'Light Layout' : 'Premium Dark'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Shopify style Section Ordering triggers */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button 
+                            disabled={sIdx === 0}
+                            onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'up'); }}
+                            className="p-1 rounded bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer border border-slate-853 transition"
+                            title="Move section up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            disabled={sIdx === sections.length - 1}
+                            onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'down'); }}
+                            className="p-1 rounded bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer border border-slate-853 transition"
+                            title="Move section down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-                      
-                      {/* Section Ordering triggers */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button 
-                          disabled={sIdx === 0}
-                          onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'up'); }}
-                          className="p-1 rounded bg-slate-950 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer"
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                          disabled={sIdx === sections.length - 1}
-                          onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'down'); }}
-                          className="p-1 rounded bg-slate-950 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer"
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
+
+                      {/* Duplicate / Delete control helpers */}
+                      <div className="flex justify-between items-center border-t border-slate-900/60 pt-2 mt-1">
+                        <span className="text-[8px] font-mono text-slate-600 uppercase font-bold">
+                          {sec.fontSize === 'display' ? 'Display scale' : `${sec.fontSize} scale`}
+                        </span>
+                        <div className="flex gap-1.5">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDuplicateSection(sIdx); }}
+                            className="px-2 py-0.5 rounded text-[9.5px] font-mono bg-slate-900 text-slate-350 hover:text-blue-400 hover:bg-blue-950/20 border border-slate-850 cursor-pointer transition font-bold"
+                          >
+                            Duplicate
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteSection(sIdx); }}
+                            className="px-2 py-0.5 rounded text-[9.5px] font-mono bg-slate-900 text-red-400 hover:bg-red-950/20 border border-slate-850 cursor-pointer transition font-bold"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Duplicate / Delete control helpers */}
-                    <div className="flex justify-end border-t border-slate-950/50 pt-2 gap-1.5">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDuplicateSection(sIdx); }}
-                        className="p-1 px-1.5 rounded text-[10px] font-mono bg-slate-900 shadow hover:text-blue-400 flex items-center gap-1 cursor-pointer font-bold"
-                      >
-                        Copy
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteSection(sIdx); }}
-                        className="p-1 px-1.5 rounded text-[10px] font-mono bg-slate-900 shadow text-red-400 hover:bg-red-950/20 flex items-center gap-1 cursor-pointer font-bold"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
-            {/* Quick Catalog list to add items */}
-            <div className="p-4 border-t border-slate-800 space-y-3.5 shrink-0">
-              <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-extrabold uppercase">Block Sections Catalog</span>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {(['banner', 'slideshow', 'image_text', 'columns', 'gallery', 'richtext', 'brands', 'faqs', 'testimonials', 'video', 'single_image', 'heading', 'text', 'property_list', 'team_profile', 'process_steps', 'stats_grid', 'contact_form_banner', 'finances_calculator'] as PageSection['type'][]).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => handleAddSection(type)}
-                    className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-350 border border-slate-850 rounded-xl text-[10.5px] uppercase font-mono font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="w-3 h-3 text-emerald-400" /> {type.replace('_', ' ')}
-                  </button>
-                ))}
+            {/* Quick Shopify-style Categorized Block Sections Catalog */}
+            <div className="p-4 border-t border-slate-800 space-y-3 shrink-0 bg-slate-950/50">
+              <span className="text-[9.5px] font-mono tracking-widest text-[#38bdf8] block font-black uppercase">
+                ➕ 4. Add Live Page Sections
+              </span>
+              
+              {/* Organized by Shopify Theme categories */}
+              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                {/* Headers & Promos Category */}
+                <div>
+                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">🪧 Heros & Banner Ads</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: 'banner', label: 'Main Banner' },
+                      { key: 'slideshow', label: 'Slideshow' },
+                      { key: 'heading', label: 'Page Title' },
+                      { key: 'text', label: 'Promo Text' }
+                    ].map(b => (
+                      <button
+                        key={b.key}
+                        onClick={() => handleAddSection(b.key as any)}
+                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3 text-blue-500" /> {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Portfolios & Listings Category */}
+                <div>
+                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">🛒 Property Directories</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: 'property_list', label: 'Properties list' },
+                      { key: 'finances_calculator', label: 'Mortgage Calc' },
+                      { key: 'stats_grid', label: 'Stats Grid' }
+                    ].map(b => (
+                      <button
+                        key={b.key}
+                        onClick={() => handleAddSection(b.key as any)}
+                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3 text-emerald-500" /> {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Symmetrical Layout structures Category */}
+                <div>
+                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">📂 Grid Dividers & Content</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: 'image_text', label: 'Image + Text' },
+                      { key: 'columns', label: '3-Col Pillar' },
+                      { key: 'single_image', label: 'Feature Image' },
+                      { key: 'richtext', label: 'Article Text' }
+                    ].map(b => (
+                      <button
+                        key={b.key}
+                        onClick={() => handleAddSection(b.key as any)}
+                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3 text-indigo-500" /> {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Endorsements and trust seals Category */}
+                <div>
+                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">💬 Endorsements & Trust</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: 'testimonials', label: 'Client Quotes' },
+                      { key: 'faqs', label: 'FAQs Accordion' },
+                      { key: 'team_profile', label: 'Expert Profiles' },
+                      { key: 'brands', label: 'Trust Logos' }
+                    ].map(b => (
+                      <button
+                        key={b.key}
+                        onClick={() => handleAddSection(b.key as any)}
+                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3 text-amber-500" /> {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Interactions Category */}
+                <div>
+                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">📞 Interactive Converters</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: 'contact_form_banner', label: 'Consult Lead' },
+                      { key: 'video', label: 'Video Drone' },
+                      { key: 'process_steps', label: 'Step Progress' }
+                    ].map(b => (
+                      <button
+                        key={b.key}
+                        onClick={() => handleAddSection(b.key as any)}
+                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3 text-red-500" /> {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Column 2: MIDDLE BUILDER SIDEBAR PANEL (ACTIVE SECTION SETTINGS) */}
-          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col overflow-hidden h-full shadow-lg">
-              <div className="border-b border-slate-800 pb-3 mb-4 flex justify-between items-center shrink-0">
-                <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block">Element details</span>
-                {activeSection && <span className="text-[9px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-extrabold">{activeSection.type}</span>}
-              </div>
-
-              {activeSection ? (
-                <div className="space-y-4 text-xs text-slate-205 flex-grow overflow-y-auto pr-1">
-                  
-                  {/* Style Settings: Background, color, fonts */}
-                  <div className="space-y-3 border-b border-slate-830 pb-4 mb-4">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase uppercase tracking-wider font-extrabold">Format &amp; Sizing styles</span>
-                    
-                    <div className="space-y-2">
-                      <label className="block text-[10px] font-mono text-slate-400 uppercase">Section Background</label>
-                      <select 
-                        value={activeSection.backgroundColor} 
-                        onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-slate-200"
-                      >
-                        <option value="bg-white text-slate-800 border-none">Clean Alabaster (Light)</option>
-                        <option value="bg-slate-50 text-slate-800 border-none">Soft Ash (Light)</option>
-                        <option value="bg-slate-100 text-slate-800 border-none">Clean Gray (Light)</option>
-                        <option value="bg-slate-900 text-white border-slate-800 border-b">Midnight Carbon (Dark)</option>
-                        <option value="bg-slate-950 text-slate-100 border-b border-slate-800">Deep Cosmic (Dark)</option>
-                        <option value="bg-blue-900 text-white">Strategic Royal (Dark Blue)</option>
-                        <option value="bg-blue-50 text-blue-950">Ocean Breeze (Soft Blue)</option>
-                        <option value="bg-emerald-900 text-white">Registry Green (Dark Emerald)</option>
-                        <option value="bg-emerald-50 text-emerald-950">Mint Fresh (Soft Green)</option>
-                        <option value="bg-amber-500 text-amber-950">Solar Amber (Orange accent)</option>
-                        <option value="bg-amber-50 text-amber-950">Soft Cream (Tan layout)</option>
-                        <option value="bg-indigo-950 text-indigo-50">Imperial Indigo (Dreamy Purple)</option>
-                        <option value="bg-indigo-50 text-indigo-950">Grape Soda (Soft Purple)</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Heading Color</label>
-                        <select 
-                          value={activeSection.headingColor} 
-                          onChange={(e) => handleUpdateActiveSectionStyle('headingColor', e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-850 rounded-lg p-1.5 uppercase font-mono tracking-wider text-[10px]"
-                        >
-                          <option value="text-slate-900">Charcoal Slate</option>
-                          <option value="text-white">Pure White</option>
-                          <option value="text-blue-600">Primary Accent</option>
-                          <option value="text-amber-500">Amber Gold</option>
-                          <option value="text-emerald-400">Green Emerald</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Paragraph font</label>
-                        <select 
-                          value={activeSection.fontSize} 
-                          onChange={(e) => handleUpdateActiveSectionStyle('fontSize', e.target.value as any)}
-                          className="w-full bg-slate-950 border border-slate-850 rounded-lg p-1.5 font-mono text-[10px]"
-                        >
-                          <option value="sm">Small (text-xs)</option>
-                          <option value="md">Medium (text-sm)</option>
-                          <option value="lg">Large (text-base)</option>
-                          <option value="display">Display Hero (text-xl)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Section Content inputs fields */}
-                  <div className="space-y-3">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase uppercase tracking-wider font-extrabold">Section parameters inputs</span>
-                    {renderSectionFieldsInputs(activeSection, handleUpdateActiveSectionSettings)}
-                  </div>
-
-                </div>
-              ) : (
-                <div className="text-center py-10 text-slate-500 font-mono text-[11px] leading-relaxed">
-                  Select any section block in the left stack list to configure titles, text, image offsets, accordion details, FAQs, and sliders.
-                </div>
+          {/* Column 2: MIDDLE BUILDER SIDEBAR PANEL (ACTIVE SECTION SETTINGS) - Premium Inspector */}
+          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col overflow-hidden h-full shadow-lg">
+            <div className="border-b border-slate-800 pb-3 mb-4 flex justify-between items-center shrink-0">
+              <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block flex items-center gap-1.5">
+                ⚙️ Section Inspector
+              </span>
+              {activeSection && (
+                <span className="text-[9.5px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-black tracking-widest">
+                  {activeSection.type}
+                </span>
               )}
             </div>
 
-            {/* Column 3: RIGHT BUILDER PANEL (LIVE HIGH-FIDELITY PREVIEW MOCKUP CONTAINER) */}
-            <div className="flex-grow bg-slate-950 border border-slate-850 rounded-3xl overflow-hidden flex flex-col relative h-full shadow-inner">
-              <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
-                <span className="text-[9px] font-mono text-slate-450 block uppercase tracking-wider font-extrabold flex items-center gap-1.5">
-                  <Monitor className="w-3.5 h-3.5 text-blue-400 animate-pulse" /> Interactive Visual Prototype Canvas
-                </span>
-                <span className="text-[8.5px] font-mono text-slate-500 uppercase">Fully Symmetrical Preview</span>
-              </div>
+            {activeSection ? (
+              <div className="space-y-4 text-xs text-slate-300 flex-grow overflow-y-auto pr-1">
+                
+                {/* Style Settings: Background, color, fonts */}
+                <div className="space-y-3.5 border-b border-slate-800 pb-4 mb-4">
+                  <span className="text-[9px] font-mono text-slate-450 uppercase tracking-widest font-extrabold block">🖌️ Element Layout Styling</span>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase">Interactive section Background</label>
+                    <select 
+                      value={activeSection.backgroundColor} 
+                      onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 text-xs font-medium cursor-pointer"
+                    >
+                      <option value="bg-white text-slate-800 border-none">Clean Alabaster (Light)</option>
+                      <option value="bg-slate-50 text-slate-800 border-none">Soft Ash (Light)</option>
+                      <option value="bg-slate-100 text-slate-800 border-none">Clean Gray (Light)</option>
+                      <option value="bg-slate-900 text-white border-slate-800 border-b">Midnight Carbon (Dark)</option>
+                      <option value="bg-slate-950 text-slate-100 border-b border-slate-800">Deep Cosmic (Dark)</option>
+                      <option value="bg-blue-900 text-white">Strategic Royal (Dark Blue)</option>
+                      <option value="bg-blue-50 text-blue-950">Ocean Breeze (Soft Blue)</option>
+                      <option value="bg-emerald-900 text-white">Registry Green (Dark Emerald)</option>
+                      <option value="bg-emerald-50 text-emerald-950">Mint Fresh (Soft Green)</option>
+                      <option value="bg-amber-500 text-amber-950">Solar Amber (Orange accent)</option>
+                      <option value="bg-amber-50 text-amber-950">Soft Cream (Tan layout)</option>
+                      <option value="bg-indigo-950 text-indigo-50">Imperial Indigo (Dreamy Purple)</option>
+                      <option value="bg-indigo-50 text-indigo-950">Grape Soda (Soft Purple)</option>
+                    </select>
+                  </div>
 
-              {/* Styled Mock Page Viewport container */}
-              <div className="flex-grow overflow-y-auto p-4 space-y-0 text-slate-800 font-sans select-none pointer-events-auto [&_*]:pointer-events-none">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Heading Color</label>
+                      <select 
+                        value={activeSection.headingColor} 
+                        onChange={(e) => handleUpdateActiveSectionStyle('headingColor', e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-slate-200 focus:outline-none cursor-pointer"
+                      >
+                        <option value="text-slate-900">Charcoal Slate</option>
+                        <option value="text-white">Pure White</option>
+                        <option value="text-blue-600">Primary Accent</option>
+                        <option value="text-amber-500">Amber Gold</option>
+                        <option value="text-emerald-400">Green Emerald</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Typography size</label>
+                      <select 
+                        value={activeSection.fontSize} 
+                        onChange={(e) => handleUpdateActiveSectionStyle('fontSize', e.target.value as any)}
+                        className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-slate-200 focus:outline-none cursor-pointer"
+                      >
+                        <option value="sm">Small text (text-xs)</option>
+                        <option value="md">Standard copy (text-sm)</option>
+                        <option value="lg">Large body (text-base)</option>
+                        <option value="display">Display Hero (text-xl)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section Content inputs fields */}
+                <div className="space-y-4">
+                  <span className="text-[9px] font-mono text-slate-450 uppercase tracking-widest font-extrabold block">📝 Block Settings inputs</span>
+                  
+                  <div className="bg-slate-950/40 border border-slate-800 p-3.5 rounded-xl space-y-3">
+                    {renderSectionFieldsInputs(activeSection, handleUpdateActiveSectionSettings)}
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              <div className="text-center py-24 text-slate-500 font-mono text-xs leading-relaxed max-w-[240px] mx-auto space-y-3">
+                <Settings className="w-8 h-8 mx-auto text-slate-650 animate-spin-reverse" />
+                <p>Click on any content block card in the left stack list to open its customizable responsive fields!</p>
+              </div>
+            )}
+          </div>
+
+          {/* Column 3: RIGHT BUILDER PANEL (LIVE HIGH-FIDELITY PREVIEW MOCKUP CONTAINER) - Interactive Device simulator */}
+          <div className="flex-grow bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden flex flex-col relative h-full shadow-inner">
+            
+            {/* Header: Device Simulator Controls (Shopify Style) */}
+            <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center shrink-0">
+              <span className="text-[10px] font-mono text-slate-400 block uppercase tracking-wider font-extrabold flex items-center gap-1.5 select-none">
+                <Monitor className="w-4 h-4 text-emerald-400 animate-pulse" /> Live Store View Emulator
+              </span>
+              
+              {/* Desktop / Tablet / Mobile Toggle selector */}
+              <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-0.5 rounded-lg select-none">
+                <button 
+                  type="button"
+                  onClick={() => setPreviewSize('desktop')}
+                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
+                    previewSize === 'desktop' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
+                  }`}
+                  title="Simulate Full Desktop Screen"
+                >
+                  🖥️ Desktop
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setPreviewSize('tablet')}
+                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
+                    previewSize === 'tablet' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
+                  }`}
+                  title="Simulate Tablet Width View"
+                >
+                  📱 Tablet
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setPreviewSize('mobile')}
+                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
+                    previewSize === 'mobile' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
+                  }`}
+                  title="Simulate Mobile Width View"
+                >
+                  📱 Mobile
+                </button>
+              </div>
+            </div>
+
+            {/* Simulated browser frame bar */}
+            <div className="bg-slate-950/80 border-b border-slate-900 px-4 py-1.5 flex items-center gap-2 select-none">
+              <div className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
+              </div>
+              
+              <div className="flex-grow max-w-md mx-auto bg-slate-900 border border-slate-850 px-3 py-0.5 rounded-md text-[9px] font-mono text-slate-500 flex items-center gap-1 justify-center">
+                <span>🔒 https://immoburundi.bi/</span>
+                <span className="text-slate-350 font-bold">{editorPage.slug}</span>
+              </div>
+            </div>
+
+            {/* Styled Mock Page Viewport container with custom dimensions mapping */}
+            <div className="flex-grow overflow-y-auto p-4 bg-slate-900/40 select-none">
+              <div className={`shadow-2xl transition-all duration-300 ${
+                previewSize === 'desktop' 
+                  ? 'w-full' 
+                  : previewSize === 'tablet' 
+                  ? 'w-[750px] border-[6px] border-slate-850 rounded-2xl shadow-slate-950/80 bg-white mx-auto' 
+                  : 'w-[375px] border-[8px] border-slate-850 rounded-3xl shadow-slate-950/80 bg-white mx-auto'
+              }`}>
                 {sections.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-3">
-                    <Layout className="w-10 h-10 text-slate-700 animate-pulse" />
-                    <h4 className="text-xs font-black text-slate-400 uppercase">Interactive Screen Empty</h4>
-                    <p className="text-[10px] text-slate-500 leading-relaxed">Generate visual layouts by adding sections. They will render beautifully here in real time with exact layout alignments and parameters.</p>
+                  <div className="py-24 flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-3.5">
+                    <Layout className="w-12 h-12 text-slate-750 animate-pulse" />
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Interactive Screen Empty</h4>
+                    <p className="text-[10px] text-slate-500 leading-relaxed">Choose some block elements on the left stack to construct your new section list live. They will compile here perfectly!</p>
                   </div>
                 ) : (
-                  sections.map((sec, innerIdx) => (
-                    <div 
-                      key={sec.id} 
-                      className={`relative w-full text-slate-800 border ${
-                        activeSectionId === sec.id 
-                          ? 'border-slate-400 shadow-2xl scale-[0.99] z-10' 
-                          : 'border-slate-850/40 hover:border-slate-700/40'
-                      }`}
-                    >
-                      {/* Active Indicator helper label */}
-                      {activeSectionId === sec.id && (
-                        <span className="absolute top-2 left-2 z-30 bg-slate-900 border border-slate-700 text-white text-[8px] font-mono uppercase px-2 py-0.5 rounded-full font-black animate-bounce tracking-widest">
-                          Active Selection: {sec.type}
-                        </span>
-                      )}
-                      
-                      {renderMockPreviewSectionContent(sec)}
-                    </div>
-                  ))
+                  sections.map((sec, innerIdx) => {
+                    const isActive = activeSectionId === sec.id;
+                    return (
+                      <div 
+                        key={sec.id} 
+                        className={`relative w-full text-slate-800 transition-all ${
+                          isActive 
+                            ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900/10 z-15 scale-[0.995] rounded-lg overflow-hidden' 
+                            : 'border-b border-slate-100/5 hover:ring-1 hover:ring-slate-700/50 hover:rounded-lg'
+                        }`}
+                      >
+                        {/* Active Indicator helper label */}
+                        {isActive && (
+                          <span className="absolute top-3 left-3 z-30 bg-blue-600 text-white text-[8px] font-mono uppercase px-2.5 py-0.5 rounded-full font-black animate-bounce tracking-widest shadow">
+                            Editing: {sec.type.replace('_', ' ')}
+                          </span>
+                        )}
+                        
+                        {renderMockPreviewSectionContent(sec)}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
           </div>
         </div>
+      </div>
     );
   }
 
