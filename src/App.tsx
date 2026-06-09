@@ -34,6 +34,16 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState(() => {
     try {
+      // 1. Check query parameters first (extremely reliable for static platforms)
+      const params = new URLSearchParams(window.location.search);
+      const queryView = params.get('page') || params.get('view');
+      if (queryView) return queryView;
+
+      // 2. Check Hash fallback
+      const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+      if (hash) return hash;
+
+      // 3. Fallback to pathname
       const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
       return path || 'home';
     } catch {
@@ -106,6 +116,19 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const queryView = params.get('page') || params.get('view');
+        if (queryView) {
+          setCurrentView(queryView);
+          return;
+        }
+
+        const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+        if (hash) {
+          setCurrentView(hash);
+          return;
+        }
+
         const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
         setCurrentView(path || 'home');
       } catch (err) {
@@ -113,7 +136,11 @@ export default function App() {
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const handleLanguageChange = (lang: Language) => {
@@ -122,16 +149,16 @@ export default function App() {
 
   const handleAuthSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
-    // Auto redirect to correct workspace tab
+    // Auto redirect to correct workspace tab using non-404 query routing
     if (authenticatedUser.role === 'admin') {
       setCurrentView('admin-dashboard');
       try {
-        window.history.pushState({ view: 'admin-dashboard' }, '', '/admin-dashboard');
+        window.history.pushState({ view: 'admin-dashboard' }, '', '/?page=admin-dashboard');
       } catch {}
     } else {
       setCurrentView('client-dashboard');
       try {
-        window.history.pushState({ view: 'client-dashboard' }, '', '/client-dashboard');
+        window.history.pushState({ view: 'client-dashboard' }, '', '/?page=client-dashboard');
       } catch {}
     }
   };
@@ -148,7 +175,7 @@ export default function App() {
   const handleNavigate = (view: string) => {
     setCurrentView(view);
     try {
-      const urlPath = view === 'home' ? '/' : `/${view}`;
+      const urlPath = view === 'home' ? '/' : `/?page=${view}`;
       window.history.pushState({ view }, '', urlPath);
     } catch (e) {
       console.error('Error saving history navigation step:', e);

@@ -1413,7 +1413,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Eye Preview button */}
                   <a 
-                    href={p.slug === 'home' || p.isHomepage ? '/' : `/${p.slug}`}
+                    href={p.slug === 'home' || p.isHomepage ? '/' : `/?page=${p.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center animate-pulse"
