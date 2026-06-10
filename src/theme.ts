@@ -87,14 +87,18 @@ export const themesMap: Record<ThemeSchema, ThemeColors> = {
 export function getThemeSettings() {
   const schema = (localStorage.getItem('ib_theme') as ThemeSchema) || 'blue';
   const header = localStorage.getItem('ib_header') || 'IMMO BURUNDI';
-  const footer = localStorage.getItem('ib_footer') || '© 2026 IMMO BURUNDI Private Limited. All rights reserved.';
+  const footer = localStorage.getItem('ib_footer') || '© 2018 IMMO BURUNDI Private Limited. All rights reserved.';
   const announcement = localStorage.getItem('ib_announcement') || '🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018';
+  const announcementBg = localStorage.getItem('ib_announcement_bg') || '#1a1a1a';
+  const announcementTextCol = localStorage.getItem('ib_announcement_text_col') || '#f2f2f2';
   
   return {
     schema,
     colors: themesMap[schema] || themesMap.blue,
     headerTitle: header,
     footerCopyright: footer,
-    announcementText: announcement
+    announcementText: announcement,
+    announcementBg,
+    announcementTextCol
   };
 }

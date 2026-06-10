@@ -364,6 +364,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   const [headerTitleInput, setHeaderTitleInput] = useState('');
   const [footerCopyrightInput, setFooterCopyrightInput] = useState('');
   const [announcementText, setAnnouncementText] = useState('🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
+  const [announcementBg, setAnnouncementBg] = useState('#1a1a1a');
+  const [announcementTextCol, setAnnouncementTextCol] = useState('#f2f2f2');
 
   // Unsaved changes tracking for Page Builder
   const [originalPageSectionsJSON, setOriginalPageSectionsJSON] = useState<string | null>(null);
@@ -382,7 +384,9 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     const currentGlobalsJSON = JSON.stringify({
       announcementText,
       headerTitleInput,
-      footerCopyrightInput
+      footerCopyrightInput,
+      announcementBg,
+      announcementTextCol
     });
     
     return (currentPageSectionsJSON !== originalPageSectionsJSON) || (currentGlobalsJSON !== originalGlobalsJSON);
@@ -394,7 +398,9 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       setOriginalGlobalsJSON(JSON.stringify({
         announcementText,
         headerTitleInput,
-        footerCopyrightInput
+        footerCopyrightInput,
+        announcementBg,
+        announcementTextCol
       }));
     } else {
       setOriginalPageSectionsJSON(null);
@@ -512,6 +518,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     setHeaderTitleInput(localStorage.getItem('ib_header') || 'IMMO BURUNDI');
     setFooterCopyrightInput(localStorage.getItem('ib_footer') || '© 2018-2026 IMMO BURUNDI Private Limited. All rights reserved.');
     setAnnouncementText(localStorage.getItem('ib_announcement') || '🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
+    setAnnouncementBg(localStorage.getItem('ib_announcement_bg') || '#1a1a1a');
+    setAnnouncementTextCol(localStorage.getItem('ib_announcement_text_col') || '#f2f2f2');
   }, []);
 
   // Update branding settings
@@ -521,6 +529,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     localStorage.setItem('ib_header', headerTitleInput);
     localStorage.setItem('ib_footer', footerCopyrightInput);
     localStorage.setItem('ib_announcement', announcementText);
+    localStorage.setItem('ib_announcement_bg', announcementBg);
+    localStorage.setItem('ib_announcement_text_col', announcementTextCol);
     
     if (onThemeChange) {
       onThemeChange();
@@ -756,6 +766,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       localStorage.setItem('ib_header', headerTitleInput);
       localStorage.setItem('ib_announcement', announcementText);
       localStorage.setItem('ib_footer', footerCopyrightInput);
+      localStorage.setItem('ib_announcement_bg', announcementBg);
+      localStorage.setItem('ib_announcement_text_col', announcementTextCol);
       if (onThemeChange) {
         onThemeChange();
       }
@@ -777,7 +789,9 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         setOriginalGlobalsJSON(JSON.stringify({
           announcementText,
           headerTitleInput,
-          footerCopyrightInput
+          footerCopyrightInput,
+          announcementBg,
+          announcementTextCol
         }));
 
         fetchAllAdminData();
@@ -2172,6 +2186,53 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                 testimonials: updatedTests
               }
             };
+          } else if (sec.type === 'gallery') {
+            const currentImages = s.images || [
+              'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=400&q=80',
+              'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80',
+              'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80'
+            ];
+            const updatedImages = [...currentImages, 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80'];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                images: updatedImages
+              }
+            };
+          } else if (sec.type === 'team_profile') {
+            const currentMembers = s.members || [
+              { name: 'Sylvain Ndayishimiye', role: 'Chief Registrar Audit Officer', bio: '15+ years cross-referencing title deeds at Gitega archives.', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' }
+            ];
+            const updatedMembers = [...currentMembers, {
+              name: 'New Team Member',
+              role: 'Licensed Property Advisor',
+              bio: 'Expert consultant helping clients secure premium real estate listings.',
+              avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80'
+            }];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                members: updatedMembers
+              }
+            };
+          } else if (sec.type === 'stats_grid') {
+            const currentStats = s.stats || [
+              { label: 'Land Audits Done', value: '480+' }
+            ];
+            const updatedStats = [...currentStats, {
+              label: 'New Stat Metric',
+              value: '100+'
+            }];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                stats: updatedStats
+              }
+            };
           }
         }
         return sec;
@@ -2298,7 +2359,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
 
           {/* Middle corner: Status Chrome */}
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-[11.5px] font-medium text-slate-300">Updated copy of Dawn</span>
+            <span className="text-[11.5px] font-medium text-slate-300">Immo Burundi Enterprise Theme</span>
             <span className="px-2 py-0.5 rounded-full bg-[#1b5e20] text-[#81c784] text-[9.5px] font-black uppercase tracking-wider scale-95 border border-[#2e7d32]/40">Active</span>
             <div className="h-3 w-px bg-[#333333] mx-1" />
             <span className="text-[11px] font-bold text-[#8c8c8c] font-mono select-none">Store default</span>
@@ -2646,12 +2707,139 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                                 </>
                               )}
 
-                              {['columns', 'slideshow', 'testimonials'].includes(sec.type) && (
+                              {sec.type === 'gallery' && (
+                                <>
+                                  {((sec.settings && sec.settings.images) || [
+                                    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=400&q=80',
+                                    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                                    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80',
+                                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80'
+                                  ]).map((img: string, imgIdx: number, arr: any[]) => {
+                                    const blockId = `gallery_image_${imgIdx}`;
+                                    const isLast = imgIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={imgIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>🖼️</span>
+                                          <span className="truncate">Picture #{imgIdx + 1}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalImages = (sec.settings && sec.settings.images) || [];
+                                            const newImages = originalImages.filter((_: any, idx: number) => idx !== imgIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, images: newImages } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Image"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {sec.type === 'team_profile' && (
+                                <>
+                                  {((sec.settings && sec.settings.members) || [
+                                    { name: 'Sylvain Ndayishimiye' },
+                                    { name: 'Estella Kaneza' },
+                                    { name: 'Aimé Ndizeye' }
+                                  ]).map((member: any, memIdx: number, arr: any[]) => {
+                                    const blockId = `team_member_${memIdx}`;
+                                    const isLast = memIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={memIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>👤</span>
+                                          <span className="truncate">{member.name || `Member ${memIdx + 1}`}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalMembers = (sec.settings && sec.settings.members) || [];
+                                            const newMembers = originalMembers.filter((_: any, idx: number) => idx !== memIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, members: newMembers } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Member"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {sec.type === 'stats_grid' && (
+                                <>
+                                  {((sec.settings && sec.settings.stats) || [
+                                    { label: 'Land Audits Done' },
+                                    { label: 'BIF Capital Secured' }
+                                  ]).map((st: any, stIdx: number, arr: any[]) => {
+                                    const blockId = `stat_${stIdx}`;
+                                    const isLast = stIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={stIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>📊</span>
+                                          <span className="truncate">{st.label || `Stat ${stIdx + 1}`}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalStats = (sec.settings && sec.settings.stats) || [];
+                                            const newStats = originalStats.filter((_: any, idx: number) => idx !== stIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, stats: newStats } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Stat"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {['columns', 'slideshow', 'testimonials', 'gallery', 'team_profile', 'stats_grid'].includes(sec.type) && (
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); handleSidebarAddBlock(sec.id); }}
                                   className="w-full text-left pl-7 py-1.5 text-[9.5px] uppercase tracking-wider text-blue-200 hover:text-white font-bold flex items-center gap-1 cursor-pointer hover:bg-blue-800/10 rounded transition mt-1"
                                 >
-                                  <Plus className="w-2.5 h-2.5" /> Add block ({sec.type === 'columns' ? 'New Column' : sec.type === 'slideshow' ? 'New Slide' : 'New Review'})
+                                  <Plus className="w-2.5 h-2.5" /> Add block ({
+                                    sec.type === 'columns' ? 'New Column' : 
+                                    sec.type === 'slideshow' ? 'New Slide' : 
+                                    sec.type === 'testimonials' ? 'New Review' :
+                                    sec.type === 'gallery' ? 'Add Image' :
+                                    sec.type === 'team_profile' ? 'Add Team Member' :
+                                    'Add Stats'
+                                  })
                                 </button>
                               )}
                             </div>
@@ -2687,7 +2875,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         </div>
                         {[
                           { type: 'property_list', label: '🏠 Certified Property List', desc: 'Display validated land listings' },
-                          { type: 'banner', label: '🖼️ Image Banner (Dawn)', desc: 'Large image background with CTA button' },
+                          { type: 'banner', label: '🖼️ Hero Image Banner', desc: 'Large high-impact backdrop header with a call-to-action button' },
                           { type: 'columns', label: '💎 Multicolumn Features', desc: 'Symmetrical icon & info pillar grid' },
                           { type: 'slideshow', label: '🌄 Slideshow Carousel', desc: 'Dynamic scrolling photo header' },
                           { type: 'team_profile', label: '👥 Cadastral Audit Team', desc: 'Showcase surveyor and attorney profiles' },
@@ -2872,8 +3060,9 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                     setActiveSectionId('announcement_bar');
                     setActiveSubBlock(null);
                   }}
-                  className={`py-2 px-3 text-center bg-[#1a1a1a] text-[#f2f2f2] text-xs font-semibold cursor-pointer select-none transition-all duration-200 flex items-center justify-center gap-1 ${
-                    activeSectionId === 'announcement_bar' ? 'ring-2 ring-blue-500 ring-inset' : 'hover:bg-[#2b2b2b]'
+                  style={{ backgroundColor: announcementBg, color: announcementTextCol }}
+                  className={`py-2 px-3 text-center text-xs font-semibold cursor-pointer select-none transition-all duration-200 flex items-center justify-center gap-1 ${
+                    activeSectionId === 'announcement_bar' ? 'ring-2 ring-blue-500 ring-inset' : ''
                   }`}
                 >
                   <p className="truncate font-sans tracking-wide leading-none">{announcementText}</p>
@@ -3112,6 +3301,44 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                     />
                   </div>
 
+                  <div className="grid grid-cols-2 gap-4 pb-2">
+                    <div className="space-y-1.5">
+                      <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Background Color:</label>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="color" 
+                          value={announcementBg} 
+                          onChange={(e) => setAnnouncementBg(e.target.value)}
+                          className="w-8 h-8 rounded border border-gray-300 p-0 cursor-pointer overflow-hidden bg-transparent"
+                        />
+                        <input 
+                          type="text" 
+                          value={announcementBg} 
+                          onChange={(e) => setAnnouncementBg(e.target.value)}
+                          className="w-full text-xs font-mono bg-[#fcfcfc] border border-[#cccccc] rounded p-1 text-[#303030] focus:outline-none focus:border-blue-500 h-8"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Text Color:</label>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="color" 
+                          value={announcementTextCol} 
+                          onChange={(e) => setAnnouncementTextCol(e.target.value)}
+                          className="w-8 h-8 rounded border border-gray-300 p-0 cursor-pointer overflow-hidden bg-transparent"
+                        />
+                        <input 
+                          type="text" 
+                          value={announcementTextCol} 
+                          onChange={(e) => setAnnouncementTextCol(e.target.value)}
+                          className="w-full text-xs font-mono bg-[#fcfcfc] border border-[#cccccc] rounded p-1 text-[#303030] focus:outline-none focus:border-blue-500 h-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-[10.5px] leading-relaxed text-blue-850">
                     💡 This announcement bar remains global across all page categories, showcasing prominent real estate certifications instantly.
                   </div>
@@ -3201,7 +3428,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                             <option value="sm">Small description text</option>
                             <option value="md">Medium standard layout copy text</option>
                             <option value="lg">Large body text scale</option>
-                            <option value="display">Display Hero bold (Dawn scale)</option>
+                            <option value="display">Bold Display Banner (Premium Scaled)</option>
                           </select>
                         </div>
                       </div>
@@ -3815,10 +4042,34 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
             <div className="border-t border-slate-800 pt-3 space-y-3">
-              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Image Grid (4 pictures)</span>
+              <div className="flex justify-between items-center bg-slate-900/40 p-2 rounded-lg">
+                <span className="text-[9.5px] font-mono text-slate-400 uppercase font-bold">Image Grid ({images.length} pictures)</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newImages = [...images, 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80'];
+                    updateFn('images', newImages);
+                  }}
+                  className="text-[10px] text-blue-400 font-bold hover:text-blue-300 font-mono"
+                >
+                  + ADD IMAGE BLOCK
+                </button>
+              </div>
               {images.map((img: string, idx: number) => (
                 <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
-                  <span className="text-[9px] font-mono text-slate-500 font-bold">Image #{idx + 1}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-mono text-slate-500 font-bold">Image #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newImages = images.filter((_, i) => i !== idx);
+                        updateFn('images', newImages);
+                      }}
+                      className="text-[9px] text-red-400 hover:text-red-300 font-bold"
+                    >
+                      Remove
+                    </button>
+                  </div>
                   <AdminImageUpload
                     value={img}
                     onChange={(url) => {
@@ -3981,10 +4232,39 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
             <div className="border-t border-slate-800 pt-3 space-y-3">
-              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold font-mono">Team Members (3 Persons)</span>
+              <div className="flex justify-between items-center bg-slate-900/40 p-2 rounded-lg">
+                <span className="text-[9.5px] font-mono text-slate-400 uppercase font-bold">Team Members ({members.length} persons)</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newMembers = [...members, {
+                      name: 'New Expert Advisor',
+                      role: 'Licensed Property Advisor',
+                      bio: 'Helping clients with property validation support.',
+                      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80'
+                    }];
+                    updateFn('members', newMembers);
+                  }}
+                  className="text-[10px] text-blue-400 font-bold hover:text-blue-300 font-mono"
+                >
+                  + ADD TEAM MEMBER
+                </button>
+              </div>
               {members.map((member: any, idx: number) => (
                 <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-850 space-y-2">
-                  <span className="text-[9px] font-mono text-slate-500 font-bold">Member #{idx + 1}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-mono text-slate-500 font-bold">Member #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newMembers = members.filter((_, i: number) => i !== idx);
+                        updateFn('members', newMembers);
+                      }}
+                      className="text-[9px] text-red-400 hover:text-red-300 font-bold"
+                    >
+                      Remove
+                    </button>
+                  </div>
                   <input 
                     type="text" 
                     value={member.name || ''} 
@@ -4117,10 +4397,34 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <input type="text" value={s.subheading || ''} onChange={(e) => updateFn('subheading', e.target.value)} className="w-full bg-slate-950 border border-slate-850 rounded p-2 text-slate-200" />
             </div>
             <div className="border-t border-slate-800 pt-3 space-y-3">
-              <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold font-mono">Metrics Grid (4 values)</span>
+              <div className="flex justify-between items-center bg-slate-900/40 p-2 rounded-lg">
+                <span className="text-[9.5px] font-mono text-slate-400 uppercase font-bold text-slate-300">Metrics Grid ({stats.length} metrics)</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newStats = [...stats, { label: 'New Metric Name', value: '100+' }];
+                    updateFn('stats', newStats);
+                  }}
+                  className="text-[10px] text-blue-400 font-bold hover:text-blue-300 font-mono"
+                >
+                  + ADD STATS
+                </button>
+              </div>
               {stats.map((stat: any, idx: number) => (
                 <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-855 space-y-2">
-                  <span className="text-[9px] font-mono text-slate-500 font-bold font-mono">Stat #{idx + 1}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-mono text-slate-500 font-bold font-mono">Stat #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newStats = stats.filter((_, i: number) => i !== idx);
+                        updateFn('stats', newStats);
+                      }}
+                      className="text-[9px] text-red-400 hover:text-red-300 font-bold"
+                    >
+                      Remove
+                    </button>
+                  </div>
                   <div className="grid grid-cols-2 gap-1.5 font-mono">
                     <input 
                       type="text" 
