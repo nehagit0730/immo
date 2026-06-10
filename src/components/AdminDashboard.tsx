@@ -365,6 +365,86 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   const [footerCopyrightInput, setFooterCopyrightInput] = useState('');
   const [announcementText, setAnnouncementText] = useState('🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
 
+  // Unsaved changes tracking for Page Builder
+  const [originalPageSectionsJSON, setOriginalPageSectionsJSON] = useState<string | null>(null);
+  const [originalGlobalsJSON, setOriginalGlobalsJSON] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    type: 'tab' | 'page' | 'exit';
+    targetTab?: 'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings' | 'media';
+    targetPageId?: string;
+  } | null>(null);
+
+  const hasUnsavedChanges = (() => {
+    if (!editorPage) return false;
+    if (originalPageSectionsJSON === null) return false;
+    
+    const currentPageSectionsJSON = JSON.stringify(editorPage.sections || []);
+    const currentGlobalsJSON = JSON.stringify({
+      announcementText,
+      headerTitleInput,
+      footerCopyrightInput
+    });
+    
+    return (currentPageSectionsJSON !== originalPageSectionsJSON) || (currentGlobalsJSON !== originalGlobalsJSON);
+  })();
+
+  useEffect(() => {
+    if (editorPage) {
+      setOriginalPageSectionsJSON(JSON.stringify(editorPage.sections || []));
+      setOriginalGlobalsJSON(JSON.stringify({
+        announcementText,
+        headerTitleInput,
+        footerCopyrightInput
+      }));
+    } else {
+      setOriginalPageSectionsJSON(null);
+      setOriginalGlobalsJSON(null);
+    }
+  }, [editorPage?.id]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Do you want to save your changes before leaving?';
+        return e.returnValue;
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  const handleTabClick = (tab: 'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings' | 'media') => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation({ type: 'tab', targetTab: tab });
+    } else {
+      setActiveTab(tab);
+      setEditorPage(null);
+    }
+  };
+
+  const executePendingNavigation = (nav: {
+    type: 'tab' | 'page' | 'exit';
+    targetTab?: 'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings' | 'media';
+    targetPageId?: string;
+  }) => {
+    if (nav.type === 'exit') {
+      setEditorPage(null);
+    } else if (nav.type === 'page' && nav.targetPageId) {
+      const targetPage = pages.find(p => p.id === nav.targetPageId);
+      if (targetPage) {
+        setEditorPage(targetPage);
+        setActiveSectionId(null);
+        setActiveSubBlock(null);
+      }
+    } else if (nav.type === 'tab' && nav.targetTab) {
+      setActiveTab(nav.targetTab);
+      setEditorPage(null);
+    }
+  };
+
   // Add Dynamic Page state
   const [addPageOpen, setAddPageOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
@@ -670,7 +750,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   };
 
   // Save modified page sections builder
-  const handleSavePageLayout = async (targetPage: WebPage) => {
+  const handleSavePageLayout = async (targetPage: WebPage, onSuccessCallback?: () => void) => {
     try {
       // Also persist header/footer and announcement text if changed in builder
       localStorage.setItem('ib_header', headerTitleInput);
@@ -692,10 +772,21 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
       });
 
       if (res.ok) {
-        setEditorPage(null);
-        setActiveSectionId(null);
+        // Update reference states
+        setOriginalPageSectionsJSON(JSON.stringify(targetPage.sections || []));
+        setOriginalGlobalsJSON(JSON.stringify({
+          announcementText,
+          headerTitleInput,
+          footerCopyrightInput
+        }));
+
         fetchAllAdminData();
-        alert('High-tech page sections saved successfully!');
+        
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        } else {
+          alert('High-tech page sections saved successfully!');
+        }
       } else {
         const errorData = await res.json().catch(() => ({}));
         alert(`Failed to save page sections: ${errorData.error || 'Server error (' + res.status + ')'}`);
@@ -720,6 +811,56 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   return (
     <div className={`min-h-[calc(100vh-4rem)] ${editorPage ? 'h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden' : ''} bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans`}>
       
+      {/* Unsaved Changes Confirmation Modal */}
+      {pendingNavigation && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4 select-text animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl shrink-0">
+                <AlertTriangle className="w-6 h-6 animate-pulse" />
+              </div>
+              <div className="space-y-1 text-left">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider">Unsaved Changes</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-sans mt-1">
+                  You have unsaved changes. Do you want to save your changes before leaving?
+                </p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2">
+              <button
+                onClick={() => {
+                  if (editorPage) {
+                    handleSavePageLayout(editorPage, () => {
+                      executePendingNavigation(pendingNavigation);
+                      setPendingNavigation(null);
+                    });
+                  }
+                }}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all cursor-pointer bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-500/10 flex items-center justify-center border-0"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => {
+                  executePendingNavigation(pendingNavigation);
+                  setPendingNavigation(null);
+                }}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-350 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all cursor-pointer flex items-center justify-center border-0"
+              >
+                Discard Changes
+              </button>
+              <button
+                onClick={() => setPendingNavigation(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-350 bg-slate-850 hover:bg-slate-800 transition-all cursor-pointer flex items-center justify-center border-0"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* ==========================================
           Futuristic Left Sidebar Options
       ========================================== */}
@@ -742,7 +883,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           {/* Navigation Items */}
           <nav className="space-y-1">
             <button
-              onClick={() => { setActiveTab('analytics'); setEditorPage(null); }}
+              onClick={() => handleTabClick('analytics')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'analytics' 
                   ? `${colors.primaryBg} text-white shadow-lg shadow-blue-900/10` 
@@ -757,7 +898,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </button>
 
             <button
-              onClick={() => { setActiveTab('listings'); setEditorPage(null); }}
+              onClick={() => handleTabClick('listings')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'listings' 
                   ? `${colors.primaryBg} text-white shadow-lg` 
@@ -774,7 +915,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </button>
 
             <button
-              onClick={() => { setActiveTab('submissions'); setEditorPage(null); }}
+              onClick={() => handleTabClick('submissions')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'submissions' 
                   ? `${colors.primaryBg} text-white shadow-lg` 
@@ -791,7 +932,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </button>
 
             <button
-               onClick={() => { setActiveTab('pages'); setEditorPage(null); }}
+               onClick={() => handleTabClick('pages')}
                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                  activeTab === 'pages' 
                    ? `${colors.primaryBg} text-white shadow-lg` 
@@ -808,7 +949,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
              </button>
  
              <button
-               onClick={() => { setActiveTab('media'); setEditorPage(null); }}
+               onClick={() => handleTabClick('media')}
                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                  activeTab === 'media' 
                    ? `${colors.primaryBg} text-white shadow-lg` 
@@ -825,7 +966,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
              </button>
 
             <button
-              onClick={() => { setActiveTab('logs'); setEditorPage(null); }}
+              onClick={() => handleTabClick('logs')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === 'logs' 
                   ? `${colors.primaryBg} text-white shadow-lg` 
@@ -844,7 +985,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
         {/* Pin-fixed Settings card */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/40">
           <button
-            onClick={() => { setActiveTab('settings'); setEditorPage(null); }}
+            onClick={() => handleTabClick('settings')}
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeTab === 'settings'
                 ? `bg-slate-850 border border-slate-700 text-white`
@@ -2112,7 +2253,13 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
           {/* Left corner: Back action + Page Selector Dropdown */}
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => setEditorPage(null)}
+              onClick={() => {
+                if (hasUnsavedChanges) {
+                  setPendingNavigation({ type: 'exit' });
+                } else {
+                  setEditorPage(null);
+                }
+              }}
               className="px-3 py-1.5 rounded-lg bg-[#2b2b2b] hover:bg-[#3d3d3d] text-slate-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
               title="Close editor and return to page catalogs list"
             >
@@ -2125,11 +2272,16 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               <select
                 value={editorPage.id}
                 onChange={(e) => {
-                  const targetPage = pages.find(p => p.id === e.target.value);
-                  if (targetPage) {
-                    setEditorPage(targetPage);
-                    setActiveSectionId(null);
-                    setActiveSubBlock(null);
+                  const targetId = e.target.value;
+                  if (hasUnsavedChanges) {
+                    setPendingNavigation({ type: 'page', targetPageId: targetId });
+                  } else {
+                    const targetPage = pages.find(p => p.id === targetId);
+                    if (targetPage) {
+                      setEditorPage(targetPage);
+                      setActiveSectionId(null);
+                      setActiveSubBlock(null);
+                    }
                   }
                 }}
                 className="appearance-none bg-[#2b2b2b] hover:bg-[#3a3a3a] text-white text-xs font-bold pl-3 pr-8 py-1.5 rounded-md border border-[#404040] focus:outline-none focus:border-blue-500 cursor-pointer transition"
@@ -2179,10 +2331,19 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
             </div>
 
             <button
-              onClick={() => handleSavePageLayout(editorPage)}
-              className="px-5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all duration-150 shadow shadow-blue-900/40 cursor-pointer"
+              onClick={() => {
+                if (hasUnsavedChanges) {
+                  handleSavePageLayout(editorPage);
+                }
+              }}
+              disabled={!hasUnsavedChanges}
+              className={`px-5 py-1.5 rounded font-bold text-xs uppercase tracking-wider transition-all duration-150 shadow cursor-pointer ${
+                hasUnsavedChanges
+                  ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40"
+                  : "bg-[#2a2a2a] text-[#717171] cursor-not-allowed opacity-60 shadow-none"
+              }`}
             >
-              Save layout
+              Save Layout
             </button>
           </div>
         </header>
@@ -2252,7 +2413,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                     <GripVertical className="w-3.5 h-3.5 text-slate-350 shrink-0 select-none cursor-grab" />
                     <div className="text-left">
                       <span className="text-xs font-bold block">🏠 Header (Logo & menus)</span>
-                      <span className="text-[9px] text-[#717171] truncate block max-w-[190px] font-mono">{headerTitleInput || 'IMMO BURUNDILogo'}</span>
+                      <span className="text-[9px] text-[#717171] truncate block max-w-[190px] font-mono">{headerTitleInput || 'IMMO BURUNDI'}</span>
                     </div>
                   </div>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -2738,23 +2899,23 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                         {headerTitleInput || 'IMMO BURUNDI'}
                       </span>
                       <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
-                        Verified Workspace
+                        {currentLanguage === 'en' ? 'Verified Workspace' : currentLanguage === 'fr' ? 'Espace Vérifié' : 'Uhakiki Salama'}
                       </span>
                     </div>
                   </div>
 
                   {/* Menus list */}
                   <div className="hidden sm:flex items-center gap-4 text-xs font-bold text-[#444444] tracking-wide uppercase">
-                    <span className="hover:text-blue-600 transition cursor-pointer">Home</span>
-                    <span className="hover:text-blue-600 transition cursor-pointer">Verified Plots</span>
-                    <span className="hover:text-blue-600 transition cursor-pointer">About Gitega</span>
-                    <span className="hover:text-blue-600 transition cursor-pointer">Diaspora Hub</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">{t.navHome}</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">{t.navProperties}</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">{t.navAbout}</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">{t.navContact}</span>
                   </div>
 
                   {/* Header right icons */}
                   <div className="flex items-center gap-3 text-[#444444] shrink-0">
                     <Search className="w-4 h-4 hover:text-blue-600" />
-                    <span className="text-[11px] font-mono text-[#8c8c8c] hidden md:inline">Contact</span>
+                    <span className="text-[11px] font-mono text-[#8c8c8c] hidden md:inline">{t.navContact}</span>
                   </div>
                 </div>
 
