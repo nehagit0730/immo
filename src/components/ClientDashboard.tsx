@@ -46,7 +46,7 @@ export default function ClientDashboard({ user, currentLanguage, onViewDetails }
       const reader = new FileReader();
       reader.onload = (e) => {
         const rawUrl = e.target?.result as string;
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           try {
             const canvas = document.createElement('canvas');

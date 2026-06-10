@@ -227,15 +227,17 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans select-none">
       
       {/* Dynamic Header */}
-      <Header
-        user={user}
-        currentLanguage={currentLanguage}
-        onLanguageChange={handleLanguageChange}
-        onLoginClick={() => setAuthModalOpen(true)}
-        onLogoutClick={handleLogout}
-        onNavigate={handleNavigate}
-        currentView={currentView}
-      />
+      {currentView !== 'admin-dashboard' && (
+        <Header
+          user={user}
+          currentLanguage={currentLanguage}
+          onLanguageChange={handleLanguageChange}
+          onLoginClick={() => setAuthModalOpen(true)}
+          onLogoutClick={handleLogout}
+          onNavigate={handleNavigate}
+          currentView={currentView}
+        />
+      )}
 
       {/* Render panel routing layout views */}
       <main className="flex-grow">
@@ -1082,48 +1084,50 @@ export default function App() {
       {/* ==========================================
           FOOTER COMPONENT WIT OFFICIAL DISCLAIMERS
       ========================================== */}
-      <footer className="bg-[#0f172a] text-slate-400 border-t border-slate-800 py-12 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            
-            {/* Logo and brief */}
-            <div className="md:col-span-2 space-y-4">
-              <span className={`font-sans font-black text-lg tracking-tight ${colors.primaryText}`}>
-                {headerTitle}
-              </span>
-              <p className="text-[11.5px] text-slate-400 leading-normal max-w-sm font-sans italic-quotes">
-                {headerTitle} provides real estate listing and verification support services. Verification statuses are based on documents presented by owners or representatives and do not constitute a legal ownership guarantee. Users are encouraged to conduct independent legal due diligence before completing transactions.
-              </p>
+      {currentView !== 'admin-dashboard' && (
+        <footer className="bg-[#0f172a] text-slate-400 border-t border-slate-800 py-12 print:hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              
+              {/* Logo and brief */}
+              <div className="md:col-span-2 space-y-4">
+                <span className={`font-sans font-black text-lg tracking-tight ${colors.primaryText}`}>
+                  {headerTitle}
+                </span>
+                <p className="text-[11.5px] text-slate-400 leading-normal max-w-sm font-sans italic-quotes">
+                  {headerTitle} provides real estate listing and verification support services. Verification statuses are based on documents presented by owners or representatives and do not constitute a legal ownership guarantee. Users are encouraged to conduct independent legal due diligence before completing transactions.
+                </p>
+              </div>
+
+              {/* Quick links */}
+              <div>
+                <span className="text-[10px] font-mono text-slate-500 font-extrabold block uppercase tracking-wider mb-3">CONFORMITY ARCHIVE</span>
+                <ul className="text-xs space-y-2 font-medium">
+                  <li><button onClick={() => handleNavigate('about')} className="hover:text-blue-400 cursor-pointer">About us</button></li>
+                  <li><button onClick={() => handleNavigate('disclaimer')} className="hover:text-blue-400 cursor-pointer">Verification Disclaimer</button></li>
+                  <li><button onClick={() => handleNavigate('agreement')} className="hover:text-blue-400 cursor-pointer text-blue-400">✍️ Service Agreement Contract</button></li>
+                </ul>
+              </div>
+
+              {/* Legal files links */}
+              <div>
+                <span className="text-[10px] font-mono text-slate-500 font-extrabold block uppercase tracking-wider mb-3">PRIVACY & TERMS</span>
+                <ul className="text-xs space-y-2 font-medium">
+                  <li><button onClick={() => handleNavigate('privacy')} className="hover:text-blue-400 cursor-pointer text-slate-400">Privacy Policy</button></li>
+                  <li><button onClick={() => handleNavigate('terms')} className="hover:text-blue-400 cursor-pointer text-slate-400">Terms & Conditions</button></li>
+                  <li><button onClick={() => handleNavigate('contact')} className="hover:text-blue-400 cursor-pointer">Contact Desk</button></li>
+                </ul>
+              </div>
+
             </div>
 
-            {/* Quick links */}
-            <div>
-              <span className="text-[10px] font-mono text-slate-500 font-extrabold block uppercase tracking-wider mb-3">CONFORMITY ARCHIVE</span>
-              <ul className="text-xs space-y-2 font-medium">
-                <li><button onClick={() => handleNavigate('about')} className="hover:text-blue-400 cursor-pointer">About us</button></li>
-                <li><button onClick={() => handleNavigate('disclaimer')} className="hover:text-blue-400 cursor-pointer">Verification Disclaimer</button></li>
-                <li><button onClick={() => handleNavigate('agreement')} className="hover:text-blue-400 cursor-pointer text-blue-400">✍️ Service Agreement Contract</button></li>
-              </ul>
+            <div className="border-t border-slate-800 pt-6 mt-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10.5px] text-slate-500 font-mono">
+              <span>{footerCopyright}</span>
+              <span>Accredited Hub • Bujumbura, Republic of Burundi</span>
             </div>
-
-            {/* Legal files links */}
-            <div>
-              <span className="text-[10px] font-mono text-slate-500 font-extrabold block uppercase tracking-wider mb-3">PRIVACY & TERMS</span>
-              <ul className="text-xs space-y-2 font-medium">
-                <li><button onClick={() => handleNavigate('privacy')} className="hover:text-blue-400 cursor-pointer text-slate-400">Privacy Policy</button></li>
-                <li><button onClick={() => handleNavigate('terms')} className="hover:text-blue-400 cursor-pointer text-slate-400">Terms & Conditions</button></li>
-                <li><button onClick={() => handleNavigate('contact')} className="hover:text-blue-400 cursor-pointer">Contact Desk</button></li>
-              </ul>
-            </div>
-
           </div>
-
-          <div className="border-t border-slate-800 pt-6 mt-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10.5px] text-slate-500 font-mono">
-            <span>{footerCopyright}</span>
-            <span>Accredited Hub • Bujumbura, Republic of Burundi</span>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* Auth Modal Trigger Popups */}
       {authModalOpen && (

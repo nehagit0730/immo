@@ -6,10 +6,11 @@ import {
   CheckCircle, RefreshCw, Eye, Home, Sparkles, MapPin, Search, 
   ChevronUp, ChevronDown, ArrowUp, ArrowDown, Settings, Copy, 
   Monitor, Layout, Info, UserCheck, AlertTriangle, Play, HelpCircle, Star,
-  Image
+  Image, GripVertical, MoreHorizontal, Smartphone, Laptop, FileText, Link
 } from 'lucide-react';
 import { ibFetch } from '../apiMock';
 import { ThemeSchema, themesMap, getThemeSettings } from '../theme';
+import PageSectionsRenderer from './PageSectionsRenderer';
 
 interface AdminImageUploadProps {
   id?: string;
@@ -32,7 +33,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
       const reader = new FileReader();
       reader.onload = (e) => {
         const rawUrl = e.target?.result as string;
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           try {
             const canvas = document.createElement('canvas');
@@ -332,12 +333,17 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   const [editorPage, setEditorPage] = useState<WebPage | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [previewPage, setPreviewPage] = useState<WebPage | null>(null);
+  const [addSectionDropdownOpen, setAddSectionDropdownOpen] = useState(false);
   const [previewSize, setPreviewSize] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [activeSubBlock, setActiveSubBlock] = useState<string | null>(null);
+  const [showInsertCatalogIndex, setShowInsertCatalogIndex] = useState<number | null>(null);
 
   // Settings states
   const [themeSchema, setThemeSchema] = useState<ThemeSchema>('blue');
   const [headerTitleInput, setHeaderTitleInput] = useState('');
   const [footerCopyrightInput, setFooterCopyrightInput] = useState('');
+  const [announcementText, setAnnouncementText] = useState('🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
 
   // Add Dynamic Page state
   const [addPageOpen, setAddPageOpen] = useState(false);
@@ -1935,667 +1941,1305 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     const handleDeleteSection = (index: number) => {
       const deletedSec = sections.filter((_, i) => i !== index);
       setEditorPage({ ...editorPage, sections: deletedSec });
-      if (activeSectionId === sections[index]?.id) {
+      if (sections[index] && activeSectionId === sections[index].id) {
         setActiveSectionId(null);
       }
     };
 
+    const handleSidebarAddBlock = (sectionId: string) => {
+      const updatedSections = sections.map((sec) => {
+        if (sec.id === sectionId) {
+          const s = sec.settings || {};
+          if (sec.type === 'columns') {
+            const currentCols = s.columns || [
+              { icon: '🛡️', title: 'Premium Verification', desc: 'Independent land registry title checks before transaction.' },
+              { icon: '⚡', title: 'Instant Brokerage', desc: 'Secure real estate connections.' },
+              { icon: '📂', title: 'Frictionless Contracts', desc: 'Signed service agreement.' }
+            ];
+            const updatedCols = [...currentCols, { 
+              icon: '📌', 
+              title: 'Burundi Column Item', 
+              desc: 'Describe additional cadastral records or real estate benefits.' 
+            }];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                columns: updatedCols
+              }
+            };
+          } else if (sec.type === 'slideshow') {
+            const currentSlides = s.slides || [
+              { image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80', title: 'Luxury Living', desc: 'Secure properties in Bujumbura' },
+              { image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80', title: 'Prime Urban Portfolios', desc: 'Active commercial buildings' }
+            ];
+            const updatedSlides = [...currentSlides, {
+              image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+              title: 'New Slate Portfolio',
+              desc: 'Legal title boundaries certified.'
+            }];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                slides: updatedSlides
+              }
+            };
+          } else if (sec.type === 'testimonials') {
+            const currentTests = s.testimonials || [
+              { text: 'IMMO BURUNDI saved us from fraud.', author: 'Gérard Sindayigaya', role: 'Diaspora Investor' }
+            ];
+            const updatedTests = [...currentTests, {
+              text: 'The best real estate service provider with authentic Burundi legal reviews.',
+              author: 'New Verified Buyer',
+              role: 'Gitega Client'
+            }];
+            return {
+              ...sec,
+              settings: {
+                ...s,
+                testimonials: updatedTests
+              }
+            };
+          }
+        }
+        return sec;
+      });
+      setEditorPage({ ...editorPage, sections: updatedSections });
+    };
+
+    // HTML5 Drag & Drop event handlers
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+      setDraggedIndex(index);
+      e.dataTransfer.effectAllowed = 'move';
+      // To prevent strange visual artifacts:
+      e.currentTarget.classList.add('opacity-45');
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e: React.DragEvent, index: number) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === index) return;
+      const reordered = [...sections];
+      const items = [...sections];
+      const itemToMove = items[draggedIndex];
+      items.splice(draggedIndex, 1);
+      items.splice(index, 0, itemToMove);
+      setEditorPage({
+        ...editorPage,
+        sections: items
+      });
+      setDraggedIndex(null);
+    };
+
+    const handleDragEnd = (e: React.DragEvent) => {
+      e.currentTarget.classList.remove('opacity-45');
+      setDraggedIndex(null);
+    };
+
+    const handleInsertSectionAfter = (index: number, type: PageSection['type']) => {
+      let defaultSettings = {};
+      if (type === 'banner') {
+        defaultSettings = { title: 'Fresh Added Banner', subtitle: 'Detailed visual subtitle copy goes here.', buttonText: 'Explore' };
+      } else if (type === 'columns') {
+        defaultSettings = { heading: 'Our Core Pillars', subheading: 'Trusted boundary verification systems', columns: [
+          { icon: '💎', title: 'Premium Audits', desc: 'Title deed validation verification' },
+          { icon: '🔒', title: 'Direct Leases', desc: 'Secure coordinate verification' }
+        ]};
+      } else if (type === 'testimonials') {
+        defaultSettings = { heading: 'Success Stories', testimonials: [{ text: 'Elite auditing expertise!', author: 'Gérard S.', role: 'Investor' }] };
+      } else {
+        defaultSettings = { title: 'New Layout Block', subtitle: 'Dynamic customizations lines' };
+      }
+
+      const newSec: PageSection = {
+        id: 'sec_' + Date.now() + '_' + Math.floor(Math.random() * 100),
+        type,
+        backgroundColor: 'bg-white text-slate-800 border-none',
+        headingColor: 'text-slate-900',
+        textColor: 'text-slate-650',
+        fontSize: 'md',
+        settings: defaultSettings
+      };
+
+      const revised = [...sections];
+      revised.splice(index + 1, 0, newSec);
+      setEditorPage({ ...editorPage, sections: revised });
+      setActiveSectionId(newSec.id);
+      setShowInsertCatalogIndex(null);
+    };
+
     return (
-      <div className="h-full flex flex-col space-y-4 p-4 lg:p-6 animate-in fade-in duration-300 overflow-hidden bg-slate-950 text-slate-100">
+      <div className="h-full flex flex-col overflow-hidden bg-[#f1f1f1] text-[#303030]">
         
-        {/* Builder Status Bar header */}
-        <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-3xl shrink-0">
+        {/* =======================================================
+            SHOPIFY TOP HEADER CHROME BAR
+           ======================================================= */}
+        <header className="h-[52px] shrink-0 bg-[#1a1a1a] text-white border-b border-[#2a2a2a] flex items-center justify-between px-4 z-40 shadow-md">
+          {/* Left corner: Back action + Page Selector Dropdown */}
           <div className="flex items-center gap-3">
-            <Layout className="w-5 h-5 text-[#38bdf8]" />
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xs sm:text-sm font-black text-white">{editorPage.title.en}</h2>
-                <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded">Route: /{editorPage.slug}</span>
-              </div>
-              <p className="text-[10px] text-slate-500 font-mono">Customize design blocks, backgrounds, text colors and font sizes live.</p>
+            <button 
+              onClick={() => setEditorPage(null)}
+              className="px-3 py-1.5 rounded-lg bg-[#2b2b2b] hover:bg-[#3d3d3d] text-slate-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              title="Close editor and return to page catalogs list"
+            >
+              <span>←</span> <span className="hidden sm:inline">Exit</span>
+            </button>
+            <div className="h-5 w-px bg-[#333333]" />
+            
+            {/* Page dropdown picker */}
+            <div className="relative">
+              <select
+                value={editorPage.id}
+                onChange={(e) => {
+                  const targetPage = pages.find(p => p.id === e.target.value);
+                  if (targetPage) {
+                    setEditorPage(targetPage);
+                    setActiveSectionId(null);
+                    setActiveSubBlock(null);
+                  }
+                }}
+                className="appearance-none bg-[#2b2b2b] hover:bg-[#3a3a3a] text-white text-xs font-bold pl-3 pr-8 py-1.5 rounded-md border border-[#404040] focus:outline-none focus:border-blue-500 cursor-pointer transition"
+              >
+                {pages.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-[#1a1a1a] text-white">
+                    {p.isHomepage ? "🏠 Home page" : `📄 Page: ${p.title.en}`}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-350 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setEditorPage(null)}
-              className="px-4 py-2 rounded-xl bg-slate-820 hover:bg-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider cursor-pointer transition"
-            >
-              Back
-            </button>
+          {/* Middle corner: Status Chrome */}
+          <div className="hidden md:flex items-center gap-2">
+            <span className="text-[11.5px] font-medium text-slate-300">Updated copy of Dawn</span>
+            <span className="px-2 py-0.5 rounded-full bg-[#1b5e20] text-[#81c784] text-[9.5px] font-black uppercase tracking-wider scale-95 border border-[#2e7d32]/40">Active</span>
+            <div className="h-3 w-px bg-[#333333] mx-1" />
+            <span className="text-[11px] font-bold text-[#8c8c8c] font-mono select-none">Store default</span>
+          </div>
+
+          {/* Right corner: Live responsive scaling selector + Save button */}
+          <div className="flex items-center gap-3">
+            {/* Device toggles identical to Shopify top bar */}
+            <div className="flex bg-[#2b2b2b] rounded-lg p-0.5 border border-[#3d3d3d] shrink-0 select-none">
+              <button
+                type="button"
+                onClick={() => setPreviewSize('desktop')}
+                className={`p-1.5 rounded transition ${
+                  previewSize === 'desktop' ? 'bg-[#404040] text-blue-400' : 'text-slate-400 hover:text-white'
+                }`}
+                title="Desktop viewport previewing mode"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewSize('mobile')}
+                className={`p-1.5 rounded transition ${
+                  previewSize === 'mobile' ? 'bg-[#404040] text-blue-400' : 'text-slate-400 hover:text-white'
+                }`}
+                title="Mobile viewport previewing mode"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             <button
               onClick={() => handleSavePageLayout(editorPage)}
-              className={`px-5 py-2 rounded-xl text-white font-bold text-xs uppercase tracking-wider shadow cursor-pointer ${colors.primaryBg} ${colors.primaryHover}`}
+              className="px-5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all duration-150 shadow shadow-blue-900/40 cursor-pointer"
             >
-              Save Section Layout
+              Save layout
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Workspace content split view */}
-        <div className="flex-grow flex flex-col lg:flex-row gap-5 overflow-hidden h-full">
-          
-          {/* Column 1: LEFT BUILDER SIDEBAR PANEL (CONTROLS & COMPONENT LIST) */}
-          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden h-full shadow-lg">
-            
-            {/* Header with Shopify design elements */}
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+        {/* =======================================================
+            MAIN THREE-COLUMN SPLIT CONTAINER
+           ======================================================= */}
+        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden relative w-full h-full">
+
+          {/* -------------------------------------------------------------
+              COLUMN 1: SHOPIFY LEFT SIDEBAR (SECTIONS DIRECTORY HIERARCHY)
+              ------------------------------------------------------------- */}
+          <aside className="w-full lg:w-[320px] shrink-0 bg-white border-r border-[#dcdcdc] flex flex-col overflow-hidden h-full">
+            {/* Sidebar Active Page Header */}
+            <div className="p-3 bg-[#fafafa] border-b border-[#e1e1e1] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-blue-950/80 border border-blue-800/50 text-blue-400">
-                  <Layout className="w-4 h-4" />
-                </span>
-                <div>
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-black block">Active Theme Customizer</span>
-                  <span className="text-[11.5px] font-bold text-white font-sans">Page Sections Stack</span>
-                </div>
+                <Layout className="w-4 h-4 text-slate-500" />
+                <span className="text-[12.5px] font-bold text-[#1a1a1a]">{editorPage.title.en} sections</span>
               </div>
-              <span className="text-[10.5px] font-mono px-2 py-0.5 rounded-full bg-slate-800/80 text-blue-300 font-bold border border-slate-700/50">
-                {sections.length} blocks
+              <span className="text-[10px] font-bold font-mono text-slate-500 bg-[#eaeaea] px-2 py-0.5 rounded-full">
+                {sections.length + 3} slices
               </span>
             </div>
 
-            {/* Page Core Settings (Title & Slug) with Premium WordPress styling */}
-            <div className="p-4 bg-slate-950/50 border-b border-slate-800/80 space-y-3 shrink-0">
-              <div className="flex items-center justify-between cursor-pointer">
-                <span className="text-[9.5px] font-mono text-blue-400 uppercase block font-bold tracking-wider flex items-center gap-1.5">
-                  <Settings className="w-3.5 h-3.5" /> 1. Page Metadata Configuration
-                </span>
-              </div>
+            {/* Hierarchical sections tree directory */}
+            <div className="flex-grow p-3 space-y-4 overflow-y-auto bg-white">
               
-              <div className="space-y-2.5">
-                <div>
-                  <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Page Admin Title (EN)</label>
-                  <input 
-                    type="text" 
-                    value={editorPage.title.en || ''} 
-                    onChange={(e) => {
-                      setEditorPage({
-                        ...editorPage,
-                        title: { ...editorPage.title, en: e.target.value }
-                      });
-                    }}
-                    className="w-full bg-slate-950 border border-slate-800 hover:border-slate-750 focus:border-blue-500 rounded-lg p-2 text-xs text-white focus:outline-none font-medium font-sans placeholder-slate-600 transition"
-                    placeholder="e.g. My Custom Land Page"
-                  />
-                </div>
-
-                {!editorPage.systemPage ? (
-                  <div>
-                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">URL Route Path (Slug)</label>
-                    <div className="flex items-center bg-slate-950 border border-slate-800 hover:border-slate-750 rounded-lg px-2.5 py-2 text-xs text-slate-400 transition">
-                      <span className="select-none text-slate-500 font-semibold font-mono">/</span>
-                      <input 
-                        type="text" 
-                        value={editorPage.slug || ''} 
-                        onChange={(e) => {
-                          const sanitizedSlug = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-                          setEditorPage({
-                            ...editorPage,
-                            slug: sanitizedSlug
-                          });
-                        }}
-                        className="w-full bg-transparent border-none text-white focus:outline-none ml-1 font-mono font-semibold"
-                        placeholder="slug"
-                      />
-                    </div>
-                    <p className="text-[8.5px] text-slate-500 font-mono mt-1">Live Endpoint URL: <span className="text-[#38bdf8] font-bold">/{editorPage.slug || ''}</span></p>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">URL Path (System Reserved Route)</label>
-                    <div className="flex items-center bg-slate-950/60 border border-slate-850/60 rounded-lg p-2 text-xs text-slate-500 font-mono select-none">
-                      <span>/{editorPage.slug}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Templates Trigger bar (Shopify Style Preset Selector) */}
-            <div className="p-4 bg-slate-950/30 border-b border-slate-800/80 space-y-2 shrink-0">
-              <span className="text-[9.5px] font-mono text-slate-400 uppercase block font-bold tracking-wider flex items-center gap-1.5">
-                ⚡ 2. Shopify-Style Fast Layout Presets
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (confirm("Applying this template will replace your current section layout cards. Proceed?")) {
-                      const agencySections: PageSection[] = [
-                        {
-                          id: 'sec_1',
-                          type: 'banner',
-                          backgroundColor: 'bg-slate-950 text-slate-100 border-b border-slate-800',
-                          headingColor: 'text-white',
-                          textColor: 'text-slate-350',
-                          fontSize: 'lg',
-                          settings: {
-                            title: 'Elite Real Estate & Cadastral Verification in Burundi',
-                            subtitle: 'Connecting certified property owners, investors and diaspora clients with total legal authenticity on the ground.',
-                            buttonText: 'Browse Vetted Listings',
-                            imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'
-                          }
-                        },
-                        {
-                          id: 'sec_2',
-                          type: 'property_list',
-                          backgroundColor: 'bg-white text-slate-800 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-650',
-                          fontSize: 'md',
-                          settings: {
-                            heading: 'Vetted & Registered Holdings',
-                            subheading: 'Properties physically audited and certified directly at the Land Registry Office.',
-                            limit: '3',
-                            typeFilter: 'all',
-                            showOnlyVerified: true
-                          }
-                        },
-                        {
-                          id: 'sec_3',
-                          type: 'columns',
-                          backgroundColor: 'bg-slate-50 text-slate-800 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-650',
-                          fontSize: 'md',
-                          settings: {
-                            heading: 'Institutional Guardrails & Transparency',
-                            subheading: 'Why trust Burundi’s premier real estate catalog ecosystem',
-                            columns: [
-                              { icon: '🛡️', title: 'Registry Checks', desc: 'Every title deed is cross-referenced with Gitega land registry before listing approval.' },
-                              { icon: '🗺️', title: 'GPS Cadastrals', desc: 'Official boundaries are confirmed with precise coordinate survey matches.' },
-                              { icon: '🔒', title: 'Secure Escrow', desc: 'Service execution agreements with legal validation prevent double-allocation.' }
-                            ]
-                          }
-                        },
-                        {
-                          id: 'sec_4',
-                          type: 'testimonials',
-                          backgroundColor: 'bg-white text-slate-800 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-600',
-                          fontSize: 'md',
-                          settings: {
-                            heading: 'What Vetted Investors Say',
-                            testimonials: [
-                              { text: 'IMMO BURUNDI saved us from a fraudulent double-allocation trap in Kiriri. The document audit is stellar!', author: 'Gérard Sindayigaya', role: 'Diaspora Investor' },
-                              { text: 'Easiest rent broker experience in Kinindo! Signed electronically on a Sunday and got keys on Monday.', author: 'Clara Kaneza', role: 'Administrative Manager' }
-                            ]
-                          }
-                        }
-                      ];
-                      setEditorPage({ ...editorPage, sections: agencySections });
-                      setActiveSectionId('sec_1');
-                    }
-                  }}
-                  className="p-2 bg-blue-950/40 hover:bg-blue-900/60 border border-blue-900/20 text-blue-300 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center whitespace-nowrap"
-                >
-                  🏢 Agency Home
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (confirm("Applying this template will replace your current section layout cards. Proceed?")) {
-                      const landSections: PageSection[] = [
-                        {
-                          id: 'sec_11',
-                          type: 'slideshow',
-                          backgroundColor: 'bg-slate-950 text-slate-100 border-none',
-                          headingColor: 'text-white',
-                          textColor: 'text-slate-200',
-                          fontSize: 'md',
-                          settings: {
-                            slides: [
-                              { image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80', title: 'Acreages & Fenced Plots', desc: 'Discover high elevation investment parcels in Gitega.' },
-                              { image: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=80', title: 'Lakefront Beach Plots', desc: 'Secure sandy shore developments on Lake Tanganyika, Rumonge.' }
-                            ]
-                          }
-                        },
-                        {
-                          id: 'sec_12',
-                          type: 'property_list',
-                          backgroundColor: 'bg-white text-slate-800 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-600',
-                          fontSize: 'md',
-                          settings: {
-                            heading: 'Featured Land Holdings Only',
-                            subheading: 'Premium verified plots with demarcations ready for construction.',
-                            limit: '3',
-                            typeFilter: 'land',
-                            showOnlyVerified: false
-                          }
-                        },
-                        {
-                          id: 'sec_13',
-                          type: 'richtext',
-                          backgroundColor: 'bg-slate-50 text-slate-805 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-650',
-                          fontSize: 'md',
-                          settings: {
-                            title: 'Land Acquisition & Cadastral Procedures',
-                            body: 'All investors seeking land holdings in Burundi are advised to review compliance files. IMMO BURUNDI guides buyers through official name registration, title deeds transfer, and tax compliance indices.'
-                          }
-                        },
-                        {
-                          id: 'sec_14',
-                          type: 'brands',
-                          backgroundColor: 'bg-white text-slate-800 border-none',
-                          headingColor: 'text-slate-900',
-                          textColor: 'text-slate-600',
-                          fontSize: 'md',
-                          settings: {
-                            brands: ['CADASTRE DE GITEGA', 'OFFICE DES RECETTES (OBR)', 'COMMUNE DE RO HERO', 'REGIDESO']
-                          }
-                        }
-                      ];
-                      setEditorPage({ ...editorPage, sections: landSections });
-                      setActiveSectionId('sec_11');
-                    }
-                  }}
-                  className="p-2 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-900/20 text-emerald-300 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide cursor-pointer transition text-center whitespace-nowrap"
-                >
-                  🗺️ Land Plots
-                </button>
-              </div>
-            </div>
-
-            {/* List of active sections stack - Squarespace clean block indicators */}
-            <div className="p-4 flex-grow space-y-2 overflow-y-auto bg-slate-900">
-              <span className="text-[9.5px] font-mono tracking-widest text-slate-400 block font-bold uppercase mb-2">
-                📂 3. Content Blocks Stack
-              </span>
-              
-              {sections.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-500 font-mono leading-relaxed p-4 border border-dashed border-slate-800 rounded-2xl bg-slate-950/30">
-                  Your store canvas is blank.<br />Click a theme slice block below to build your page hierarchy dynamically!
-                </div>
-              ) : (
-                sections.map((sec, sIdx) => {
-                  const isActive = activeSectionId === sec.id;
-                  return (
-                    <div 
-                      key={sec.id}
-                      className={`group p-3 rounded-xl border transition-all flex flex-col gap-2 ${
-                        isActive 
-                          ? 'bg-slate-950 border-blue-500 shadow-md shadow-blue-900/10' 
-                          : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700/60 hover:bg-slate-900/80'
-                      }`}
-                    >
-                      <div 
-                        className="flex items-center justify-between cursor-pointer"
-                        onClick={() => setActiveSectionId(sec.id)}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className={`text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                            isActive ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
-                          }`}>
-                            #{sIdx+1}
-                          </span>
-                          <div className="text-left">
-                            <span className="text-xs font-bold block text-slate-200 group-hover:text-white uppercase font-mono">
-                              {sec.type.replace('_', ' ')}
-                            </span>
-                            <span className="text-[9px] text-slate-500 font-mono">
-                              {sec.backgroundColor.includes('bg-white') ? 'Light Layout' : 'Premium Dark'}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {/* Shopify style Section Ordering triggers */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button 
-                            disabled={sIdx === 0}
-                            onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'up'); }}
-                            className="p-1 rounded bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer border border-slate-853 transition"
-                            title="Move section up"
-                          >
-                            <ArrowUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button 
-                            disabled={sIdx === sections.length - 1}
-                            onClick={(e) => { e.stopPropagation(); handleMoveSection(sIdx, 'down'); }}
-                            className="p-1 rounded bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer border border-slate-853 transition"
-                            title="Move section down"
-                          >
-                            <ArrowDown className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Duplicate / Delete control helpers */}
-                      <div className="flex justify-between items-center border-t border-slate-900/60 pt-2 mt-1">
-                        <span className="text-[8px] font-mono text-slate-600 uppercase font-bold">
-                          {sec.fontSize === 'display' ? 'Display scale' : `${sec.fontSize} scale`}
-                        </span>
-                        <div className="flex gap-1.5">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleDuplicateSection(sIdx); }}
-                            className="px-2 py-0.5 rounded text-[9.5px] font-mono bg-slate-900 text-slate-350 hover:text-blue-400 hover:bg-blue-950/20 border border-slate-850 cursor-pointer transition font-bold"
-                          >
-                            Duplicate
-                          </button>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleDeleteSection(sIdx); }}
-                            className="px-2 py-0.5 rounded text-[9.5px] font-mono bg-slate-900 text-red-400 hover:bg-red-950/20 border border-slate-850 cursor-pointer transition font-bold"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Quick Shopify-style Categorized Block Sections Catalog */}
-            <div className="p-4 border-t border-slate-800 space-y-3 shrink-0 bg-slate-950/50">
-              <span className="text-[9.5px] font-mono tracking-widest text-[#38bdf8] block font-black uppercase">
-                ➕ 4. Add Live Page Sections
-              </span>
-              
-              {/* Organized by Shopify Theme categories */}
-              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
-                {/* Headers & Promos Category */}
-                <div>
-                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">🪧 Heros & Banner Ads</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { key: 'banner', label: 'Main Banner' },
-                      { key: 'slideshow', label: 'Slideshow' },
-                      { key: 'heading', label: 'Page Title' },
-                      { key: 'text', label: 'Promo Text' }
-                    ].map(b => (
-                      <button
-                        key={b.key}
-                        onClick={() => handleAddSection(b.key as any)}
-                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3 text-blue-500" /> {b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Portfolios & Listings Category */}
-                <div>
-                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">🛒 Property Directories</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { key: 'property_list', label: 'Properties list' },
-                      { key: 'finances_calculator', label: 'Mortgage Calc' },
-                      { key: 'stats_grid', label: 'Stats Grid' }
-                    ].map(b => (
-                      <button
-                        key={b.key}
-                        onClick={() => handleAddSection(b.key as any)}
-                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3 text-emerald-500" /> {b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Symmetrical Layout structures Category */}
-                <div>
-                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">📂 Grid Dividers & Content</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { key: 'image_text', label: 'Image + Text' },
-                      { key: 'columns', label: '3-Col Pillar' },
-                      { key: 'single_image', label: 'Feature Image' },
-                      { key: 'richtext', label: 'Article Text' }
-                    ].map(b => (
-                      <button
-                        key={b.key}
-                        onClick={() => handleAddSection(b.key as any)}
-                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3 text-indigo-500" /> {b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Endorsements and trust seals Category */}
-                <div>
-                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">💬 Endorsements & Trust</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { key: 'testimonials', label: 'Client Quotes' },
-                      { key: 'faqs', label: 'FAQs Accordion' },
-                      { key: 'team_profile', label: 'Expert Profiles' },
-                      { key: 'brands', label: 'Trust Logos' }
-                    ].map(b => (
-                      <button
-                        key={b.key}
-                        onClick={() => handleAddSection(b.key as any)}
-                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3 text-amber-500" /> {b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Interactions Category */}
-                <div>
-                  <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-1">📞 Interactive Converters</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { key: 'contact_form_banner', label: 'Consult Lead' },
-                      { key: 'video', label: 'Video Drone' },
-                      { key: 'process_steps', label: 'Step Progress' }
-                    ].map(b => (
-                      <button
-                        key={b.key}
-                        onClick={() => handleAddSection(b.key as any)}
-                        className="py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-850 hover:border-slate-700 rounded-lg text-[9.5px] font-bold font-mono uppercase tracking-wide transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3 text-red-500" /> {b.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Column 2: MIDDLE BUILDER SIDEBAR PANEL (ACTIVE SECTION SETTINGS) - Premium Inspector */}
-          <div className="w-full lg:w-[350px] shrink-0 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col overflow-hidden h-full shadow-lg">
-            <div className="border-b border-slate-800 pb-3 mb-4 flex justify-between items-center shrink-0">
-              <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block flex items-center gap-1.5">
-                ⚙️ Section Inspector
-              </span>
-              {activeSection && (
-                <span className="text-[9.5px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-black tracking-widest">
-                  {activeSection.type}
-                </span>
-              )}
-            </div>
-
-            {activeSection ? (
-              <div className="space-y-4 text-xs text-slate-300 flex-grow overflow-y-auto pr-1">
+              {/* GROUP A: HEADER & GLOBAL PLUGINS */}
+              <div className="space-y-1">
+                <span className="text-[9.5px] font-extrabold text-[#757575] uppercase tracking-wider block px-1.5 mb-1.5">Header Group</span>
                 
-                {/* Style Settings: Background, color, fonts */}
-                <div className="space-y-3.5 border-b border-slate-800 pb-4 mb-4">
-                  <span className="text-[9px] font-mono text-slate-450 uppercase tracking-widest font-extrabold block">🖌️ Element Layout Styling</span>
-                  
-                  <div className="space-y-1.5">
-                    <label className="block text-[8.5px] font-mono text-slate-400 uppercase">Interactive section Background</label>
-                    <select 
-                      value={activeSection.backgroundColor} 
-                      onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 text-xs font-medium cursor-pointer"
-                    >
-                      <option value="bg-white text-slate-800 border-none">Clean Alabaster (Light)</option>
-                      <option value="bg-slate-50 text-slate-800 border-none">Soft Ash (Light)</option>
-                      <option value="bg-slate-100 text-slate-800 border-none">Clean Gray (Light)</option>
-                      <option value="bg-slate-900 text-white border-slate-800 border-b">Midnight Carbon (Dark)</option>
-                      <option value="bg-slate-950 text-slate-100 border-b border-slate-800">Deep Cosmic (Dark)</option>
-                      <option value="bg-blue-900 text-white">Strategic Royal (Dark Blue)</option>
-                      <option value="bg-blue-50 text-blue-950">Ocean Breeze (Soft Blue)</option>
-                      <option value="bg-emerald-900 text-white">Registry Green (Dark Emerald)</option>
-                      <option value="bg-emerald-50 text-emerald-950">Mint Fresh (Soft Green)</option>
-                      <option value="bg-amber-500 text-amber-950">Solar Amber (Orange accent)</option>
-                      <option value="bg-amber-50 text-amber-950">Soft Cream (Tan layout)</option>
-                      <option value="bg-indigo-950 text-indigo-50">Imperial Indigo (Dreamy Purple)</option>
-                      <option value="bg-indigo-50 text-indigo-950">Grape Soda (Soft Purple)</option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Heading Color</label>
-                      <select 
-                        value={activeSection.headingColor} 
-                        onChange={(e) => handleUpdateActiveSectionStyle('headingColor', e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-slate-200 focus:outline-none cursor-pointer"
-                      >
-                        <option value="text-slate-900">Charcoal Slate</option>
-                        <option value="text-white">Pure White</option>
-                        <option value="text-blue-600">Primary Accent</option>
-                        <option value="text-amber-500">Amber Gold</option>
-                        <option value="text-emerald-400">Green Emerald</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[8.5px] font-mono text-slate-400 uppercase mb-1">Typography size</label>
-                      <select 
-                        value={activeSection.fontSize} 
-                        onChange={(e) => handleUpdateActiveSectionStyle('fontSize', e.target.value as any)}
-                        className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-slate-200 focus:outline-none cursor-pointer"
-                      >
-                        <option value="sm">Small text (text-xs)</option>
-                        <option value="md">Standard copy (text-sm)</option>
-                        <option value="lg">Large body (text-base)</option>
-                        <option value="display">Display Hero (text-xl)</option>
-                      </select>
+                {/* 1. Global Announcement bar item */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('announcement_bar');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`group p-2.5 rounded-md border flex items-center justify-between cursor-pointer transition ${
+                    activeSectionId === 'announcement_bar'
+                      ? 'bg-[#e2f0fd] border-blue-400 text-blue-900'
+                      : 'bg-white border-transparent hover:bg-[#f6f6f6] text-[#303030]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="w-3.5 h-3.5 text-slate-350 shrink-0 select-none cursor-grab" />
+                    <div className="text-left">
+                      <span className="text-xs font-bold block">📢 Announcement bar</span>
+                      <span className="text-[9px] text-[#717171] truncate block max-w-[190px] font-mono">{announcementText}</span>
                     </div>
                   </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 </div>
 
-                {/* Section Content inputs fields */}
-                <div className="space-y-4">
-                  <span className="text-[9px] font-mono text-slate-450 uppercase tracking-widest font-extrabold block">📝 Block Settings inputs</span>
-                  
-                  <div className="bg-slate-950/40 border border-slate-800 p-3.5 rounded-xl space-y-3">
-                    {renderSectionFieldsInputs(activeSection, handleUpdateActiveSectionSettings)}
+                {/* 2. Global Brand Header item */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('header_brand');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`group p-2.5 rounded-md border flex items-center justify-between cursor-pointer transition ${
+                    activeSectionId === 'header_brand'
+                      ? 'bg-[#e2f0fd] border-blue-400 text-blue-900'
+                      : 'bg-white border-transparent hover:bg-[#f6f6f6] text-[#303030]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="w-3.5 h-3.5 text-slate-350 shrink-0 select-none cursor-grab" />
+                    <div className="text-left">
+                      <span className="text-xs font-bold block">🏠 Header (Logo & menus)</span>
+                      <span className="text-[9px] text-[#717171] truncate block max-w-[190px] font-mono">{headerTitleInput || 'IMMO BURUNDILogo'}</span>
+                    </div>
                   </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </div>
+              </div>
+
+              {/* GROUP B: TEMPLATE CONTENT SECTIONS (COLLAPSIBLE / DRAGGABLE TREE) */}
+              <div className="space-y-1.5 pt-2 border-t border-[#f0f0f0]">
+                <div className="flex items-center justify-between px-1.5 mb-1.5">
+                  <span className="text-[9.5px] font-extrabold text-[#757575] uppercase tracking-wider">Template sections (Slices)</span>
+                  <span className="text-[8px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded cursor-help" title="To organize layouts, you can drag and drop sections up or down inside this panel!">DRAG TO ORDER</span>
                 </div>
 
-              </div>
-            ) : (
-              <div className="text-center py-24 text-slate-500 font-mono text-xs leading-relaxed max-w-[240px] mx-auto space-y-3">
-                <Settings className="w-8 h-8 mx-auto text-slate-650 animate-spin-reverse" />
-                <p>Click on any content block card in the left stack list to open its customizable responsive fields!</p>
-              </div>
-            )}
-          </div>
-
-          {/* Column 3: RIGHT BUILDER PANEL (LIVE HIGH-FIDELITY PREVIEW MOCKUP CONTAINER) - Interactive Device simulator */}
-          <div className="flex-grow bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden flex flex-col relative h-full shadow-inner">
-            
-            {/* Header: Device Simulator Controls (Shopify Style) */}
-            <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center shrink-0">
-              <span className="text-[10px] font-mono text-slate-400 block uppercase tracking-wider font-extrabold flex items-center gap-1.5 select-none">
-                <Monitor className="w-4 h-4 text-emerald-400 animate-pulse" /> Live Store View Emulator
-              </span>
-              
-              {/* Desktop / Tablet / Mobile Toggle selector */}
-              <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-0.5 rounded-lg select-none">
-                <button 
-                  type="button"
-                  onClick={() => setPreviewSize('desktop')}
-                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
-                    previewSize === 'desktop' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
-                  }`}
-                  title="Simulate Full Desktop Screen"
-                >
-                  🖥️ Desktop
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setPreviewSize('tablet')}
-                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
-                    previewSize === 'tablet' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
-                  }`}
-                  title="Simulate Tablet Width View"
-                >
-                  📱 Tablet
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setPreviewSize('mobile')}
-                  className={`px-2 py-1 rounded text-[9px] font-mono uppercase font-bold flex items-center gap-1 cursor-pointer transition ${
-                    previewSize === 'mobile' ? 'bg-blue-600 text-white' : 'text-slate-450 hover:text-white'
-                  }`}
-                  title="Simulate Mobile Width View"
-                >
-                  📱 Mobile
-                </button>
-              </div>
-            </div>
-
-            {/* Simulated browser frame bar */}
-            <div className="bg-slate-950/80 border-b border-slate-900 px-4 py-1.5 flex items-center gap-2 select-none">
-              <div className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
-              </div>
-              
-              <div className="flex-grow max-w-md mx-auto bg-slate-900 border border-slate-850 px-3 py-0.5 rounded-md text-[9px] font-mono text-slate-500 flex items-center gap-1 justify-center">
-                <span>🔒 https://immoburundi.bi/</span>
-                <span className="text-slate-350 font-bold">{editorPage.slug}</span>
-              </div>
-            </div>
-
-            {/* Styled Mock Page Viewport container with custom dimensions mapping */}
-            <div className="flex-grow overflow-y-auto p-4 bg-slate-900/40 select-none">
-              <div className={`shadow-2xl transition-all duration-300 ${
-                previewSize === 'desktop' 
-                  ? 'w-full' 
-                  : previewSize === 'tablet' 
-                  ? 'w-[750px] border-[6px] border-slate-850 rounded-2xl shadow-slate-950/80 bg-white mx-auto' 
-                  : 'w-[375px] border-[8px] border-slate-850 rounded-3xl shadow-slate-950/80 bg-white mx-auto'
-              }`}>
                 {sections.length === 0 ? (
-                  <div className="py-24 flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-3.5">
-                    <Layout className="w-12 h-12 text-slate-750 animate-pulse" />
-                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Interactive Screen Empty</h4>
-                    <p className="text-[10px] text-slate-500 leading-relaxed">Choose some block elements on the left stack to construct your new section list live. They will compile here perfectly!</p>
+                  <div className="p-5 text-center text-xs text-[#757575] border border-dashed border-[#cccccc] rounded-lg bg-[#fafafa]">
+                    Layout container empty.<br />Click "+ Add section" below or use the fast presets to populate blocks!
                   </div>
                 ) : (
-                  sections.map((sec, innerIdx) => {
-                    const isActive = activeSectionId === sec.id;
+                  sections.map((sec, idx) => {
+                    const isSelected = activeSectionId === sec.id;
                     return (
                       <div 
-                        key={sec.id} 
-                        className={`relative w-full text-slate-800 transition-all ${
-                          isActive 
-                            ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900/10 z-15 scale-[0.995] rounded-lg overflow-hidden' 
-                            : 'border-b border-slate-100/5 hover:ring-1 hover:ring-slate-700/50 hover:rounded-lg'
+                        key={sec.id}
+                        draggable="true"
+                        onDragStart={(e) => handleDragStart(e, idx)}
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDrop={(e) => handleDrop(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        className={`group rounded-lg border transition-all ${
+                          isSelected 
+                            ? 'bg-blue-600 border-blue-700 text-white shadow shadow-blue-800/20' 
+                            : 'bg-white border-[#e1e1e1] hover:bg-[#f8f8f8]'
                         }`}
                       >
-                        {/* Active Indicator helper label */}
-                        {isActive && (
-                          <span className="absolute top-3 left-3 z-30 bg-blue-600 text-white text-[8px] font-mono uppercase px-2.5 py-0.5 rounded-full font-black animate-bounce tracking-widest shadow">
-                            Editing: {sec.type.replace('_', ' ')}
-                          </span>
+                        {/* Section Header Row clickable */}
+                        <div 
+                          onClick={() => {
+                            setActiveSectionId(sec.id);
+                            setActiveSubBlock(null);
+                          }}
+                          className="p-2.5 flex items-center justify-between cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <GripVertical className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-blue-300' : 'text-[#a2a2a2]'} cursor-grab active:cursor-grabbing`} />
+                            <div className="text-left truncate">
+                              <span className="text-xs font-bold block capitalize">
+                                {sec.type.replace('_', ' ')}
+                              </span>
+                              <span className={`text-[9px] block font-mono ${isSelected ? 'text-blue-100' : 'text-[#717171]'}`}>
+                                Section Block #{idx + 1}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Duplicate and delete quick bar */}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDuplicateSection(idx); }}
+                              className={`p-1 rounded text-[9.5px] font-mono uppercase font-bold text-center shrink-0 hover:scale-105 transition-all ${
+                                isSelected ? 'bg-blue-700 text-white' : 'bg-[#f0f0f0] text-slate-800'
+                              }`}
+                              title="Duplicate block duplicate copy"
+                            >
+                              📋
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDeleteSection(idx); }}
+                              className={`p-1 rounded text-[9.5px] font-mono uppercase font-bold text-center shrink-0 hover:scale-105 transition-all ${
+                                isSelected ? 'bg-red-800 text-white' : 'bg-red-50 text-red-600'
+                              }`}
+                              title="Delete this block"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Hierarchical Sub-Blocks Sub-Tree displayed ONLY when this section is selected/active */}
+                        {isSelected && (
+                          <div className="px-3 pb-2.5 pt-1.5 border-t border-blue-500/50 bg-blue-700/30 text-white text-[11px] space-y-1 rounded-b-lg">
+                            <span className="text-[8.5px] uppercase tracking-wider font-extrabold text-blue-100 block opacity-90 pl-3">Inner Blocks Layout:</span>
+                            
+                            {/* Standard structural children nodes mapping matching Shopify Dawn list exactly */}
+                            <div className="space-y-1">
+                              <div 
+                                onClick={(e) => { e.stopPropagation(); setActiveSubBlock('heading'); }}
+                                className={`pl-4 py-1.5 rounded transition flex items-center gap-1.5 cursor-pointer ${activeSubBlock === 'heading' ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                              >
+                                <span className="opacity-60 text-[9px]">├─</span>
+                                <span className="font-mono">📝</span> 
+                                <span className="truncate">Heading: "{(sec.settings && (sec.settings.heading || sec.settings.title)) || 'Section Text heading'}"</span>
+                              </div>
+
+                              {sec.type === 'banner' && (
+                                <>
+                                  <div 
+                                    onClick={(e) => { e.stopPropagation(); setActiveSubBlock('first_image'); }}
+                                    className={`pl-4 py-1.5 rounded transition flex items-center gap-1.5 cursor-pointer ${activeSubBlock === 'first_image' ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                  >
+                                    <span className="opacity-60 text-[9px]">├─</span>
+                                    <span className="font-mono">🖼️</span> 
+                                    <span className="truncate">First Image slot</span>
+                                  </div>
+                                  <div 
+                                    onClick={(e) => { e.stopPropagation(); setActiveSubBlock('buttons'); }}
+                                    className={`pl-4 py-1.5 rounded transition flex items-center gap-1.5 cursor-pointer ${activeSubBlock === 'buttons' ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                  >
+                                    <span className="opacity-60 text-[9px]">└─</span>
+                                    <span className="font-mono">🖱️</span> 
+                                    <span className="truncate">Action buttons (Shop all...)</span>
+                                  </div>
+                                </>
+                              )}
+
+                              {sec.type === 'columns' && (
+                                <>
+                                  {((sec.settings && sec.settings.columns) || [
+                                    { icon: '🛡️', title: 'Premium Verification' },
+                                    { icon: '⚡', title: 'Instant Brokerage' },
+                                    { icon: '📂', title: 'Frictionless Contracts' }
+                                  ]).map((col: any, colIdx: number, arr: any[]) => {
+                                    const blockId = `column_${colIdx}`;
+                                    const isLast = colIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={colIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>{col.icon || '📌'}</span>
+                                          <span className="truncate">{col.title || `Column ${colIdx + 1}`}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalCols = (sec.settings && sec.settings.columns) || [];
+                                            const newCols = originalCols.filter((_: any, idx: number) => idx !== colIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, columns: newCols } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Column"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {sec.type === 'slideshow' && (
+                                <>
+                                  {((sec.settings && sec.settings.slides) || [
+                                    { title: 'Luxury Living' },
+                                    { title: 'Prime Urban Portfolios' }
+                                  ]).map((slide: any, slideIdx: number, arr: any[]) => {
+                                    const blockId = `slide_${slideIdx}`;
+                                    const isLast = slideIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={slideIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>🌄</span>
+                                          <span className="truncate">{slide.title || `Slide ${slideIdx + 1}`}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalSlides = (sec.settings && sec.settings.slides) || [];
+                                            const newSlides = originalSlides.filter((_: any, idx: number) => idx !== slideIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, slides: newSlides } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Slide"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {sec.type === 'testimonials' && (
+                                <>
+                                  {((sec.settings && sec.settings.testimonials) || [
+                                    { author: 'Gérard Sindayigaya' },
+                                    { author: 'Clara Kaneza' }
+                                  ]).map((test: any, testIdx: number, arr: any[]) => {
+                                    const blockId = `testimonial_${testIdx}`;
+                                    const isLast = testIdx === arr.length - 1;
+                                    return (
+                                      <div 
+                                        key={testIdx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveSubBlock(blockId); }}
+                                        className={`pl-4 py-1.5 rounded transition flex items-center justify-between cursor-pointer ${activeSubBlock === blockId ? 'bg-blue-800 text-white font-bold' : 'hover:bg-blue-700/50 text-blue-50'}`}
+                                      >
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="opacity-60 text-[9px] font-mono">{isLast ? '└─' : '├─'}</span>
+                                          <span>💬</span>
+                                          <span className="truncate">{test.author || `Reviewer ${testIdx + 1}`}</span>
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const originalTests = (sec.settings && sec.settings.testimonials) || [];
+                                            const newTests = originalTests.filter((_: any, idx: number) => idx !== testIdx);
+                                            if (activeSubBlock === blockId) setActiveSubBlock(null);
+                                            const updated = sections.map(sc => sc.id === sec.id ? { ...sc, settings: { ...sc.settings, testimonials: newTests } } : sc);
+                                            setEditorPage({ ...editorPage, sections: updated });
+                                          }}
+                                          className="text-[9px] text-red-200 hover:text-red-105 font-bold px-1 ml-1"
+                                          title="Remove Testimonial"
+                                        >
+                                          ❌
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {['columns', 'slideshow', 'testimonials'].includes(sec.type) && (
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleSidebarAddBlock(sec.id); }}
+                                  className="w-full text-left pl-7 py-1.5 text-[9.5px] uppercase tracking-wider text-blue-200 hover:text-white font-bold flex items-center gap-1 cursor-pointer hover:bg-blue-800/10 rounded transition mt-1"
+                                >
+                                  <Plus className="w-2.5 h-2.5" /> Add block ({sec.type === 'columns' ? 'New Column' : sec.type === 'slideshow' ? 'New Slide' : 'New Review'})
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         )}
-                        
-                        {renderMockPreviewSectionContent(sec)}
                       </div>
                     );
                   })
                 )}
+
+                {/* Add Section trigger slot as depicted at the bottom of Template in Shopify */}
+                <div className="pt-2">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setAddSectionDropdownOpen(!addSectionDropdownOpen)}
+                      className="w-full py-2 bg-blue-50 hover:bg-blue-100 border border-dashed border-blue-300 hover:border-blue-500 rounded-lg text-xs font-bold text-blue-600 flex items-center justify-center gap-1 cursor-pointer transition shadow-sm"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Section Block
+                    </button>
+
+                    {addSectionDropdownOpen && (
+                      <div className="absolute left-0 bottom-full mb-2 w-full max-h-72 overflow-y-auto bg-white border border-[#eaeaea] rounded-lg shadow-xl z-50 p-2 space-y-1 scrollbar-thin">
+                        <div className="text-[10px] uppercase font-mono font-bold text-slate-400 px-2 py-1 border-b border-[#fafafa] flex justify-between items-center bg-slate-50 rounded-t">
+                          <span>Burundi Shop Templates</span>
+                          <button 
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setAddSectionDropdownOpen(false); }} 
+                            className="text-red-500 hover:scale-110 font-sans font-normal text-xs px-1 cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        {[
+                          { type: 'property_list', label: '🏠 Certified Property List', desc: 'Display validated land listings' },
+                          { type: 'banner', label: '🖼️ Image Banner (Dawn)', desc: 'Large image background with CTA button' },
+                          { type: 'columns', label: '💎 Multicolumn Features', desc: 'Symmetrical icon & info pillar grid' },
+                          { type: 'slideshow', label: '🌄 Slideshow Carousel', desc: 'Dynamic scrolling photo header' },
+                          { type: 'team_profile', label: '👥 Cadastral Audit Team', desc: 'Showcase surveyor and attorney profiles' },
+                          { type: 'process_steps', label: '👣 Compliance Workflow', desc: '4 milestones verification cycle' },
+                          { type: 'stats_grid', label: '📊 Burundi Stats Figures', desc: 'Grid of capital and audit numbers' },
+                          { type: 'testimonials', label: '💬 Client Testimonials', desc: 'Buyer/Diaspora verified feedback list' },
+                          { type: 'image_text', label: '🎨 Image with Text Block', desc: 'Side-by-side illustration & details' },
+                          { type: 'faqs', label: '❓ FAQ Accordion List', desc: 'Common legal & registration Q&As' },
+                          { type: 'richtext', label: '📝 Compliance Document Copy', desc: 'Full-width rich paragraph text layout' },
+                          { type: 'video', label: '🎥 Accredited Drone Showcase', desc: 'Embedded video player wrapper' },
+                          { type: 'contact_form_banner', label: '📞 Advisory Free Consult', desc: 'Direct lead generation contact form' },
+                          { type: 'finances_calculator', label: '🧮 Diaspora Mortgage Tool', desc: 'Financial downpayment estimator' }
+                        ].map((tpl) => (
+                          <button
+                            key={tpl.type}
+                            type="button"
+                            onClick={() => {
+                              handleAddSection(tpl.type as PageSection['type']);
+                              setAddSectionDropdownOpen(false);
+                            }}
+                            className="w-full text-left p-2 rounded hover:bg-blue-50 hover:text-blue-900 group transition-all flex flex-col cursor-pointer border border-transparent hover:border-blue-100"
+                          >
+                            <span className="text-xs font-bold text-[#303030] group-hover:text-blue-800">{tpl.label}</span>
+                            <span className="text-[9.5px] text-slate-500 line-clamp-1">{tpl.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* GROUP C: FOOTER GROUP */}
+              <div className="pt-3 border-t border-[#f0f0f0] space-y-1">
+                <span className="text-[9.5px] font-extrabold text-[#757575] uppercase tracking-wider block px-1.5 mb-1.5">Footer Group</span>
+                
+                {/* Global footer copyright brand item */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('footer_brand');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`group p-2.5 rounded-md border flex items-center justify-between cursor-pointer transition ${
+                    activeSectionId === 'footer_brand'
+                      ? 'bg-[#e2f0fd] border-blue-400 text-blue-900'
+                      : 'bg-white border-transparent hover:bg-[#f6f6f6] text-[#303030]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="w-3.5 h-3.5 text-slate-350 shrink-0 cursor-grab" />
+                    <div className="text-left">
+                      <span className="text-xs font-bold block">🏠 Footer Global Info</span>
+                      <span className="text-[9px] text-[#717171] truncate block max-w-[190px] font-mono">{footerCopyrightInput || 'Burundi footer text'}</span>
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </div>
+              </div>
+
+            </div>
+
+            {/* Quick Presets Catalog Panel */}
+            <div className="p-3 border-t border-[#e1e1e1] bg-[#fafafa] shrink-0">
+              <span className="text-[9px] font-extrabold text-[#616161] uppercase tracking-wider block mb-2">Preset Layout Injectors:</span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const agencySections: PageSection[] = [
+                      {
+                        id: 'sec_1',
+                        type: 'banner',
+                        backgroundColor: 'bg-slate-950 text-slate-100 border-b border-slate-800',
+                        headingColor: 'text-white',
+                        textColor: 'text-slate-350',
+                        fontSize: 'lg',
+                        settings: {
+                          title: 'Elite Real Estate & Cadastral Verification in Burundi',
+                          subtitle: 'Connecting certified property owners, investors and diaspora clients with total legal authenticity on the ground.',
+                          buttonText: 'Browse Vetted Listings',
+                          imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
+                          opacity: 50,
+                          bannerHeight: 'large',
+                          alignment: 'left',
+                          showContainer: true
+                        }
+                      },
+                      {
+                        id: 'sec_2',
+                        type: 'property_list',
+                        backgroundColor: 'bg-white text-slate-800 border-none',
+                        headingColor: 'text-slate-900',
+                        textColor: 'text-slate-650',
+                        fontSize: 'md',
+                        settings: {
+                          heading: 'Vetted & Registered Holdings',
+                          subheading: 'Properties physically audited and certified directly at the Land Registry Office.',
+                          limit: '3',
+                          typeFilter: 'all',
+                          showOnlyVerified: true
+                        }
+                      }
+                    ];
+                    setEditorPage({ ...editorPage, sections: agencySections });
+                    setActiveSectionId('sec_1');
+                    setActiveSubBlock(null);
+                  }}
+                  className="p-1 px-2.5 bg-blue-50 border border-blue-200 text-blue-700 hover:bg-[#0052cc] hover:text-white rounded font-bold text-[9.5px] cursor-pointer text-center whitespace-nowrap transition-colors duration-150"
+                >
+                  🏢 Agency Theme
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const landSections: PageSection[] = [
+                      {
+                        id: 'sec_11',
+                        type: 'banner',
+                        backgroundColor: 'bg-slate-950 text-slate-100 border-b border-slate-800',
+                        headingColor: 'text-white',
+                        textColor: 'text-slate-100',
+                        fontSize: 'display',
+                        settings: {
+                          title: 'Premium Lakefront plots Tanganyika, Rumonge',
+                          subtitle: 'Secure parcels with certified boundaries ready for investment.',
+                          buttonText: 'View land catalog',
+                          imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+                          opacity: 40,
+                          bannerHeight: 'medium',
+                          alignment: 'center',
+                          showContainer: false
+                        }
+                      }
+                    ];
+                    setEditorPage({ ...editorPage, sections: landSections });
+                    setActiveSectionId('sec_11');
+                    setActiveSubBlock(null);
+                  }}
+                  className="p-1 px-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded font-bold text-[9.5px] cursor-pointer text-center whitespace-nowrap transition-colors duration-150"
+                >
+                  🗺️ Land Theme
+                </button>
               </div>
             </div>
-          </div>
+          </aside>
+
+          {/* -------------------------------------------------------------
+              COLUMN 2: LARGE MIDDLE LIVE PREVIEW MOCKUP EMULATOR CANVAS (Arrow 2)
+              ------------------------------------------------------------- */}
+          <main className="flex-grow p-4 lg:p-6 overflow-y-auto flex items-start justify-center bg-[#dbdbdb] h-full relative select-none">
+            
+            {/* Viewport resizing container */}
+            <div 
+              style={{ maxWidth: previewSize === 'mobile' ? '375px' : '100%' }}
+              className={`w-full bg-white shadow-2xl rounded-2xl overflow-hidden border border-[#cccccc] transition-all duration-300 relative ${
+                previewSize === 'mobile' ? 'min-h-[667px]' : 'min-h-full'
+              }`}
+            >
+              
+              {/* Simulated browser header bar for desktop mode */}
+              <div className="bg-[#eaeaea] border-b border-[#cdcdcd] px-3 py-1.5 flex items-center justify-between z-10 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#f25f56] inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#f4be1a] inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4cd964] inline-block" />
+                </div>
+                
+                {/* Simulated locked secure URL */}
+                <div className="flex-grow max-w-sm mx-auto bg-white border border-[#cdcdcd] px-3.5 py-0.5 rounded text-[10px] font-mono text-slate-500 font-bold flex items-center gap-1 justify-center shadow-inner">
+                  <span>🔒 https://immoburundi.bi/</span>
+                  <span className="text-[#3c8dbc] font-bold">pages/{editorPage.slug}</span>
+                </div>
+                <div className="w-10" />
+              </div>
+
+              {/* LIVE PAGE LAYOUT CHROME RENDER VIEW */}
+              <div className="w-full h-full bg-white text-slate-800">
+                
+                {/* 1. ANNOUNCEMENT BAR (Live state linked) */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('announcement_bar');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`py-2 px-3 text-center bg-[#1a1a1a] text-[#f2f2f2] text-xs font-semibold cursor-pointer select-none transition-all duration-200 flex items-center justify-center gap-1 ${
+                    activeSectionId === 'announcement_bar' ? 'ring-2 ring-blue-500 ring-inset' : 'hover:bg-[#2b2b2b]'
+                  }`}
+                >
+                  <p className="truncate font-sans tracking-wide leading-none">{announcementText}</p>
+                </div>
+
+                {/* 2. CORPORATE HEADER MENU (Live state linked using headerTitleInput) */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('header_brand');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`bg-white border-b border-[#ececec] py-4 px-5 flex items-center justify-between cursor-pointer select-none transition-all duration-200 ${
+                    activeSectionId === 'header_brand' ? 'ring-2 ring-blue-500 ring-inset' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  {/* Brand logo/title */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white shrink-0">
+                      <ShieldCheck className="w-4.5 h-4.5 text-white" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-xs font-extrabold font-sans uppercase tracking-tight text-blue-900 leading-none">
+                        {headerTitleInput || 'IMMO BURUNDI'}
+                      </span>
+                      <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
+                        Verified Workspace
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Menus list */}
+                  <div className="hidden sm:flex items-center gap-4 text-xs font-bold text-[#444444] tracking-wide uppercase">
+                    <span className="hover:text-blue-600 transition cursor-pointer">Home</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">Verified Plots</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">About Gitega</span>
+                    <span className="hover:text-blue-600 transition cursor-pointer">Diaspora Hub</span>
+                  </div>
+
+                  {/* Header right icons */}
+                  <div className="flex items-center gap-3 text-[#444444] shrink-0">
+                    <Search className="w-4 h-4 hover:text-blue-600" />
+                    <span className="text-[11px] font-mono text-[#8c8c8c] hidden md:inline">Contact</span>
+                  </div>
+                </div>
+
+                {/* 3. DYNAMIC BODY PORTALS LIST (With interactive Shopify border highlight and bottom plus button) */}
+                <div className="space-y-0 w-full">
+                  {sections.length === 0 ? (
+                    <div className="py-24 px-6 text-center max-w-sm mx-auto space-y-4">
+                      <Layout className="w-12 h-12 text-[#b0b0b0] mx-auto animate-pulse" />
+                      <h4 className="text-sm font-extrabold text-[#303030] uppercase tracking-wide">Interactive Canvas is Empty</h4>
+                      <p className="text-xs text-[#717171] leading-relaxed">Click any preset layout button or block in the left panel to populate your theme stack here live.</p>
+                    </div>
+                  ) : (
+                    sections.map((sec, sIdx) => {
+                      const isActive = activeSectionId === sec.id;
+                      
+                      // Dawn style banner specific backgrounds
+                      let heightClass = 'py-16 sm:py-24';
+                      const s = sec.settings || {};
+                      if (s.bannerHeight === 'small') heightClass = 'py-10';
+                      else if (s.bannerHeight === 'large') heightClass = 'py-24 sm:py-36';
+
+                      let opacityVal = 40;
+                      if (s.opacity !== undefined) opacityVal = parseInt(s.opacity);
+
+                      return (
+                        <div 
+                          key={sec.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSectionId(sec.id);
+                            setActiveSubBlock(null);
+                          }}
+                          className={`relative w-full group transition-all duration-150 ${
+                            isActive 
+                              ? 'ring-[3px] ring-blue-600 ring-offset-1 z-20 shadow-xl' 
+                              : 'hover:ring-1 hover:ring-slate-400 border-b border-[#eeeeee]'
+                          }`}
+                        >
+                          {/* Top Border Badge showing name (only if active) */}
+                          {isActive && (
+                            <span className="absolute bottom-3 left-3 z-30 bg-blue-600 text-white text-[9px] font-mono uppercase px-2 rounded-full font-extrabold tracking-widest shadow">
+                              Template: {sec.type.replace('_', ' ')}
+                            </span>
+                          )}
+
+                          {/* Dynamic page content render */}
+                          <div className="w-full">
+                            {renderMockPreviewSectionContent(sec)}
+                          </div>
+
+                          {/* Blue circular PLUS button in bottom border middle (just like Shopify screenshot!) */}
+                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowInsertCatalogIndex(sIdx);
+                              }}
+                              className="w-6 h-6 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md border hover:scale-110 active:scale-95 transition-all text-xs font-black cursor-pointer"
+                              title="Insert new layout block beneath this section"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {/* Float list of categorized sections to insert directly below */}
+                          {showInsertCatalogIndex === sIdx && (
+                            <div className="absolute left-1/2 -translate-x-1/2 top-4 mt-2 bg-white border border-[#cfcfcf] shadow-2xl p-3.5 rounded-xl z-50 w-72 max-w-sm text-xs text-left animate-in zoom-in duration-100 select-none">
+                              <div className="flex justify-between items-center border-b pb-1.5 mb-2 shrink-0">
+                                <span className="font-bold text-[#1a1a1a] uppercase text-[9.5px] font-mono tracking-wider">⚡ Insert brand new block</span>
+                                <button onClick={(e) => { e.stopPropagation(); setShowInsertCatalogIndex(null); }} className="text-[#a1a1a1] hover:text-[#303030] font-bold text-xs">✕</button>
+                              </div>
+                              <span className="text-[8px] uppercase tracking-widest text-[#717171] font-bold block mb-1">Select block type:</span>
+                              <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
+                                {[
+                                  { k: 'banner', l: 'Main Banner', icon: '🖼️' },
+                                  { k: 'property_list', l: 'Properties', icon: '🏡' },
+                                  { k: 'columns', l: '3 Pillars', icon: '💎' },
+                                  { k: 'testimonials', l: 'Testimonials', icon: '💬' },
+                                  { k: 'video', l: 'Drone Video', icon: '📽️' },
+                                  { k: 'slideshow', l: 'Carousel Slider', icon: '🎞️' }
+                                ].map(item => (
+                                  <button
+                                    key={item.k}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleInsertSectionAfter(sIdx, item.k as any);
+                                    }}
+                                    className="p-1.5 rounded hover:bg-slate-100 border text-[10px] items-center flex gap-1 font-bold text-slate-800 text-left transition cursor-pointer"
+                                  >
+                                    <span>{item.icon}</span> <span>{item.l}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* 4. LAYOUT GLOBAL FOOTER (Live state linked copyright text) */}
+                <div 
+                  onClick={() => {
+                    setActiveSectionId('footer_brand');
+                    setActiveSubBlock(null);
+                  }}
+                  className={`bg-[#1a1a1a] text-slate-400 py-10 px-6 border-t border-[#333333] cursor-pointer text-center select-none transition-all duration-200 ${
+                    activeSectionId === 'footer_brand' ? 'ring-2 ring-blue-500 ring-inset' : 'hover:bg-[#202020]'
+                  }`}
+                >
+                  <p className="text-[11px] max-w-lg mx-auto font-sans leading-relaxed tracking-wide font-normal">
+                    {footerCopyrightInput || '© 2026 Gitega national archives. All rights certified IMMO BURUNDI.'}
+                  </p>
+                  <div className="flex justify-center gap-5 mt-4 text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                    <span>Terms &amp; deeds policy</span>
+                    <span>Registry laws</span>
+                    <span>Sovereign security indices</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </main>
+
+          {/* -------------------------------------------------------------
+              COLUMN 3: SHOPIFY RIGHT INSPECTOR PANEL (ACTIVE SECTION SETTINGS) (Arrow 3)
+              ------------------------------------------------------------- */}
+          <aside className="w-full lg:w-[350px] shrink-0 bg-white border-l border-[#dcdcdc] flex flex-col overflow-hidden h-full">
+            
+            {/* Inspector Header with Section Title */}
+            <div className="p-3 bg-[#fafafa] border-b border-[#e1e1e1] flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span className="text-xs font-black text-[#1a1a1a] uppercase font-mono tracking-wider">
+                  {activeSectionId === 'announcement_bar' 
+                    ? 'Announcement bar' 
+                    : activeSectionId === 'header_brand' 
+                    ? 'Logo/Header settings' 
+                    : activeSectionId === 'footer_brand' 
+                    ? 'Footer copyright' 
+                    : sections.find(s => s.id === activeSectionId)
+                    ? sections.find(s => s.id === activeSectionId)?.type?.replace('_', ' ') + ' customizer'
+                    : 'Section settings'
+                  }
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => alert('Opening additional block tools!')}
+                  className="p-1 rounded text-slate-400 hover:bg-[#eaeaea] hover:text-[#1a1a1a] shrink-0 cursor-pointer"
+                  title="More block operations"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => {
+                    setActiveSectionId(null);
+                    setActiveSubBlock(null);
+                  }}
+                  className="p-1 rounded text-slate-400 hover:bg-red-50 hover:text-red-500 shrink-0 cursor-pointer"
+                  title="Close settings inspector panels"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Inspector Scroll Container */}
+            <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-white text-xs">
+              
+              {/* If no section selected */}
+              {!activeSectionId && (
+                <div className="text-center py-24 text-slate-400 font-mono text-xs leading-relaxed max-w-[210px] mx-auto space-y-3 select-none">
+                  <Settings className="w-8 h-8 mx-auto text-slate-350 animate-spin-reverse" />
+                  <p>Click on any content block card in the left stack list or hover-click inside the middle preview layout to trigger Shopify settings inspector fields.</p>
+                </div>
+              )}
+
+              {/* A. If Announcement bar selected */}
+              {activeSectionId === 'announcement_bar' && (
+                <div className="space-y-4">
+                  <span className="text-[9.5px] text-[#717171] uppercase tracking-widest font-extrabold font-mono block">📢 Global Announcement parameters</span>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Banner Alert Text:</label>
+                    <textarea 
+                      rows={4}
+                      value={announcementText} 
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      className="w-full bg-[#fcfcfc] border border-[#cccccc] hover:border-slate-400 focus:border-blue-500 rounded p-2.5 text-[#303030] focus:outline-none transition leading-relaxed" 
+                    />
+                  </div>
+
+                  <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-[10.5px] leading-relaxed text-blue-850">
+                    💡 This announcement bar remains global across all page categories, showcasing prominent real estate certifications instantly.
+                  </div>
+                </div>
+              )}
+
+              {/* B. If Header branding is selected */}
+              {activeSectionId === 'header_brand' && (
+                <div className="space-y-4">
+                  <span className="text-[9.5px] text-[#717171] uppercase tracking-widest font-extrabold font-mono block">🏠 Corporate Header configurations</span>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Website corporate logo text:</label>
+                    <input 
+                      type="text" 
+                      value={headerTitleInput} 
+                      onChange={(e) => setHeaderTitleInput(e.target.value)}
+                      className="w-full bg-[#fcfcfc] border border-[#cccccc] hover:border-slate-400 focus:border-blue-500 rounded p-2.5 text-[#303030] focus:outline-none transition" 
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-[#717171] pt-2">
+                    <span className="block font-bold text-[10px] text-slate-800">Menus layout links:</span>
+                    <ul className="list-disc pl-4 space-y-1 text-[10.5px]">
+                      <li>🏠 Home URL (/)</li>
+                      <li>📄 Land plots (/land)</li>
+                      <li>📞 Contact consult advisor (/contact)</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* C. If Footer copyright is selected */}
+              {activeSectionId === 'footer_brand' && (
+                <div className="space-y-4">
+                  <span className="text-[9.5px] text-[#717171] uppercase tracking-widest font-extrabold font-mono block">🏠 Footer Global labels</span>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Copyright notice copy lines:</label>
+                    <textarea 
+                      rows={4}
+                      value={footerCopyrightInput} 
+                      onChange={(e) => setFooterCopyrightInput(e.target.value)}
+                      className="w-full bg-[#fcfcfc] border border-[#cccccc] hover:border-slate-400 focus:border-blue-500 rounded p-2.5 text-[#303030] focus:outline-none transition leading-relaxed" 
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* D. If Dynamic Page Section is selected (e.g. Image banner) */}
+              {activeSectionId && 
+               ['announcement_bar', 'header_brand', 'footer_brand'].indexOf(activeSectionId) === -1 && 
+               sections.find(s => s.id === activeSectionId) && (
+                (() => {
+                  const sec = sections.find(s => s.id === activeSectionId)!;
+                  const s = sec.settings || {};
+                  
+                  return (
+                    <div className="space-y-4">
+                      
+                      {/* Segment 1: Header / Style scheme */}
+                      <div className="space-y-3.5 border-b pb-4">
+                        <span className="text-[9.5px] text-[#717171] uppercase tracking-widest font-extrabold font-mono block">🎨 Color scheme & Styles</span>
+                        
+                        <div>
+                          <label className="block text-[#1a1a1a] font-bold text-[10.5px] mb-1">Color Scheme:</label>
+                          <select 
+                            value={sec.backgroundColor} 
+                            onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
+                            className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-slate-800 text-xs font-semibold cursor-pointer focus:outline-none"
+                          >
+                            <option value="bg-white text-slate-800 border-none">Scheme 1 (White layout background)</option>
+                            <option value="bg-slate-50 text-slate-800 border-none">Scheme 2 (Minimal Ash gray)</option>
+                            <option value="bg-slate-900 text-white border-slate-800">Scheme 3 (Dark Slate background)</option>
+                            <option value="bg-[#1a1a1a] text-white">Scheme 4 (Premium Pitch black)</option>
+                            <option value="bg-blue-900 text-white">Scheme 5 (Strategic Royal Blue)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[#1a1a1a] font-bold text-[10.5px] mb-1">Typography size setting:</label>
+                          <select 
+                            value={sec.fontSize} 
+                            onChange={(e) => handleUpdateActiveSectionStyle('fontSize', e.target.value as any)}
+                            className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-xs font-semibold focus:outline-none cursor-pointer"
+                          >
+                            <option value="sm">Small description text</option>
+                            <option value="md">Medium standard layout copy text</option>
+                            <option value="lg">Large body text scale</option>
+                            <option value="display">Display Hero bold (Dawn scale)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Segment 2: Image banner specific layout (Arrow 3 in absolute detail!) */}
+                      {sec.type === 'banner' ? (
+                        <div className="space-y-4 pt-1">
+                          
+                          {/* First Image slot with real uploader */}
+                          <div className="space-y-1.5">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">First Image / Background Cover</label>
+                            <AdminImageUpload
+                              value={s.imageUrl || ''}
+                              onChange={(url) => handleUpdateActiveSectionSettings('imageUrl', url)}
+                              placeholder="Upload first banner image"
+                            />
+                          </div>
+
+                          {/* Second Image slot with real uploader */}
+                          <div className="space-y-1.5 font-sans">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Second Image (Split Screen / Blend)</label>
+                            <AdminImageUpload
+                              value={s.imageUrl2 || ''}
+                              onChange={(url) => handleUpdateActiveSectionSettings('imageUrl2', url)}
+                              placeholder="Upload split screen image"
+                            />
+                          </div>
+
+                          {/* Image overlay opacity slider */}
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex justify-between items-center">
+                              <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Image overlay opacity</label>
+                              <span className="bg-[#f0f0f0] border border-[#cecece] px-2 py-0.5 rounded text-[10px] font-mono text-slate-700 font-bold">
+                                {s.opacity || 40} %
+                              </span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={s.opacity || 40} 
+                              onChange={(e) => handleUpdateActiveSectionSettings('opacity', e.target.value)}
+                              className="w-full h-1.5 bg-[#eaeaea] accent-blue-600 rounded-lg appearance-none cursor-pointer" 
+                            />
+                          </div>
+
+                          {/* Banner height selection */}
+                          <div className="space-y-1.5">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Banner height</label>
+                            <select 
+                              value={s.bannerHeight || 'large'}
+                              onChange={(e) => handleUpdateActiveSectionSettings('bannerHeight', e.target.value)}
+                              className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-xs font-semibold focus:outline-none cursor-pointer"
+                            >
+                              <option value="small">Small layout banner style</option>
+                              <option value="medium">Medium compact layout height</option>
+                              <option value="large">Large aesthetic height height</option>
+                            </select>
+                            <span className="text-[9.5px] text-[#717171] leading-normal block">
+                              For best results, use an image with a spacious 3:2 aspect ratio layout. Let's learn more details.
+                            </span>
+                          </div>
+
+                          {/* Desktop content position */}
+                          <div className="space-y-1.5">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Desktop content position</label>
+                            <select 
+                              value={s.desktopContentPosition || 'bottom-center'}
+                              onChange={(e) => handleUpdateActiveSectionSettings('desktopContentPosition', e.target.value)}
+                              className="w-[#100] bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-xs font-semibold focus:outline-none cursor-pointer"
+                            >
+                              <option value="top-left">Top Left</option>
+                              <option value="top-center">Top Center</option>
+                              <option value="middle-center">Middle Center</option>
+                              <option value="bottom-left">Bottom Left</option>
+                              <option value="bottom-center">Bottom Center</option>
+                            </select>
+                          </div>
+
+                          {/* Show container on desktop toggle switch */}
+                          <div className="flex items-center justify-between py-2 border-b border-t border-[#f0f0f0]">
+                            <label className="text-[#1a1a1a] font-bold text-[10.5px]">Show container on desktop</label>
+                            <button
+                              type="button" 
+                              onClick={() => handleUpdateActiveSectionSettings('showContainer', !s.showContainer)}
+                              className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${
+                                s.showContainer ? 'bg-blue-600' : 'bg-slate-300'
+                              }`}
+                            >
+                              <div className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-200 ${
+                                s.showContainer ? 'translate-x-5' : 'translate-x-0'
+                              }`} />
+                            </button>
+                          </div>
+
+                          {/* Desktop content alignment Segmented Buttons layout */}
+                          <div className="space-y-1.5">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Desktop content alignment</label>
+                            <div className="grid grid-cols-3 gap-1 bg-[#f4f4f4] rounded-lg p-1 border border-[#e2e2e2]">
+                              {['left', 'center', 'right'].map(align => (
+                                <button
+                                  type="button"
+                                  key={align}
+                                  onClick={() => handleUpdateActiveSectionSettings('alignment', align)}
+                                  className={`py-1 rounded-md text-xs font-black capitalize transition-all ${
+                                    s.alignment === align 
+                                      ? 'bg-white shadow text-[#1a1a1a] font-black' 
+                                      : 'text-slate-500 hover:text-[#1a1a1a]'
+                                  }`}
+                                >
+                                  {align}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Custom Header Text editing fields */}
+                          <div className="space-y-1.5 pt-2 border-t">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Banner Heading Text</label>
+                            <input 
+                              type="text" 
+                              value={s.title || ''} 
+                              onChange={(e) => handleUpdateActiveSectionSettings('title', e.target.value)}
+                              className="w-full bg-[#fcfcfc] border border-[#cccccc] hover:border-slate-400 focus:border-blue-500 rounded p-2 text-[#303030] focus:outline-none transition font-sans font-bold" 
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Image Description</label>
+                            <textarea 
+                              rows={2.5}
+                              value={s.subtitle || ''} 
+                              onChange={(e) => handleUpdateActiveSectionSettings('subtitle', e.target.value)}
+                              className="w-full bg-[#fcfcfc] border border-[#cccccc] hover:border-slate-400 focus:border-blue-500 rounded p-2 text-[#303030] focus:outline-none transition leading-normal font-sans" 
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        /* Universal fields for other sections, styled identically to look professional and cohesive */
+                        <div className="space-y-4 pt-1 bg-white">
+                          <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black block">📝 Block details inputs</span>
+                          <div className="space-y-3 p-3 bg-slate-50/70 border rounded-xl">
+                            {renderSectionFieldsInputs(sec, handleUpdateActiveSectionSettings)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Animations accordion group */}
+                      <div className="pt-2 border-t">
+                        <details className="group border rounded-lg bg-white overflow-hidden transition-all text-[#303030]">
+                          <summary className="flex justify-between items-center p-3 font-bold text-[10.5px] cursor-pointer bg-[#fafafa] list-none">
+                            <span>Animations</span>
+                            <span className="transition-transform group-open:rotate-180">▼</span>
+                          </summary>
+                          <div className="p-3 bg-white space-y-2 border-t">
+                            <label className="block text-[10px] font-bold">Image behavior:</label>
+                            <select 
+                              value={s.imageBehavior || 'ambient'} 
+                              onChange={(e) => handleUpdateActiveSectionSettings('imageBehavior', e.target.value)}
+                              className="w-full bg-white border border-[#cccccc] rounded p-1.5 focus:outline-none text-xs cursor-pointer"
+                            >
+                              <option value="ambient">Ambient movement (Flowing visual glide)</option>
+                              <option value="fixed">Fixed parallax backdrop</option>
+                              <option value="zoom">Magnified Hover Scale</option>
+                            </select>
+                          </div>
+                        </details>
+                      </div>
+
+                      {/* Mobile Layout configurations group */}
+                      <div className="pt-1.5">
+                        <details className="group border rounded-lg bg-white overflow-hidden transition-all text-[#303030]">
+                          <summary className="flex justify-between items-center p-3 font-bold text-[10.5px] cursor-pointer bg-[#fafafa] list-none">
+                            <span>Mobile Layout</span>
+                            <span className="transition-transform group-open:rotate-180">▼</span>
+                          </summary>
+                          <div className="p-3 bg-white space-y-3.5 border-t">
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-bold">Mobile content alignment:</label>
+                              <div className="grid grid-cols-3 gap-1 bg-[#f4f4f4] rounded-lg p-1 border">
+                                {['left', 'center', 'right'].map(align => (
+                                  <button
+                                    type="button"
+                                    key={align}
+                                    onClick={() => handleUpdateActiveSectionSettings('mobileAlignment', align)}
+                                    className={`py-1 rounded text-[10px] font-semibold capitalize bg-transparent ${
+                                      s.mobileAlignment === align ? 'bg-white shadow text-[#1a1a1a] font-bold' : 'text-slate-400'
+                                    }`}
+                                  >
+                                    {align}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10px] font-bold">Stack images on mobile</label>
+                              <button 
+                                type="button"
+                                onClick={() => handleUpdateActiveSectionSettings('stackImagesMobile', !s.stackImagesMobile)}
+                                className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-150 ${s.stackImagesMobile ? 'bg-blue-600' : 'bg-slate-300'}`}
+                              >
+                                <div className={`bg-white w-3 h-3 rounded-full transform transition-transform duration-150 ${s.stackImagesMobile ? 'translate-x-4' : 'translate-x-0'}`} />
+                              </button>
+                            </div>
+                          </div>
+                        </details>
+                      </div>
+
+                    </div>
+                  );
+                })()
+              )}
+
+            </div>
+
+            {/* Global theme settings accordion at the bottom as shown in the screenshot */}
+            <div className="p-3 border-t bg-[#fafafa] shrink-0 text-left select-none">
+              <div 
+                onClick={() => alert('Opening Global Theme configurations! You can switch colors from the sidebar tab too.')}
+                className="flex justify-between items-center text-xs font-bold text-[#1a1a1a] cursor-pointer hover:text-blue-600 transition"
+              >
+                <span className="flex items-center gap-1.5">🎨 Theme Settings</span>
+                <span>▶</span>
+              </div>
+            </div>
+
+          </aside>
+
         </div>
       </div>
     );
@@ -3347,252 +3991,20 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
 
   // Render Visual Mini-Prototype for builder right workspace canvas
   function renderMockPreviewSectionContent(sec: PageSection) {
-    const bg = sec.backgroundColor || 'bg-white text-slate-800';
-    const s = sec.settings || {};
-    const fs = sec.fontSize;
-    const fontClass = fs === 'sm' ? 'text-xs' : fs === 'lg' ? 'text-base' : fs === 'display' ? 'text-lg font-extrabold' : 'text-sm font-normal';
-
     return (
-      <div className={`p-6 text-center ${bg} ${fontClass} leading-relaxed rounded-md space-y-2`}>
-        <div className="font-sans font-black flex items-center justify-center gap-1">
-          <span className="text-[10px] font-mono tracking-widest text-[#a855f7] border border-[#a855f7]/25 px-1.5 py-0.5 rounded capitalize font-bold leading-none shrink-0 mb-1">
-            Visual block: {sec.type === 'image_text' ? 'Image & Text' : sec.type}
-          </span>
-        </div>
-        
-        {sec.type === 'banner' && (
-          <div className="space-y-1">
-            <h4 className="font-extrabold max-w-sm mx-auto leading-none text-slate-900 border-none pt-1">{s.title || 'Responsive Banner Heading'}</h4>
-            <p className="text-[11px] opacity-75 max-w-xs mx-auto leading-normal">{s.subtitle || 'Custom subtitle lines...'}</p>
-            {s.buttonText && <span className="inline-block px-3 py-1 bg-blue-600 text-white rounded text-[9px] uppercase tracking-wide font-black mt-2">{s.buttonText}</span>}
-          </div>
-        )}
-
-        {sec.type === 'image_text' && (
-          <div className="grid grid-cols-2 gap-3 items-center text-left py-2">
-            <div className={`space-y-1 ${s.alignment === 'right' ? 'order-2' : ''}`}>
-              <h5 className="font-bold text-xs leading-none text-slate-900">{s.heading || 'Aesthetic Title'}</h5>
-              <p className="text-[10px] opacity-75 leading-tight">{s.body || 'Paragraph copy blocks...'}</p>
-            </div>
-            <div className={`bg-slate-200 rounded h-14 overflow-hidden relative flex items-center justify-center ${s.alignment === 'right' ? 'order-1' : ''}`}>
-              <img src={s.imageUrl || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80'} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-black/10" />
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'columns' && (
-          <div className="space-y-2">
-            <h4 className="font-bold text-xs">{s.heading || 'Symmetrical columns title'}</h4>
-            <div className="grid grid-cols-3 gap-2 text-center pt-1 text-[9px]">
-              <div className="bg-slate-500/10 p-2 rounded">
-                <span>💎</span>
-                <p className="font-bold mt-1 leading-none text-slate-900 text-[10px]">Verification</p>
-              </div>
-              <div className="bg-slate-500/10 p-2 rounded">
-                <span>⚡</span>
-                <p className="font-bold mt-1 leading-none text-slate-900 text-[10px]">Registry</p>
-              </div>
-              <div className="bg-slate-500/10 p-2 rounded">
-                <span>📁</span>
-                <p className="font-bold mt-1 leading-none text-slate-900 text-[10px]">Audit</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'slideshow' && (
-          <div className="rounded bg-cover bg-center h-20 relative flex flex-col justify-center text-white" style={{ backgroundImage: `url(${(s.slides && s.slides[0]?.image) || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'})` }}>
-            <div className="absolute inset-0 bg-black/60 rounded" />
-            <div className="relative z-10 p-2">
-              <h5 className="font-bold text-[11px] leading-none">{(s.slides && s.slides[0]?.title) || 'Luxury Living'}</h5>
-              <p className="text-[8px] opacity-85 leading-none mt-1">{(s.slides && s.slides[0]?.desc) || 'Multi-slide carousel banner support'}</p>
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'gallery' && (
-          <div className="grid grid-cols-4 gap-1 pt-1.5">
-            {(s.images && s.images.length > 0 ? s.images : [
-              'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=150&q=80',
-              'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=150&q=80',
-              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=150&q=80',
-              'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=150&q=80'
-            ]).slice(0, 4).map((imgUrl: string, idx: number) => (
-              <div key={idx} className="bg-slate-200 h-10 rounded overflow-hidden">
-                <img src={imgUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {sec.type === 'richtext' && (
-          <div className="space-y-1 py-1 max-w-sm mx-auto text-left">
-            <h5 className="font-bold text-[11.5px] border-b pb-1 text-slate-950 leading-tight">{s.title || 'Compliance details'}</h5>
-            <p className="text-[10px] opacity-70 leading-normal font-sans pr-1 line-clamp-2">{s.body || 'This provides high quality rich text layout models...'}</p>
-          </div>
-        )}
-
-        {sec.type === 'brands' && (
-          <div className="py-1 flex justify-center flex-wrap gap-2 text-[9px] font-mono tracking-wider text-slate-500 uppercase font-bold">
-            {(s.brands && s.brands.length > 0 ? s.brands : ['BANQUE DE LA REPUBLIQUE', 'REGIDESO', 'MINISTERE DES FINANCES', 'OBR BURUNDI']).slice(0, 4).map((b: string, idx: number) => (
-              <span key={idx} className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">🏢 {b}</span>
-            ))}
-          </div>
-        )}
-
-        {sec.type === 'faqs' && (
-          <div className="space-y-1.5 text-left max-w-xs mx-auto py-1.5">
-            <span className="text-[10px] font-bold text-slate-800 tracking-tight block">❓ {s.heading || 'Frequently Asked Accordions'}</span>
-            <div className="p-2 bg-slate-50 border rounded text-[9.5px] text-slate-600 leading-tight font-sans space-y-1">
-              {(s.faqs && s.faqs.length > 0 ? s.faqs : [{ q: 'How does IMMO BURUNDI audit listings securely?' }]).slice(0, 2).map((item: any, idx: number) => (
-                <div key={idx} className="truncate font-medium text-slate-700">Q: {item.q}</div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'testimonials' && (
-          <div className="bg-slate-50 p-2.5 rounded-xl text-left max-w-xs mx-auto space-y-1 border">
-            <div className="flex gap-0.5 text-amber-500 text-[8px] leading-none">★★★★★</div>
-            <p className="text-[10px] italic leading-tight text-slate-650 font-sans line-clamp-2">
-              "{(s.testimonials && s.testimonials.length > 0 ? s.testimonials[0].text : 'Saved us from double-allocation trap!')}"
-            </p>
-            <span className="text-[8.5px] font-bold text-slate-800 block">
-              - {(s.testimonials && s.testimonials.length > 0 ? s.testimonials[0].author : 'Clara Kaneza')}
-            </span>
-          </div>
-        )}
-
-        {sec.type === 'video' && (
-          <div className="bg-slate-900 hover:opacity-95 text-white h-20 rounded-xl relative flex items-center justify-center cursor-pointer">
-            <img src={s.coverImage || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80'} className="absolute inset-0 w-full h-full object-cover opacity-40 rounded-xl" referrerPolicy="no-referrer" />
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center relative z-10">
-              <Play className="w-3 h-3 fill-white translate-x-0.5" />
-            </div>
-            <span className="absolute bottom-1 right-2 text-[8px] font-mono opacity-80 uppercase leading-none">📽️ {s.duration || '3 mins'}</span>
-          </div>
-        )}
-
-        {sec.type === 'single_image' && (
-          <div className="space-y-1.5 font-sans">
-            <div className="rounded overflow-hidden h-20 border">
-              <img src={s.imageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80'} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            </div>
-            {s.caption && <span className="text-[9px] font-mono text-slate-450 block">{s.caption}</span>}
-          </div>
-        )}
-
-        {sec.type === 'heading' && (
-          <div className="py-2">
-            <h4 className="font-extrabold text-sm text-slate-900 border-none">{s.title || 'Display Centered Typography'}</h4>
-            {s.subtitle && <p className="text-[10.5px] text-slate-500 mt-1">{s.subtitle}</p>}
-          </div>
-        )}
-
-        {sec.type === 'text' && (
-          <p className="text-slate-650 text-[10.5px] text-left leading-normal font-sans px-2 mx-auto max-w-sm">
-            {s.body || 'Provide detailed layout information paragraph segments...'}
-          </p>
-        )}
-
-        {sec.type === 'property_list' && (
-          <div className="space-y-2 text-left py-1.5 border-t border-b border-slate-100 mt-2">
-            <h4 className="font-extrabold text-xs text-slate-950 border-none pb-0 text-center">{s.heading || 'Featured Properties Catalog'}</h4>
-            <p className="text-[9.5px] opacity-70 leading-tight text-center max-w-xs mx-auto">{s.subheading || 'Listing widgets filtered from the database'}</p>
-            <div className="grid grid-cols-3 gap-2 text-center pt-2 text-[8px] font-mono">
-              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
-                <span>🏡 Villa</span>
-                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Kiriri Hills</p>
-              </div>
-              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
-                <span>🏢 Office</span>
-                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Rohero I</p>
-              </div>
-              <div className="bg-slate-100 border border-slate-200/50 p-1.5 rounded text-slate-800">
-                <span>🗺️ Land</span>
-                <p className="font-bold font-sans text-[7.5px] truncate text-slate-900 mt-0.5 leading-none">Rumonge</p>
-              </div>
-            </div>
-            <div className="text-[8.5px] text-blue-600 font-mono text-center font-bold mt-1 tracking-wide">
-              Show Limit: {s.limit || '3'} • Filter: {s.typeFilter || 'all'} • Verified Only: {s.showOnlyVerified !== false ? 'Yes' : 'No'}
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'team_profile' && (
-          <div className="space-y-2.5 text-center mt-2 py-1.5 border-t border-b border-slate-100">
-            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Licensed Auditing Experts'}</h4>
-            <p className="text-[9px] opacity-70 leading-none">{s.subheading || 'Certified surveyor team validations'}</p>
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              {(s.members || [
-                { name: 'Sylvain Ndayishimiye', role: 'Chief Audit Officer' },
-                { name: 'Estella Kaneza', role: 'Sovereist GPS Geodesist' },
-                { name: 'Aimé Ndizeye', role: 'Diaspora Coordinator' }
-              ]).slice(0, 3).map((m: any, idx: number) => (
-                <div key={idx} className="bg-slate-50 p-1.5 rounded border border-slate-150 text-[8px] truncate">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 mx-auto mb-1 overflow-hidden">
-                    <img src={m.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'} className="w-full h-full object-cover" />
-                  </div>
-                  <p className="font-bold text-slate-950 truncate leading-none">{m.name}</p>
-                  <p className="text-[7px] text-blue-600 truncate opacity-90 mt-0.5 leading-none">{m.role}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'process_steps' && (
-          <div className="space-y-2 text-center mt-2 py-1.5 border-t border-b border-slate-100">
-            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Secure Verification Workflow'}</h4>
-            <div className="flex justify-between items-center px-4 pt-1.5 max-w-xs mx-auto font-mono text-[8.5px] text-slate-500 font-bold">
-              {(s.steps || [
-                { title: 'Deeds Check' },
-                { title: 'Registrar Search' },
-                { title: 'GPS Boundary' },
-                { title: 'Live stamp' }
-              ]).slice(0, 4).map((st: any, idx: number) => (
-                <div key={idx} className="flex flex-col items-center">
-                  <div className="w-4 h-4 rounded-full bg-blue-600 text-white text-[8px] flex items-center justify-center font-bold">0{idx + 1}</div>
-                  <span className="text-[7px] text-slate-850 truncate max-w-[45px] mt-1 leading-none">{st.title}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'stats_grid' && (
-          <div className="space-y-2 text-center mt-2 py-1.5 border-t border-b border-slate-100">
-            <h4 className="font-extrabold text-xs text-slate-900 leading-tight">{s.heading || 'Our Achievements'}</h4>
-            <div className="grid grid-cols-4 gap-1.5 pt-1">
-              {(s.stats || [
-                { value: '480+', label: 'Audits' },
-                { value: '95B', label: 'BIF Capital' },
-                { value: '120+', label: 'Diaspora' },
-                { value: '100%', label: 'Zero Fraud' }
-              ]).slice(0, 4).map((st: any, idx: number) => (
-                <div key={idx} className="bg-slate-50 border rounded p-1 text-[8px] truncate">
-                  <span className="font-extrabold text-blue-600 text-[10px] block leading-none">{st.value}</span>
-                  <span className="text-[7px] text-slate-400 block truncate mt-0.5 leading-none">{st.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {sec.type === 'contact_form_banner' && (
-          <div className="bg-gradient-to-r from-slate-900 to-indigo-950 p-3 rounded-xl text-center text-white mt-2 space-y-1.5 shadow border border-slate-800">
-            <span className="text-[7.5px] font-mono tracking-widest text-slate-400 block uppercase">🔒 Protected Consult Panel</span>
-            <h5 className="font-extrabold text-[10px] text-white leading-none truncate">{s.heading || 'Secure Free Advisory Consult Session'}</h5>
-            <div className="flex gap-1 justify-center max-w-xs mx-auto pt-0.5">
-              <div className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[7.5px] text-white/50 w-12 truncate leading-none text-left">Full Name</div>
-              <div className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[7.5px] text-white/50 w-12 truncate leading-none text-left font-sans">Email</div>
-              <div className="bg-blue-600 text-[7px] font-bold text-white px-2 rounded font-sans uppercase tracking-wide py-0.5 shrink-0 leading-none flex items-center justify-center">{s.buttonText || 'Schedule'}</div>
-            </div>
-          </div>
-        )}
-
-      </div>
+      <PageSectionsRenderer
+        sections={[sec]}
+        properties={properties}
+        currentLanguage={currentLanguage}
+        onViewDetails={(pid) => alert(`Clicked property detail id: ${pid} inside preview simulation layout.`)}
+        searchQuery=""
+        setSearchQuery={() => {}}
+        selectedType="all"
+        setSelectedType={() => {}}
+        selectedPriceRange="all"
+        setSelectedPriceRange={() => {}}
+        t={translations[currentLanguage] || translations.en}
+      />
     );
   }
 
