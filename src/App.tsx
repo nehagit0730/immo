@@ -1072,7 +1072,11 @@ export default function App() {
           /* ==========================================
               ADMIN DASHBOARD VIEW (CORE REGULATORY)
           ========================================== */
-          <AdminDashboard currentLanguage={currentLanguage} onThemeChange={() => setThemeRev(r => r + 1)} />
+          <AdminDashboard 
+            currentLanguage={currentLanguage} 
+            onThemeChange={() => setThemeRev(r => r + 1)} 
+            onViewSite={() => setCurrentView('home')} 
+          />
         ) : (
           /* FALLBACK / OUT-OF-SESSION HANDLER */
           <div className="max-w-md mx-auto py-24 text-center px-4 animate-in fade-in duration-200">

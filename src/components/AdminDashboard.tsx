@@ -326,9 +326,10 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
 interface AdminDashboardProps {
   currentLanguage: Language;
   onThemeChange?: () => void;
+  onViewSite?: () => void;
 }
 
-export default function AdminDashboard({ currentLanguage, onThemeChange }: AdminDashboardProps) {
+export default function AdminDashboard({ currentLanguage, onThemeChange, onViewSite }: AdminDashboardProps) {
   // Navigation
   const [activeTab, setActiveTab] = useState<'analytics' | 'listings' | 'submissions' | 'pages' | 'logs' | 'settings' | 'media'>('analytics');
   
@@ -993,6 +994,21 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950/40 text-slate-400">Out</span>
             </button>
+
+            {onViewSite && (
+              <button
+                type="button"
+                onClick={onViewSite}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20 border border-emerald-900/40 mt-2"
+                title="Exit dashboard back to public view site"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-sm">🌐</span>
+                  View Customer Site
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/50 text-emerald-400 border border-emerald-800/40 font-bold">Go Live</span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -2390,6 +2406,25 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
                 <Smartphone className="w-3.5 h-3.5" />
               </button>
             </div>
+
+            {onViewSite && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (hasUnsavedChanges) {
+                    if (window.confirm("You have unsaved layout modifications. Would you like to exit to view the public site?")) {
+                      onViewSite();
+                    }
+                  } else {
+                    onViewSite();
+                  }
+                }}
+                className="px-3.5 py-1.5 rounded bg-[#2b2b2b] hover:bg-[#3d3d3d] border border-[#3e3e3e] text-slate-200 hover:text-white transition-all text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                title="View Live Customer Site"
+              >
+                <span>🌐</span> <span className="hidden sm:inline">View Site</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
