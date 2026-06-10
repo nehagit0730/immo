@@ -16,7 +16,7 @@ import PropertyDetailView from './components/PropertyDetailView';
 export default function App() {
   // Local states
   const [themeRev, setThemeRev] = useState(0);
-  const { colors, headerTitle, footerCopyright } = getThemeSettings();
+  const { colors, headerTitle, footerCopyright, announcementText } = getThemeSettings();
 
   const [user, setUser] = useState<User | null>(() => {
     try {
@@ -224,8 +224,15 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans select-none" key={themeRev}>
       
+      {/* Global Live Announcement Bar */}
+      {currentView !== 'admin-dashboard' && announcementText && (
+        <div className="bg-[#1a1a1a] text-[#f2f2f2] py-2 px-4 text-center text-[10px] sm:text-xs font-semibold select-none font-sans tracking-wide leading-normal flex items-center justify-center gap-1">
+          <span>{announcementText}</span>
+        </div>
+      )}
+
       {/* Dynamic Header */}
       {currentView !== 'admin-dashboard' && (
         <Header

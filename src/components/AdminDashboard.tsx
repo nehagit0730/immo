@@ -30,6 +30,26 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
   // Helper inside component to compress image
   const compressImage = (file: File): Promise<{ blob: Blob; dataUrl: string }> => {
     return new Promise((resolve) => {
+      let resolved = false;
+      const safeResolve = (val: { blob: Blob; dataUrl: string }) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timer);
+          resolve(val);
+        }
+      };
+
+      // Set a hard timeout of 1.2 seconds to fall back to the raw file instantly if canvas hangs
+      const timer = setTimeout(() => {
+        console.warn('compressImage timed out, using fallback original file');
+        const fallbackReader = new FileReader();
+        fallbackReader.onload = () => {
+          safeResolve({ blob: file, dataUrl: fallbackReader.result as string });
+        };
+        fallbackReader.onerror = () => safeResolve({ blob: file, dataUrl: '' });
+        fallbackReader.readAsDataURL(file);
+      }, 1200);
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const rawUrl = e.target?.result as string;
@@ -58,7 +78,7 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             if (!ctx) {
-              resolve({ blob: file, dataUrl: rawUrl });
+              safeResolve({ blob: file, dataUrl: rawUrl });
               return;
             }
             ctx.drawImage(img, 0, 0, width, height);
@@ -67,20 +87,20 @@ const AdminImageUpload = ({ id, value, onChange, label, placeholder }: AdminImag
             
             canvas.toBlob((blob) => {
               if (blob) {
-                resolve({ blob, dataUrl: base64Url });
+                safeResolve({ blob, dataUrl: base64Url });
               } else {
-                resolve({ blob: file, dataUrl: rawUrl });
+                safeResolve({ blob: file, dataUrl: rawUrl });
               }
             }, 'image/jpeg', 0.55);
           } catch (err) {
             console.warn('Canvas compression failure', err);
-            resolve({ blob: file, dataUrl: rawUrl });
+            safeResolve({ blob: file, dataUrl: rawUrl });
           }
         };
-        img.onerror = () => resolve({ blob: file, dataUrl: rawUrl });
+        img.onerror = () => safeResolve({ blob: file, dataUrl: rawUrl });
         img.src = rawUrl;
       };
-      reader.onerror = () => resolve({ blob: file, dataUrl: typeof reader.result === 'string' ? reader.result : '' });
+      reader.onerror = () => safeResolve({ blob: file, dataUrl: typeof reader.result === 'string' ? reader.result : '' });
       reader.readAsDataURL(file);
     });
   };
@@ -410,7 +430,8 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     // Load config inputs
     setThemeSchema((localStorage.getItem('ib_theme') as ThemeSchema) || 'blue');
     setHeaderTitleInput(localStorage.getItem('ib_header') || 'IMMO BURUNDI');
-    setFooterCopyrightInput(localStorage.getItem('ib_footer') || '© 2026 IMMO BURUNDI Private Limited. All rights reserved.');
+    setFooterCopyrightInput(localStorage.getItem('ib_footer') || '© 2018-2026 IMMO BURUNDI Private Limited. All rights reserved.');
+    setAnnouncementText(localStorage.getItem('ib_announcement') || '🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
   }, []);
 
   // Update branding settings
@@ -419,6 +440,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
     localStorage.setItem('ib_theme', themeSchema);
     localStorage.setItem('ib_header', headerTitleInput);
     localStorage.setItem('ib_footer', footerCopyrightInput);
+    localStorage.setItem('ib_announcement', announcementText);
     
     if (onThemeChange) {
       onThemeChange();
@@ -650,6 +672,14 @@ export default function AdminDashboard({ currentLanguage, onThemeChange }: Admin
   // Save modified page sections builder
   const handleSavePageLayout = async (targetPage: WebPage) => {
     try {
+      // Also persist header/footer and announcement text if changed in builder
+      localStorage.setItem('ib_header', headerTitleInput);
+      localStorage.setItem('ib_announcement', announcementText);
+      localStorage.setItem('ib_footer', footerCopyrightInput);
+      if (onThemeChange) {
+        onThemeChange();
+      }
+
       const res = await ibFetch(`/api/pages/${targetPage.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
