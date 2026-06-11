@@ -824,7 +824,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
   });
 
   return (
-    <div className={`min-h-[calc(100vh-4rem)] ${editorPage ? 'h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden' : ''} bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans`}>
+    <div className={`min-h-[calc(100vh-4rem)] ${editorPage ? 'h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden' : ''} bg-slate-50 text-slate-900 admin-dashboard-lite flex flex-col md:flex-row font-sans`}>
       
       {/* Unsaved Changes Confirmation Modal */}
       {pendingNavigation && (
@@ -1462,7 +1462,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                     <td className="px-4 py-4 text-right space-x-1.5 whitespace-nowrap">
                       <button 
                         onClick={() => { setReviewingProperty(property); setRejectionReason(property.rejectionReason || ''); }}
-                        className="py-1 px-2.5 rounded text-[10px] font-bold bg-slate-800 text-slate-250 hover:bg-slate-700 cursor-pointer"
+                        className="py-1 px-2.5 rounded text-[10px] font-bold bg-[#4f39f6] text-white hover:bg-[#3b27db] cursor-pointer"
                       >
                         Audit
                       </button>
@@ -1549,7 +1549,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                 <div className="grid grid-cols-2 gap-2 pt-4 border-t border-slate-800">
                   <button
                     onClick={() => { setReviewingProperty(property); setRejectionReason(''); }}
-                    className="col-span-2 bg-slate-800 hover:bg-slate-750 text-slate-100 font-bold p-2.5 rounded-xl text-xs uppercase tracking-wider cursor-pointer text-center"
+                    className="col-span-2 bg-[#4f39f6] hover:bg-[#3b27db] text-white font-bold p-2.5 rounded-xl text-xs uppercase tracking-wider cursor-pointer text-center"
                   >
                     Open Reviewing Chamber
                   </button>
@@ -1613,7 +1613,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                       {p.title.en}
                     </h3>
                     {p.isHomepage && <span className="text-[8.5px] font-mono uppercase bg-blue-500/10 text-blue-400 px-2 rounded-full">Homepage</span>}
-                    {p.systemPage && <span className="text-[8.5px] font-mono uppercase bg-slate-800 text-slate-400 px-2 rounded-full">Predefined</span>}
+                    {p.systemPage && <span className="text-[8.5px] font-mono uppercase bg-[#4f39f6] text-white px-2 rounded-full font-bold">Predefined</span>}
                   </div>
                   <p className="text-xs text-slate-505 font-mono">Slug: <span className="text-slate-350">/{p.slug}</span> | Sections count: <span className="text-emerald-400 font-bold">{p.sections?.length || 0} layouts</span></p>
                 </div>

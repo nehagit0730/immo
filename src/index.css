@@ -14,3 +14,190 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }
+
+/* ==========================================================================
+   ADMIN DASHBOARD LITE THEME - HIGH FIDELITY ENTERPRISE STYLE
+   ========================================================================== */
+
+.admin-dashboard-lite {
+  background-color: #f8fafc !important; /* light slate BG */
+  color: #0f172a !important; /* deep slate text */
+}
+
+/* Sidebar Styling */
+.admin-dashboard-lite aside {
+  background-color: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+.admin-dashboard-lite aside h1,
+.admin-dashboard-lite aside label,
+.admin-dashboard-lite aside span:not(.font-mono) {
+  color: #0f172a !important;
+}
+
+/* Sidebar Badge Indicator */
+.admin-dashboard-lite aside .bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.admin-dashboard-lite aside .bg-slate-950\/40 {
+  background-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+/* Sidebar Button states */
+.admin-dashboard-lite aside nav button:not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-red"]):not(.bg-blue-600) {
+  color: #475569 !important;
+}
+
+.admin-dashboard-lite aside nav button:not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-red"]):not(.bg-blue-600):hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* All action and primary buttons inside dashboard, plus specific ones requested */
+.admin-dashboard-lite aside nav button.bg-blue-600,
+.admin-dashboard-lite .bg-blue-600,
+.admin-dashboard-lite button.bg-blue-600,
+.admin-dashboard-lite button[class*="bg-blue-"],
+.admin-dashboard-lite button[class*="primaryBg"],
+.admin-dashboard-lite .primaryBg,
+.admin-dashboard-lite button.bg-emerald-600,
+.admin-dashboard-lite button[class*="bg-emerald-600"],
+.admin-dashboard-lite button.col-span-2 {
+  background-color: #4f39f6 !important;
+  color: #ffffff !important;
+  border-color: #4f39f6 !important;
+}
+
+/* Hover state overrides for beautiful interactivity */
+.admin-dashboard-lite aside nav button.bg-blue-600:hover,
+.admin-dashboard-lite button.bg-blue-600:hover,
+.admin-dashboard-lite button[class*="bg-blue-"]:hover,
+.admin-dashboard-lite button[class*="primaryBg"]:hover,
+.admin-dashboard-lite button.bg-emerald-600:hover {
+  background-color: #3b27db !important;
+  color: #ffffff !important;
+  opacity: 0.95;
+}
+
+/* Pin-fixed Settings card in sidebar */
+.admin-dashboard-lite aside div.border-t.border-slate-800 {
+  border-color: #e2e8f0 !important;
+  background-color: #f8fafc !important;
+}
+
+.admin-dashboard-lite aside div.border-t.border-slate-800 button {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+/* Main Panel and Components */
+.admin-dashboard-lite h2,
+.admin-dashboard-lite h3,
+.admin-dashboard-lite h4,
+.admin-dashboard-lite h5,
+.admin-dashboard-lite h6,
+.admin-dashboard-lite .text-white,
+.admin-dashboard-lite .text-slate-100,
+.admin-dashboard-lite .text-slate-200 {
+  color: #0f172a !important;
+}
+
+.admin-dashboard-lite .text-slate-300,
+.admin-dashboard-lite .text-slate-400,
+.admin-dashboard-lite .text-slate-450 {
+  color: #475569 !important;
+}
+
+/* Analytics Cards Panels */
+.admin-dashboard-lite .bg-slate-900,
+.admin-dashboard-lite .bg-slate-905,
+.admin-dashboard-lite .bg-slate-950,
+.admin-dashboard-lite .bg-slate-950\/40,
+.admin-dashboard-lite div.grid > div.relative.overflow-hidden {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+}
+
+.admin-dashboard-lite .border-slate-800,
+.admin-dashboard-lite .border-slate-850,
+.admin-dashboard-lite .border-slate-855,
+.admin-dashboard-lite .border-slate-900,
+.admin-dashboard-lite .border-b.border-slate-850 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Metric text colors in analytics charts */
+.admin-dashboard-lite .font-black.text-white {
+  color: #0f172a !important;
+}
+
+/* Specific UI items counters & logs background */
+.admin-dashboard-lite .bg-slate-950 {
+  background-color: #f8fafc !important;
+}
+
+/* Tables in list panels */
+.admin-dashboard-lite table {
+  background-color: #ffffff !important;
+}
+
+.admin-dashboard-lite table thead tr {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.admin-dashboard-lite table tbody tr {
+  border-bottom-color: #f1f5f9 !important;
+}
+
+.admin-dashboard-lite table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.admin-dashboard-lite table td {
+  color: #334155 !important;
+}
+
+/* Interactive elements: Search inputs, Dropdown selections & Form fields */
+.admin-dashboard-lite input[type="text"],
+.admin-dashboard-lite input[type="number"],
+.admin-dashboard-lite select,
+.admin-dashboard-lite textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.admin-dashboard-lite input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Submissions review dialog modal or rejection overlays */
+.admin-dashboard-lite .fixed.inset-0.bg-black\/80 {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.admin-dashboard-lite .fixed.inset-0.bg-black\/85 .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Add custom slide backgrounds & labels colors in builder slide sections */
+.admin-dashboard-lite .bg-slate-950\/90,
+.admin-dashboard-lite .bg-slate-950\/70 {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+}
+
+.admin-dashboard-lite .text-slate-350 {
+  color: #cbd5e1 !important;
+}
