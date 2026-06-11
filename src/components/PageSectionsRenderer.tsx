@@ -100,6 +100,15 @@ export default function PageSectionsRenderer({
         const bgVal = section.backgroundColor || 'bg-white';
         const headColorVal = section.headingColor || 'text-slate-900';
         const txtColorVal = section.textColor || 'text-slate-650';
+
+        // Check if colors are standard tailwind classes or custom colors (hex, rgb, etc.)
+        const isCustomBg = bgVal && (bgVal.startsWith('#') || bgVal.startsWith('rgb') || bgVal.startsWith('hsl') || (!bgVal.startsWith('bg-') && bgVal.length > 0));
+        const isCustomHeading = headColorVal && (headColorVal.startsWith('#') || headColorVal.startsWith('rgb') || headColorVal.startsWith('hsl') || (!headColorVal.startsWith('text-') && headColorVal.length > 0));
+        const isCustomText = txtColorVal && (txtColorVal.startsWith('#') || txtColorVal.startsWith('rgb') || txtColorVal.startsWith('hsl') || (!txtColorVal.startsWith('text-') && txtColorVal.length > 0));
+
+        const finalBgClass = isCustomBg ? `custom-section-bg-${section.id}` : bgVal;
+        const finalHeadColorClass = isCustomHeading ? `custom-section-head-${section.id}` : headColorVal;
+        const finalTxtColorClass = isCustomText ? `custom-section-txt-${section.id}` : txtColorVal;
         
         let fontSizeTextClass = 'text-sm sm:text-base';
         let fontSizeHeadClass = 'text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight';
@@ -116,16 +125,47 @@ export default function PageSectionsRenderer({
         }
 
         const isFullWidthSection = ['banner', 'slideshow', 'single_image', 'contact_form_banner'].includes(section.type);
-        const commonStyle = `${bgVal} w-full border-b border-slate-100/50 last:border-0 transition-all overflow-hidden relative ${
+        const commonStyle = `${finalBgClass} w-full border-b border-slate-100/50 last:border-0 transition-all overflow-hidden relative ${
           isFullWidthSection ? 'py-0 px-0' : 'py-20 sm:py-28 px-4 sm:px-6 lg:px-8'
         }`;
 
         // Dynamic background ambient lighting effects based on section styles
-        const isDarkSection = bgVal.includes('bg-slate-') || bgVal.includes('bg-gray-') || bgVal.includes('bg-indigo-') || bgVal.includes('bg-emerald-9') || bgVal.includes('bg-blue-9');
+        const isDarkSection = bgVal.includes('bg-slate-') || bgVal.includes('bg-gray-') || bgVal.includes('bg-indigo-') || bgVal.includes('bg-emerald-9') || bgVal.includes('bg-blue-9') || isCustomBg;
         const glowColor = isDarkSection ? 'bg-blue-500/10' : 'bg-blue-500/5';
 
         return (
           <div key={section.id || idx} className={commonStyle}>
+            {/* Scoped style injector so custom hex backgrounds & colors apply to entire section children seamlessly */}
+            {(isCustomBg || isCustomHeading || isCustomText) && (
+              <style dangerouslySetInnerHTML={{ __html: `
+                ${isCustomBg ? `
+                  .custom-section-bg-${section.id} {
+                    background-color: ${bgVal} !important;
+                  }
+                ` : ''}
+                ${isCustomHeading ? `
+                  .custom-section-head-${section.id},
+                  .custom-section-head-${section.id} h1,
+                  .custom-section-head-${section.id} h2,
+                  .custom-section-head-${section.id} h3,
+                  .custom-section-head-${section.id} h4,
+                  .custom-section-head-${section.id} h5 {
+                    color: ${headColorVal} !important;
+                  }
+                ` : ''}
+                ${isCustomText ? `
+                  .custom-section-txt-${section.id},
+                  .custom-section-txt-${section.id} p,
+                  .custom-section-txt-${section.id} span,
+                  .custom-section-txt-${section.id} li,
+                  .custom-section-txt-${section.id} div,
+                  .custom-section-txt-${section.id} h6 {
+                    color: ${txtColorVal} !important;
+                  }
+                ` : ''}
+              `}} />
+            )}
+
             {/* Ambient subtle premium gradient blur behind section elements */}
             <div className={`absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full ${glowColor} blur-3xl pointer-events-none`} />
             <div className={`absolute bottom-1/4 right-1/4 w-[350px] top-1/4 h-[400px] rounded-full bg-indigo-500/5 blur-3xl pointer-events-none`} />
@@ -133,7 +173,7 @@ export default function PageSectionsRenderer({
             <div className={isFullWidthSection ? 'w-full relative z-10' : 'max-w-7xl mx-auto relative z-10'}>
               {renderSectionContent(
                 section, 
-                { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal }, 
+                { fontSizeHeadClass, fontSizeTextClass, headColorVal: finalHeadColorClass, txtColorVal: finalTxtColorClass }, 
                 properties, 
                 currentLanguage, 
                 onViewDetails,

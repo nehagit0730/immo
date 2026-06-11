@@ -3668,22 +3668,139 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                     <div className="space-y-4">
                       
                       {/* Segment 1: Header / Style scheme */}
-                      <div className="space-y-3.5 border-b pb-4">
+                      <div className="space-y-4 border-b pb-4.5">
                         <span className="text-[9.5px] text-[#717171] uppercase tracking-widest font-extrabold font-mono block">🎨 Color scheme & Styles</span>
                         
-                        <div>
-                          <label className="block text-[#1a1a1a] font-bold text-[10.5px] mb-1">Color Scheme:</label>
-                          <select 
-                            value={sec.backgroundColor} 
-                            onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
-                            className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-slate-800 text-xs font-semibold cursor-pointer focus:outline-none"
-                          >
-                            <option value="bg-white text-slate-800 border-none">Scheme 1 (White layout background)</option>
-                            <option value="bg-slate-50 text-slate-800 border-none">Scheme 2 (Minimal Ash gray)</option>
-                            <option value="bg-slate-900 text-white border-slate-800">Scheme 3 (Dark Slate background)</option>
-                            <option value="bg-[#1a1a1a] text-white">Scheme 4 (Premium Pitch black)</option>
-                            <option value="bg-blue-900 text-white">Scheme 5 (Strategic Royal Blue)</option>
-                          </select>
+                        {/* A. Background Selection */}
+                        <div className="space-y-1.5">
+                          <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Section Background color style:</label>
+                          <div className="space-y-1.5">
+                            <select 
+                              value={['bg-white text-slate-800 border-none', 'bg-slate-50 text-slate-800 border-none', 'bg-slate-900 text-white border-slate-800', 'bg-[#1a1a1a] text-white', 'bg-blue-900 text-white'].includes(sec.backgroundColor) ? sec.backgroundColor : 'custom'} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'custom') {
+                                  handleUpdateActiveSectionStyle('backgroundColor', '#f5f5f5');
+                                } else {
+                                  handleUpdateActiveSectionStyle('backgroundColor', val);
+                                }
+                              }}
+                              className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-slate-800 text-xs font-semibold cursor-pointer focus:outline-none"
+                            >
+                              <option value="bg-white text-slate-800 border-none">Scheme 1 (White background)</option>
+                              <option value="bg-slate-50 text-slate-800 border-none">Scheme 2 (Minimal Ash gray)</option>
+                              <option value="bg-slate-900 text-white border-slate-800">Scheme 3 (Dark Slate background)</option>
+                              <option value="bg-[#1a1a1a] text-white">Scheme 4 (Premium Pitch black)</option>
+                              <option value="bg-blue-900 text-white">Scheme 5 (Strategic Royal Blue)</option>
+                              <option value="custom">🎨 Specify Custom Hex Color...</option>
+                            </select>
+
+                            {!['bg-white text-slate-800 border-none', 'bg-slate-50 text-slate-800 border-none', 'bg-slate-900 text-white border-slate-800', 'bg-[#1a1a1a] text-white', 'bg-blue-900 text-white'].includes(sec.backgroundColor) && (
+                              <div className="flex items-center gap-2 mt-1.5 animate-in slide-in-from-top-1 duration-100">
+                                <input 
+                                  type="color" 
+                                  value={sec.backgroundColor.startsWith('#') ? sec.backgroundColor : '#ffffff'} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
+                                  className="w-10 h-8 border border-[#cccccc] rounded cursor-pointer p-0.5 bg-white shrink-0"
+                                />
+                                <input 
+                                  type="text" 
+                                  value={sec.backgroundColor} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('backgroundColor', e.target.value)}
+                                  placeholder="Hex/RGB code, e.g. #f3e8ff"
+                                  className="flex-grow bg-white border border-[#cccccc] rounded p-1.5 px-2.5 text-xs focus:outline-none text-slate-800 font-mono font-bold"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* B. Heading Color Selection */}
+                        <div className="space-y-1.5">
+                          <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Heading / Title Color style:</label>
+                          <div className="space-y-1.5">
+                            <select 
+                              value={['text-slate-900', 'text-white', 'text-blue-900', 'text-indigo-600', 'text-emerald-700'].includes(sec.headingColor) ? sec.headingColor : 'custom'} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'custom') {
+                                  handleUpdateActiveSectionStyle('headingColor', '#1e293b');
+                                } else {
+                                  handleUpdateActiveSectionStyle('headingColor', val);
+                                }
+                              }}
+                              className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-slate-800 text-xs font-semibold cursor-pointer focus:outline-none"
+                            >
+                              <option value="text-slate-900">Slate Charcoal (text-slate-900)</option>
+                              <option value="text-white">Immersive White (text-white)</option>
+                              <option value="text-blue-900">Strategic Navy Blue (text-blue-900)</option>
+                              <option value="text-indigo-600">Electric Indigo (text-indigo-600)</option>
+                              <option value="text-emerald-700">Burundi Forest Green (text-emerald-700)</option>
+                              <option value="custom">🎨 Specify Custom Hex Heading Color...</option>
+                            </select>
+
+                            {!['text-slate-900', 'text-white', 'text-blue-900', 'text-indigo-600', 'text-emerald-700'].includes(sec.headingColor) && (
+                              <div className="flex items-center gap-2 mt-1.5 animate-in slide-in-from-top-1 duration-100">
+                                <input 
+                                  type="color" 
+                                  value={sec.headingColor.startsWith('#') ? sec.headingColor : '#1e293b'} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('headingColor', e.target.value)}
+                                  className="w-10 h-8 border border-[#cccccc] rounded cursor-pointer p-0.5 bg-white shrink-0"
+                                />
+                                <input 
+                                  type="text" 
+                                  value={sec.headingColor} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('headingColor', e.target.value)}
+                                  placeholder="Hex/RGB code, e.g. #3b82f6"
+                                  className="flex-grow bg-white border border-[#cccccc] rounded p-1.5 px-2.5 text-xs focus:outline-none text-slate-800 font-mono font-bold"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* C. Body Text & Subheading Color Selection */}
+                        <div className="space-y-1.5">
+                          <label className="block text-[#1a1a1a] font-bold text-[10.5px]">Body Text & Subtitle Color style:</label>
+                          <div className="space-y-1.5">
+                            <select 
+                              value={['text-slate-650', 'text-slate-400', 'text-white', 'text-slate-300', 'text-blue-800'].includes(sec.textColor) ? sec.textColor : 'custom'} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'custom') {
+                                  handleUpdateActiveSectionStyle('textColor', '#475569');
+                                } else {
+                                  handleUpdateActiveSectionStyle('textColor', val);
+                                }
+                              }}
+                              className="w-full bg-white border border-[#cccccc] hover:border-slate-400 rounded p-2 text-slate-800 text-xs font-semibold cursor-pointer focus:outline-none"
+                            >
+                              <option value="text-slate-650">Classic Slate Gray (text-slate-650)</option>
+                              <option value="text-slate-400">Dimmed Silver (text-slate-400)</option>
+                              <option value="text-white">Crystal White (text-white)</option>
+                              <option value="text-slate-300">Light Slate Ash (text-slate-300)</option>
+                              <option value="text-blue-800">Business Indigo Blue (text-blue-800)</option>
+                              <option value="custom">🎨 Specify Custom Hex Text Color...</option>
+                            </select>
+
+                            {!['text-slate-650', 'text-slate-400', 'text-white', 'text-slate-300', 'text-blue-800'].includes(sec.textColor) && (
+                              <div className="flex items-center gap-2 mt-1.5 animate-in slide-in-from-top-1 duration-100">
+                                <input 
+                                  type="color" 
+                                  value={sec.textColor.startsWith('#') ? sec.textColor : '#475569'} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('textColor', e.target.value)}
+                                  className="w-10 h-8 border border-[#cccccc] rounded cursor-pointer p-0.5 bg-white shrink-0"
+                                />
+                                <input 
+                                  type="text" 
+                                  value={sec.textColor} 
+                                  onChange={(e) => handleUpdateActiveSectionStyle('textColor', e.target.value)}
+                                  placeholder="Hex/RGB code, e.g. #64748b"
+                                  className="flex-grow bg-white border border-[#cccccc] rounded p-1.5 px-2.5 text-xs focus:outline-none text-slate-800 font-mono font-bold"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div>
@@ -4805,6 +4922,15 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                 const bgVal = section.backgroundColor || 'bg-white';
                 const headColorVal = section.headingColor || 'text-slate-900';
                 const txtColorVal = section.textColor || 'text-slate-650';
+
+                // Check if colors are standard tailwind classes or custom colors (hex, rgb, etc.)
+                const isCustomBg = bgVal && (bgVal.startsWith('#') || bgVal.startsWith('rgb') || bgVal.startsWith('hsl') || (!bgVal.startsWith('bg-') && bgVal.length > 0));
+                const isCustomHeading = headColorVal && (headColorVal.startsWith('#') || headColorVal.startsWith('rgb') || headColorVal.startsWith('hsl') || (!headColorVal.startsWith('text-') && headColorVal.length > 0));
+                const isCustomText = txtColorVal && (txtColorVal.startsWith('#') || txtColorVal.startsWith('rgb') || txtColorVal.startsWith('hsl') || (!txtColorVal.startsWith('text-') && txtColorVal.length > 0));
+
+                const finalBgClass = isCustomBg ? `custom-section-bg-${section.id}` : bgVal;
+                const finalHeadColorClass = isCustomHeading ? `custom-section-head-${section.id}` : headColorVal;
+                const finalTxtColorClass = isCustomText ? `custom-section-txt-${section.id}` : txtColorVal;
                 
                 let fontSizeTextClass = 'text-sm sm:text-base';
                 let fontSizeHeadClass = 'text-xl sm:text-3xl font-black tracking-tight';
@@ -4820,13 +4946,43 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                   fontSizeHeadClass = 'text-3xl sm:text-6xl font-black tracking-tighter leading-none';
                 }
 
-                const commonStyle = `${bgVal} w-full py-12 sm:py-16 px-4 border-b border-slate-100 last:border-0 relative select-none pointer-events-none`;
+                const commonStyle = `${finalBgClass} w-full py-12 sm:py-16 px-4 border-b border-slate-100 last:border-0 relative select-none pointer-events-none`;
 
                 return (
                   <div key={section.id || idx} className={commonStyle}>
+                    {/* Scoped style injector so custom hex backgrounds & colors apply to entire section children seamlessly */}
+                    {(isCustomBg || isCustomHeading || isCustomText) && (
+                      <style dangerouslySetInnerHTML={{ __html: `
+                        ${isCustomBg ? `
+                          .custom-section-bg-${section.id} {
+                            background-color: ${bgVal} !important;
+                          }
+                        ` : ''}
+                        ${isCustomHeading ? `
+                          .custom-section-head-${section.id},
+                          .custom-section-head-${section.id} h1,
+                          .custom-section-head-${section.id} h2,
+                          .custom-section-head-${section.id} h3,
+                          .custom-section-head-${section.id} h4,
+                          .custom-section-head-${section.id} h5 {
+                            color: ${headColorVal} !important;
+                          }
+                        ` : ''}
+                        ${isCustomText ? `
+                          .custom-section-txt-${section.id},
+                          .custom-section-txt-${section.id} p,
+                          .custom-section-txt-${section.id} span,
+                          .custom-section-txt-${section.id} li,
+                          .custom-section-txt-${section.id} div,
+                          .custom-section-txt-${section.id} h6 {
+                            color: ${txtColorVal} !important;
+                          }
+                        ` : ''}
+                      `}} />
+                    )}
                     <div className="max-w-5xl mx-auto">
                       {/* Using simpler custom layout render elements to prevent useEffect duplicate loops in iframe portal lightboxes */}
-                      {renderFullVisualSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal, txtColorVal })}
+                      {renderFullVisualSectionContent(section, { fontSizeHeadClass, fontSizeTextClass, headColorVal: finalHeadColorClass, txtColorVal: finalTxtColorClass })}
                     </div>
                   </div>
                 );
