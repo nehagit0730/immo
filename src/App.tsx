@@ -224,7 +224,7 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans select-none" key={themeRev}>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans select-none">
       
       {/* Global Live Announcement Bar */}
       {currentView !== 'admin-dashboard' && announcementText && (
