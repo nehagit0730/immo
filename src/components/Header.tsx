@@ -26,8 +26,14 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [legalDropdownOpen, setLegalDropdownOpen] = useState(false);
   
-  const { colors, headerTitle } = getThemeSettings();
+  const { colors, headerTitle, menus } = getThemeSettings();
   const t = translations[currentLanguage];
+
+  const getLabel = (item: any) => {
+    if (currentLanguage === 'fr') return item.labelFr || item.labelEn;
+    if (currentLanguage === 'sw') return item.labelSw || item.labelEn;
+    return item.labelEn;
+  };
 
   const handleLinkClick = (view: string, pageId?: string) => {
     onNavigate(view, pageId);
@@ -56,96 +62,23 @@ export default function Header({
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 font-bold text-xs uppercase tracking-widest text-[#475569]">
-            <button 
-              onClick={() => handleLinkClick('home')}
-              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
-                currentView === 'home' 
-                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
-                  : 'text-slate-600'
-              }`}
-            >
-              {t.navHome}
-            </button>
-            <button 
-              onClick={() => handleLinkClick('properties')}
-              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
-                currentView === 'properties' 
-                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
-                  : 'text-slate-600'
-              }`}
-            >
-              {t.navProperties}
-            </button>
-            <button 
-              onClick={() => handleLinkClick('about')}
-              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
-                currentView === 'about' 
-                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
-                  : 'text-slate-600'
-              }`}
-            >
-              {t.navAbout}
-            </button>
-
-            {/* Legal Pages Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setLegalDropdownOpen(!legalDropdownOpen)}
-                className={`flex items-center pb-1 transition-all focus:outline-none cursor-pointer hover:opacity-80 ${
-                  ['disclaimer', 'agreement', 'privacy', 'terms'].includes(currentView)
-                    ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold`
-                    : 'text-slate-600'
-                }`}
-              >
-                <span>{currentLanguage === 'en' ? 'Integrity' : currentLanguage === 'fr' ? 'Conformité' : 'Sheria'}</span>
-                <ChevronDown className={`w-3.5 h-3.5 ml-1 transform transition-transform ${legalDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {legalDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setLegalDropdownOpen(false)}></div>
-                  <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-md bg-white border border-slate-200 z-50 overflow-hidden">
-                    <div className="py-1">
-                      <button
-                        onClick={() => handleLinkClick('disclaimer')}
-                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider ${colors.primaryText}`}
-                      >
-                        {t.navDisclaimer}
-                      </button>
-                      <button
-                        onClick={() => handleLinkClick('agreement')}
-                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors font-extrabold uppercase tracking-wider border-t border-slate-100 ${colors.primaryText}`}
-                      >
-                        ✍️ {t.navAgreement}
-                      </button>
-                      <button
-                        onClick={() => handleLinkClick('privacy')}
-                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider border-t border-slate-100 ${colors.primaryText}`}
-                      >
-                        {t.navPrivacy}
-                      </button>
-                      <button
-                        onClick={() => handleLinkClick('terms')}
-                        className={`block w-full text-left px-4 py-2.5 text-xs hover:bg-slate-50 transition-colors uppercase font-bold tracking-wider border-t border-slate-100 ${colors.primaryText}`}
-                      >
-                        {t.navTerms}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <button 
-              onClick={() => handleLinkClick('contact')}
-              className={`pb-1 transition-all cursor-pointer hover:opacity-80 ${
-                currentView === 'contact' 
-                  ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
-                  : 'text-slate-600'
-              }`}
-            >
-              {t.navContact}
-            </button>
+            {menus.map((item) => {
+              const label = getLabel(item);
+              const isActive = currentView === item.target;
+              return (
+                <button 
+                  key={item.id}
+                  onClick={() => handleLinkClick(item.target)}
+                  className={`pb-1 transition-all cursor-pointer hover:opacity-85 whitespace-nowrap ${
+                    isActive 
+                      ? `${colors.primaryText} border-b-2 ${colors.primaryBorder} font-extrabold` 
+                      : 'text-slate-600'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Controls: Language and Login */}
@@ -233,75 +166,21 @@ export default function Header({
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200/80 py-4 px-4 space-y-2 text-slate-800 shadow-xl animate-in slide-in-from-top duration-150 absolute top-16 left-0 w-full z-45">
-          <button 
-            onClick={() => handleLinkClick('home')}
-            className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
-              currentView === 'home' ? `bg-slate-50 ${colors.primaryText} font-extrabold` : 'text-slate-600 hover:bg-slate-50/80'
-            }`}
-          >
-            {t.navHome}
-          </button>
-          <button 
-            onClick={() => handleLinkClick('properties')}
-            className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
-              currentView === 'properties' ? `bg-slate-50 ${colors.primaryText} font-extrabold` : 'text-slate-600 hover:bg-slate-50/80'
-            }`}
-          >
-            {t.navProperties}
-          </button>
-          <button 
-            onClick={() => handleLinkClick('about')}
-            className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
-              currentView === 'about' ? 'bg-blue-50 text-blue-700 font-extrabold' : 'text-slate-600 hover:bg-slate-50/80'
-            }`}
-          >
-            {t.navAbout}
-          </button>
-
-          <span className="block px-4 pt-3 pb-1 text-[9px] font-mono tracking-widest text-slate-400 uppercase font-black">
-            {currentLanguage === 'en' ? 'LEGAL & INTEGRITY' : 'CONFORMITÉ ET DOCUMENTS'}
-          </span>
-          <button 
-            onClick={() => handleLinkClick('disclaimer')}
-            className={`block w-full text-left px-5 py-2 rounded-xl text-xs text-slate-600 uppercase font-bold tracking-widest hover:bg-slate-50/80 ${
-              currentView === 'disclaimer' ? 'text-blue-700 font-extrabold bg-slate-50/50' : ''
-            }`}
-          >
-            {t.navDisclaimer}
-          </button>
-          <button 
-            onClick={() => handleLinkClick('agreement')}
-            className={`block w-full text-left px-5 py-2 rounded-xl text-xs text-slate-600 uppercase font-bold tracking-widest hover:bg-slate-50/80 ${
-              currentView === 'agreement' ? 'text-blue-700 font-extrabold bg-slate-50/50' : ''
-            }`}
-          >
-            ✍️ {t.navAgreement}
-          </button>
-          <button 
-            onClick={() => handleLinkClick('privacy')}
-            className={`block w-full text-left px-5 py-2 rounded-xl text-xs text-slate-600 uppercase font-bold tracking-widest hover:bg-slate-50/80 ${
-              currentView === 'privacy' ? 'text-blue-700 font-extrabold bg-slate-50/50' : ''
-            }`}
-          >
-            {t.navPrivacy}
-          </button>
-          <button 
-            onClick={() => handleLinkClick('terms')}
-            className={`block w-full text-left px-5 py-2 rounded-xl text-xs text-slate-600 uppercase font-bold tracking-widest hover:bg-slate-50/80 ${
-              currentView === 'terms' ? 'text-blue-700 font-extrabold bg-slate-50/50' : ''
-            }`}
-          >
-            {t.navTerms}
-          </button>
-
-          <button 
-            onClick={() => handleLinkClick('contact')}
-            className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
-              currentView === 'contact' ? 'bg-blue-50 text-blue-700 font-extrabold' : 'text-slate-600 hover:bg-slate-50/80'
-            }`}
-          >
-            {t.navContact}
-          </button>
+          {menus.map((item) => {
+            const label = getLabel(item);
+            const isActive = currentView === item.target;
+            return (
+              <button 
+                key={item.id}
+                onClick={() => handleLinkClick(item.target)}
+                className={`block w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest ${
+                  isActive ? `bg-slate-50 ${colors.primaryText} font-extrabold` : 'text-slate-600 hover:bg-slate-50/80'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
 
           {/* Account Section Mobile */}
           <div className="pt-4 border-t border-slate-100 space-y-2">

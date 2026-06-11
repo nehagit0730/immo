@@ -9,7 +9,7 @@ import {
   Image, GripVertical, MoreHorizontal, Smartphone, Laptop, FileText, Link
 } from 'lucide-react';
 import { ibFetch } from '../apiMock';
-import { ThemeSchema, themesMap, getThemeSettings } from '../theme';
+import { ThemeSchema, themesMap, getThemeSettings, HeaderMenuItem, defaultMenuItems } from '../theme';
 import PageSectionsRenderer from './PageSectionsRenderer';
 
 interface AdminImageUploadProps {
@@ -368,6 +368,14 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
   const [announcementBg, setAnnouncementBg] = useState('#1a1a1a');
   const [announcementTextCol, setAnnouncementTextCol] = useState('#f2f2f2');
 
+  // Custom menu items
+  const [menuItems, setMenuItems] = useState<HeaderMenuItem[]>([]);
+  // Form states for adding a new menu item
+  const [newMenuLabelEn, setNewMenuLabelEn] = useState('');
+  const [newMenuLabelFr, setNewMenuLabelFr] = useState('');
+  const [newMenuLabelSw, setNewMenuLabelSw] = useState('');
+  const [newMenuTarget, setNewMenuTarget] = useState('home');
+
   // Unsaved changes tracking for Page Builder
   const [originalPageSectionsJSON, setOriginalPageSectionsJSON] = useState<string | null>(null);
   const [originalGlobalsJSON, setOriginalGlobalsJSON] = useState<string | null>(null);
@@ -521,6 +529,18 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
     setAnnouncementText(localStorage.getItem('ib_announcement') || '🌿 Secure Cadastral Approvals & Land Registration In Burundi Since 2018');
     setAnnouncementBg(localStorage.getItem('ib_announcement_bg') || '#1a1a1a');
     setAnnouncementTextCol(localStorage.getItem('ib_announcement_text_col') || '#f2f2f2');
+
+    // Load custom menus
+    const storedMenus = localStorage.getItem('ib_menus');
+    if (storedMenus) {
+      try {
+        setMenuItems(JSON.parse(storedMenus));
+      } catch (e) {
+        setMenuItems(defaultMenuItems);
+      }
+    } else {
+      setMenuItems(defaultMenuItems);
+    }
   }, []);
 
   // Update branding settings
@@ -532,11 +552,62 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
     localStorage.setItem('ib_announcement', announcementText);
     localStorage.setItem('ib_announcement_bg', announcementBg);
     localStorage.setItem('ib_announcement_text_col', announcementTextCol);
+    localStorage.setItem('ib_menus', JSON.stringify(menuItems));
     
     if (onThemeChange) {
       onThemeChange();
     }
     alert(currentLanguage === 'en' ? 'Branding settings updated with high-tech schemas!' : 'Paramètres de marque mis à jour avec des schémas de pointe !');
+  };
+
+  const addMenuItem = () => {
+    if (!newMenuLabelEn.trim()) {
+      alert('Please enter at least an English label for menu item.');
+      return;
+    }
+    const newItem: HeaderMenuItem = {
+      id: Date.now().toString(),
+      labelEn: newMenuLabelEn,
+      labelFr: newMenuLabelFr || newMenuLabelEn,
+      labelSw: newMenuLabelSw || newMenuLabelEn,
+      target: newMenuTarget
+    };
+    const updated = [...menuItems, newItem];
+    setMenuItems(updated);
+    localStorage.setItem('ib_menus', JSON.stringify(updated));
+    if (onThemeChange) {
+      onThemeChange();
+    }
+    // Clear inputs
+    setNewMenuLabelEn('');
+    setNewMenuLabelFr('');
+    setNewMenuLabelSw('');
+    setNewMenuTarget('home');
+  };
+
+  const deleteMenuItem = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this menu item from global site header navigation?')) {
+      const updated = menuItems.filter(item => item.id !== id);
+      setMenuItems(updated);
+      localStorage.setItem('ib_menus', JSON.stringify(updated));
+      if (onThemeChange) {
+        onThemeChange();
+      }
+    }
+  };
+
+  const moveMenuItem = (index: number, direction: 'up' | 'down') => {
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= menuItems.length) return;
+    const items = [...menuItems];
+    const temp = items[index];
+    items[index] = items[nextIndex];
+    items[nextIndex] = temp;
+    setMenuItems(items);
+    localStorage.setItem('ib_menus', JSON.stringify(items));
+    if (onThemeChange) {
+      onThemeChange();
+    }
   };
 
   // Duplicate page
@@ -1977,6 +2048,168 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                 className="w-full bg-slate-950 border border-slate-850 rounded-xl p-3 text-white focus:outline-none focus:border-slate-500"
               />
               <span className="text-[9.5px] text-slate-500 mt-1 block">Specify localized compliance, legal terms lines, or corporation cadasters details.</span>
+            </div>
+          </div>
+
+          {/* Header Navigation Menu List Builder */}
+          <div className="space-y-4 border-t border-slate-850 pt-5">
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-350 block font-bold">Header Navigation Menu Settings</span>
+              <span className="text-[9.5px] text-slate-500 mt-1 block">Configured values list that dynamically populates links showing on the public-facing header menu</span>
+            </div>
+
+            {/* List of current menu items */}
+            <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              {menuItems.map((item, idx) => (
+                <div key={item.id} className="bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-slate-500 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">
+                        /{item.target}
+                      </span>
+                      <span className="text-white font-bold text-xs">{item.labelEn}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-x-3 text-[10px] text-slate-400 font-mono">
+                      <span>FR: {item.labelFr}</span>
+                      <span>SW: {item.labelSw}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => moveMenuItem(idx, 'up')}
+                      className="p-1 px-1.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 cursor-pointer"
+                      title="Move Up"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === menuItems.length - 1}
+                      onClick={() => moveMenuItem(idx, 'down')}
+                      className="p-1 px-1.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 cursor-pointer"
+                      title="Move Down"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteMenuItem(item.id)}
+                      className="p-1 px-1.5 rounded bg-rose-950/40 border border-rose-900/30 text-rose-450 hover:bg-rose-900/40 hover:text-rose-300 cursor-pointer"
+                      title="Delete Item"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {menuItems.length === 0 && (
+                <div className="text-center py-6 text-slate-500 border border-dashed border-slate-850 rounded-xl">
+                  {currentLanguage === 'en' ? 'No menu items configured. Navigation will be empty!' : 'Aucun élément de menu configuré. La navigation sera vide !'}
+                </div>
+              )}
+            </div>
+
+            {/* Quick reset to defaults button */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Reset navigation settings to IMMO BURUNDI standard defaults?')) {
+                    setMenuItems(defaultMenuItems);
+                    localStorage.setItem('ib_menus', JSON.stringify(defaultMenuItems));
+                    if (onThemeChange) {
+                      onThemeChange();
+                    }
+                  }
+                }}
+                className="text-[10px] font-bold text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Reset to Standard Default Menus
+              </button>
+            </div>
+
+            {/* Add menu item form segment */}
+            <div className="bg-slate-950/40 border border-slate-850 rounded-2xl p-4 space-y-4">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#4f39f6] block font-bold">Add Custom Menu Item</span>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div>
+                  <label className="block text-[10px] text-slate-450 mb-1">Label English (En)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Properties"
+                    value={newMenuLabelEn}
+                    onChange={(e) => setNewMenuLabelEn(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-slate-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-450 mb-1">Label French (Fr)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Propriétés"
+                    value={newMenuLabelFr}
+                    onChange={(e) => setNewMenuLabelFr(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-slate-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-450 mb-1">Label Swahili (Sw)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Miliki"
+                    value={newMenuLabelSw}
+                    onChange={(e) => setNewMenuLabelSw(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-slate-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
+                <div>
+                  <label className="block text-[10px] text-slate-450 mb-1">Destination Target Page</label>
+                  <select
+                    value={newMenuTarget}
+                    onChange={(e) => setNewMenuTarget(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-300 text-xs focus:outline-none focus:border-slate-600"
+                  >
+                    <optgroup label="Core Static Pages">
+                      <option value="home">Home Page (home)</option>
+                      <option value="properties">Land Listings & Maps (properties)</option>
+                      <option value="about">About IMMO BURUNDI (about)</option>
+                      <option value="contact">Get in Touch (contact)</option>
+                    </optgroup>
+                    <optgroup label="Verification Documents">
+                      <option value="disclaimer">Audit & Verification Disclaimer (disclaimer)</option>
+                      <option value="agreement">Land Leasing & Purchase Agreements (agreement)</option>
+                      <option value="privacy">Privacy & Cadastrales Codes (privacy)</option>
+                      <option value="terms">Legislate Terms & Regulations (terms)</option>
+                    </optgroup>
+                    {pages && pages.length > 0 && (
+                      <optgroup label="Your Custom Dynamic Pages">
+                        {pages.map((p) => (
+                          <option key={p.id} value={p.slug}>
+                            {p.title.en} ({p.slug})
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addMenuItem}
+                  className="w-full text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-150 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  style={{ backgroundColor: '#4f39f6', color: '#ffffff' }}
+                >
+                  🚀 Add Navigation Menu Item
+                </button>
+              </div>
             </div>
           </div>
 

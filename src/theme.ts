@@ -84,6 +84,25 @@ export const themesMap: Record<ThemeSchema, ThemeColors> = {
   }
 };
 
+export interface HeaderMenuItem {
+  id: string;
+  labelEn: string;
+  labelFr: string;
+  labelSw: string;
+  target: string;
+}
+
+export const defaultMenuItems: HeaderMenuItem[] = [
+  { id: '1', labelEn: 'Home', labelFr: 'Accueil', labelSw: 'Nyumbani', target: 'home' },
+  { id: '2', labelEn: 'Properties', labelFr: 'Propriétés', labelSw: 'Miliki', target: 'properties' },
+  { id: '3', labelEn: 'About Us', labelFr: 'À Propos', labelSw: 'Kuhusu Sisi', target: 'about' },
+  { id: '4', labelEn: 'Verification Disclaimer', labelFr: 'Clause de Non-Responsabilité', labelSw: 'Kanusho la Uhakiki', target: 'disclaimer' },
+  { id: '5', labelEn: 'Service Agreement', labelFr: 'Contrat de Service', labelSw: 'Mkataba wa Huduma', target: 'agreement' },
+  { id: '6', labelEn: 'Privacy Policy', labelFr: 'Confidentialité', labelSw: 'Sera ya Faragha', target: 'privacy' },
+  { id: '7', labelEn: 'Terms', labelFr: 'Conditions', labelSw: 'Sheria na Masharti', target: 'terms' },
+  { id: '8', labelEn: 'Contact', labelFr: 'Contact', labelSw: 'Wasiliana', target: 'contact' }
+];
+
 export function getThemeSettings() {
   const schema = (localStorage.getItem('ib_theme') as ThemeSchema) || 'blue';
   const header = localStorage.getItem('ib_header') || 'IMMO BURUNDI';
@@ -92,6 +111,17 @@ export function getThemeSettings() {
   const announcementBg = localStorage.getItem('ib_announcement_bg') || '#1a1a1a';
   const announcementTextCol = localStorage.getItem('ib_announcement_text_col') || '#f2f2f2';
   
+  // Custom header menus configuration stored as stringified JSON
+  const menusRaw = localStorage.getItem('ib_menus');
+  let menus: HeaderMenuItem[] = defaultMenuItems;
+  if (menusRaw) {
+    try {
+      menus = JSON.parse(menusRaw);
+    } catch (e) {
+      console.error('Failed to parse ib_menus from localStorage, fallback to defaults:', e);
+    }
+  }
+
   return {
     schema,
     colors: themesMap[schema] || themesMap.blue,
@@ -99,6 +129,7 @@ export function getThemeSettings() {
     footerCopyright: footer,
     announcementText: announcement,
     announcementBg,
-    announcementTextCol
+    announcementTextCol,
+    menus
   };
 }
