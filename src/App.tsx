@@ -39,6 +39,8 @@ export default function App() {
       const queryView = params.get('page') || params.get('view');
       if (queryView) {
         let qv = queryView;
+        if (qv.endsWith('/index.html')) qv = qv.substring(0, qv.length - 11);
+        else if (qv.endsWith('index.html')) qv = qv.substring(0, qv.length - 10);
         if (qv.startsWith('pages/')) qv = qv.substring(6);
         else if (qv.startsWith('/pages/')) qv = qv.substring(7);
         return qv;
@@ -48,6 +50,8 @@ export default function App() {
       const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
       if (hash) {
         let h = hash;
+        if (h.endsWith('/index.html')) h = h.substring(0, h.length - 11);
+        else if (h.endsWith('index.html')) h = h.substring(0, h.length - 10);
         if (h.startsWith('pages/')) h = h.substring(6);
         else if (h.startsWith('/pages/')) h = h.substring(7);
         return h;
@@ -55,6 +59,11 @@ export default function App() {
 
       // 3. Fallback to pathname
       let path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (path.endsWith('/index.html')) {
+        path = path.substring(0, path.length - 11);
+      } else if (path.endsWith('index.html')) {
+        path = path.substring(0, path.length - 10);
+      }
       if (path.startsWith('pages/')) {
         path = path.substring(6);
       }
@@ -70,6 +79,11 @@ export default function App() {
 
   const getMatchingPage = (viewName: string) => {
     let query = viewName || '';
+    if (query.endsWith('/index.html')) {
+      query = query.substring(0, query.length - 11);
+    } else if (query.endsWith('index.html')) {
+      query = query.substring(0, query.length - 10);
+    }
     if (query.startsWith('pages/')) {
       query = query.substring(6);
     } else if (query.startsWith('/pages/')) {
@@ -151,6 +165,8 @@ export default function App() {
         const queryView = params.get('page') || params.get('view');
         if (queryView) {
           let qv = queryView;
+          if (qv.endsWith('/index.html')) qv = qv.substring(0, qv.length - 11);
+          else if (qv.endsWith('index.html')) qv = qv.substring(0, qv.length - 10);
           if (qv.startsWith('pages/')) qv = qv.substring(6);
           else if (qv.startsWith('/pages/')) qv = qv.substring(7);
           setCurrentView(qv);
@@ -160,6 +176,8 @@ export default function App() {
         const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
         if (hash) {
           let h = hash;
+          if (h.endsWith('/index.html')) h = h.substring(0, h.length - 11);
+          else if (h.endsWith('index.html')) h = h.substring(0, h.length - 10);
           if (h.startsWith('pages/')) h = h.substring(6);
           else if (h.startsWith('/pages/')) h = h.substring(7);
           setCurrentView(h);
@@ -167,6 +185,11 @@ export default function App() {
         }
 
         let path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        if (path.endsWith('/index.html')) {
+          path = path.substring(0, path.length - 11);
+        } else if (path.endsWith('index.html')) {
+          path = path.substring(0, path.length - 10);
+        }
         if (path.startsWith('pages/')) {
           path = path.substring(6);
         }
