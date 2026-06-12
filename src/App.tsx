@@ -76,11 +76,12 @@ export default function App() {
       query = query.substring(7);
     }
     
-    // Check systemPage aliases
+    // Check systemPage aliases and about-us customization
     const mappedSlug = query === 'disclaimer' ? 'verification-disclaimer' : 
                        query === 'privacy' ? 'privacy-policy' : 
                        query === 'terms' ? 'terms-and-conditions' : 
-                       query === 'agreement' ? 'service-agreement' : query;
+                       query === 'agreement' ? 'service-agreement' : 
+                       (query === 'about' || query === 'about-us') ? 'about' : query;
                        
     return pages.find(p => p.slug === mappedSlug);
   };
@@ -229,9 +230,18 @@ export default function App() {
           checkSlug = checkSlug.substring(7);
         }
         
-        const matched = pages.find(p => p.slug === checkSlug);
+        // Resolve target view mapping
+        const mappedSlug = checkSlug === 'disclaimer' ? 'verification-disclaimer' : 
+                           checkSlug === 'privacy' ? 'privacy-policy' : 
+                           checkSlug === 'terms' ? 'terms-and-conditions' : 
+                           checkSlug === 'agreement' ? 'service-agreement' : 
+                           (checkSlug === 'about' || checkSlug === 'about-us') ? 'about' : checkSlug;
+                           
+        const matched = pages.find(p => p.slug === mappedSlug);
         if (matched) {
-          urlPath = `/pages/${matched.slug}`;
+          // Keep about page URL as /pages/about-us visually
+          const urlSlug = matched.slug === 'about' ? 'about-us' : matched.slug;
+          urlPath = `/pages/${urlSlug}`;
         } else {
           urlPath = `/?page=${view}`;
         }

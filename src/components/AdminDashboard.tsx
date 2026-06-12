@@ -1692,7 +1692,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Eye Preview button */}
                   <a 
-                    href={p.slug === 'home' || p.isHomepage ? '/' : `/pages/${p.slug}`}
+                    href={p.slug === 'home' || p.isHomepage ? '/' : `/pages/${p.slug === 'about' ? 'about-us' : p.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center animate-pulse"
@@ -3314,7 +3314,7 @@ export default function AdminDashboard({ currentLanguage, onThemeChange, onViewS
                 {/* Simulated locked secure URL */}
                 <div className="flex-grow max-w-sm mx-auto bg-white border border-[#cdcdcd] px-3.5 py-0.5 rounded text-[10px] font-mono text-slate-500 font-bold flex items-center gap-1 justify-center shadow-inner">
                   <span>🔒 https://immoburundi.bi/</span>
-                  <span className="text-[#3c8dbc] font-bold">pages/{editorPage.slug}</span>
+                  <span className="text-[#3c8dbc] font-bold">pages/{editorPage.slug === 'about' ? 'about-us' : editorPage.slug}</span>
                 </div>
                 <div className="w-10" />
               </div>
