@@ -37,14 +37,27 @@ export default function App() {
       // 1. Check query parameters first (extremely reliable for static platforms)
       const params = new URLSearchParams(window.location.search);
       const queryView = params.get('page') || params.get('view');
-      if (queryView) return queryView;
+      if (queryView) {
+        let qv = queryView;
+        if (qv.startsWith('pages/')) qv = qv.substring(6);
+        else if (qv.startsWith('/pages/')) qv = qv.substring(7);
+        return qv;
+      }
 
       // 2. Check Hash fallback
       const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
-      if (hash) return hash;
+      if (hash) {
+        let h = hash;
+        if (h.startsWith('pages/')) h = h.substring(6);
+        else if (h.startsWith('/pages/')) h = h.substring(7);
+        return h;
+      }
 
       // 3. Fallback to pathname
-      const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      let path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (path.startsWith('pages/')) {
+        path = path.substring(6);
+      }
       return path || 'home';
     } catch {
       return 'home';
@@ -54,6 +67,23 @@ export default function App() {
   const [previousView, setPreviousView] = useState<string>('home');
   const [properties, setProperties] = useState<Property[]>([]);
   const [pages, setPages] = useState<WebPage[]>([]);
+
+  const getMatchingPage = (viewName: string) => {
+    let query = viewName || '';
+    if (query.startsWith('pages/')) {
+      query = query.substring(6);
+    } else if (query.startsWith('/pages/')) {
+      query = query.substring(7);
+    }
+    
+    // Check systemPage aliases
+    const mappedSlug = query === 'disclaimer' ? 'verification-disclaimer' : 
+                       query === 'privacy' ? 'privacy-policy' : 
+                       query === 'terms' ? 'terms-and-conditions' : 
+                       query === 'agreement' ? 'service-agreement' : query;
+                       
+    return pages.find(p => p.slug === mappedSlug);
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -119,17 +149,26 @@ export default function App() {
         const params = new URLSearchParams(window.location.search);
         const queryView = params.get('page') || params.get('view');
         if (queryView) {
-          setCurrentView(queryView);
+          let qv = queryView;
+          if (qv.startsWith('pages/')) qv = qv.substring(6);
+          else if (qv.startsWith('/pages/')) qv = qv.substring(7);
+          setCurrentView(qv);
           return;
         }
 
         const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
         if (hash) {
-          setCurrentView(hash);
+          let h = hash;
+          if (h.startsWith('pages/')) h = h.substring(6);
+          else if (h.startsWith('/pages/')) h = h.substring(7);
+          setCurrentView(h);
           return;
         }
 
-        const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        let path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        if (path.startsWith('pages/')) {
+          path = path.substring(6);
+        }
         setCurrentView(path || 'home');
       } catch (err) {
         console.error('Error on popstate navigation change:', err);
@@ -175,7 +214,28 @@ export default function App() {
   const handleNavigate = (view: string) => {
     setCurrentView(view);
     try {
-      const urlPath = view === 'home' ? '/' : `/?page=${view}`;
+      let urlPath = '/';
+      if (view === 'home') {
+        urlPath = '/';
+      } else if (view === 'properties' || view === 'properties-catalog') {
+        urlPath = '/properties';
+      } else if (view === 'contact') {
+        urlPath = '/contact';
+      } else {
+        let checkSlug = view;
+        if (checkSlug.startsWith('pages/')) {
+          checkSlug = checkSlug.substring(6);
+        } else if (checkSlug.startsWith('/pages/')) {
+          checkSlug = checkSlug.substring(7);
+        }
+        
+        const matched = pages.find(p => p.slug === checkSlug);
+        if (matched) {
+          urlPath = `/pages/${matched.slug}`;
+        } else {
+          urlPath = `/?page=${view}`;
+        }
+      }
       window.history.pushState({ view }, '', urlPath);
     } catch (e) {
       console.error('Error saving history navigation step:', e);
@@ -947,13 +1007,12 @@ export default function App() {
               </div>
             );
           })()
-        ) : pages.some(p => p.slug === (currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView)) ? (
+        ) : getMatchingPage(currentView) !== undefined ? (
           /* ==========================================
               DYNAMIC CUSTOM PAGE ROUTER
           ========================================== */
           (() => {
-            const mappedSlug = currentView === 'disclaimer' ? 'verification-disclaimer' : currentView === 'privacy' ? 'privacy-policy' : currentView === 'terms' ? 'terms-and-conditions' : currentView === 'agreement' ? 'service-agreement' : currentView;
-            const matchedPl = pages.find(p => p.slug === mappedSlug);
+            const matchedPl = getMatchingPage(currentView);
             if (!matchedPl) return null;
             
             if (matchedPl.sections && matchedPl.sections.length > 0) {
@@ -992,6 +1051,23 @@ export default function App() {
               </div>
             );
           })()
+        ) : (window.location.pathname.includes('/pages/') || window.location.pathname.startsWith('/pages')) ? (
+          /* ==========================================
+              404 NOT FOUND FOR EXPLICIT PAGES ROUTELINE
+          ========================================== */
+          <div className="max-w-md mx-auto py-24 text-center px-4 animate-in fade-in duration-200">
+            <span className="text-4xl text-slate-400 block mb-4">🔍</span>
+            <h2 className="font-sans font-black text-slate-900 text-lg">Page Not Found</h2>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+              The requested land cadaster dynamic document or page does not exist on our servers. It may have been deleted or archived by the compliance team.
+            </p>
+            <button
+              onClick={() => handleNavigate('home')}
+              className="mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-lg text-xs uppercase cursor-pointer transition-all"
+            >
+              go back to homepage
+            </button>
+          </div>
         ) : currentView === 'agreement' ? (
           /* ==========================================
               SERVICE AGREEMENT WITH DIGITAL SIGNATURE
